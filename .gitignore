@@ -1,0 +1,8 @@
+# VsCode files
+.vscode/*
+
+# Documentation whitelist
+docs/*
+!docs/*.md
+!docs/*.tex
+!docs/*.pdf
