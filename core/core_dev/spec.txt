@@ -1,0 +1,38 @@
+ * Model_t *room = LoadModelFromObj("filepath/to/obj");
+ *
+ * // AABB_t area = ModelToAABB(room);
+ *
+ * AABB_t observer_area = {
+ *      .max = {x,y,z},
+ *      .min = {x,y,z}
+ * };
+ *
+ * SceneConfig_t config = {
+ *      .environment = room,
+ *      .num_sources = 1,
+ *      .observer_area = observer_area,
+ *      .material = MATERIAL_CONCRETE,
+ *      .num_rays = 10_000
+ * };
+ *
+ * Scene_t *scene = createScene(&config); //send to AI -> gives us position and normal of source (emitting at 180 deg)
+ *
+ * Settings_t settings = {
+ *      .fps = 60,
+ *      .voxel_size = 10,
+ *      .replay_length = (total_frames)
+ * };
+ *
+ * Simulation_t *sim = simulateScene(&scene, &settings);
+ *
+ *  typedef struct {
+ *      Vector3 origin;
+ *      int dimension_x, .._y, .._z;
+ *      float voxel_size;
+ *      int num_bins;
+ *      Voxel_t* voxels;
+ * } Simulation_t
+ *
+ * DDA algorithm
+ *
+ * ...send to backend
