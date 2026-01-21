@@ -38,13 +38,13 @@ typedef struct {
 typedef struct {
     AT_Vec3 position;
     AT_Vec3 direction;
-    float intensity;
+    float intensity; // Decibels
 } AT_Source;
 
 typedef struct {
-    const AT_Source source; // Assuming one source for now
+    const AT_Source *source; // Assuming one source for now
     uint32_t num_rays;
-    uint32_t max_bounces;
+    uint32_t intensity_threshold;
     AT_Material material;
 
     // Borrowed: must remain valid for the entire lifetime of the scene
@@ -53,9 +53,8 @@ typedef struct {
 } AT_SceneConfig;
 
 typedef struct {
-    uint32_t voxel_size;
-    uint32_t replay_length;
-    uint8_t fps;
+    float voxel_size; // Render resolution
+    uint8_t fps; // Bin width is always one frame
 } AT_Settings;
 
 // Model
