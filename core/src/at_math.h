@@ -7,6 +7,10 @@ typedef struct {
     float x, y, z;
 } AT_Vec3;
 
+typedef struct {
+    AT_Vec3 v1, v2, v3;
+} AT_Triangle;
+
 static inline AT_Vec3 AT_vec3(float x, float y, float z) {
     return (AT_Vec3){ x, y, z };
 }
