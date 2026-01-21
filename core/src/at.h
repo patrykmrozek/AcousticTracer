@@ -44,7 +44,6 @@ typedef struct {
 typedef struct {
     const AT_Source *source; // Assuming one source for now
     uint32_t num_rays;
-    uint32_t intensity_threshold;
     AT_Material material;
 
     // Borrowed: must remain valid for the entire lifetime of the scene
