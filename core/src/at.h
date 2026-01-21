@@ -13,7 +13,6 @@ typedef enum {
     AT_OK = 0,
     AT_ERR_INVALID_ARGUMENT,
     AT_ERR_ALLOC_ERROR,
-    AT_ERR_NETWORK_ERROR
 } AT_Result;
 
 typedef enum {
@@ -28,27 +27,19 @@ typedef struct {
 } AT_AABB;
 
 typedef struct {
-    const char *url;
-    uint32_t timeout_ms;
-    int *http_status_out;
-    char *response_buf;
-    size_t response_buf_size;
-} AT_NetworkConfig;
-
-typedef struct {
     AT_Vec3 position;
     AT_Vec3 direction;
-    float intensity; // Decibels
+    float intensity; // relative to the source intensity
 } AT_Source;
 
 typedef struct {
-    const AT_Source *source; // Assuming one source for now
+    const AT_Source *source;
+    uint32_t num_sources;
     uint32_t num_rays;
     AT_Material material;
 
     // Borrowed: must remain valid for the entire lifetime of the scene
     const AT_Model *environment;
-    const AT_AABB *observer_area;
 } AT_SceneConfig;
 
 typedef struct {
@@ -96,18 +87,6 @@ AT_Result AT_simulation_run(
 
 void AT_simulation_destroy(
     AT_Simulation *simulation
-);
-
-AT_Result AT_scene_to_json(
-    char *json,
-    size_t max_len,
-    size_t *bytes_written_out,
-    const AT_Scene *scene
-);
-
-AT_Result AT_send_json_to_url(
-    const char *json,
-    const AT_NetworkConfig *config
 );
 
 #endif // AT_H
