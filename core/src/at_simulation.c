@@ -2,7 +2,7 @@
 #include "acoustic/at.h"
 #include "acoustic/at_math.h"
 #include "acoustic/at_scene.h"
-#include "../src/at_internal.h"
+#include "../src/at_voxel.h"
 
 #include <stdint.h>
 #include <stdlib.h>

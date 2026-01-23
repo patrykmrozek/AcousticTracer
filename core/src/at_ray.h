@@ -1,7 +1,7 @@
 #ifndef AT_RAY_H
 #define AT_RAY_H
 
-#include "at_math.h"
+#include "acoustic/at_math.h"
 #include "../src/at_internal.h"
 
 #include <stdint.h>
@@ -41,7 +41,7 @@ static inline AT_Vec3 AT_ray_reflect(
 
 bool AT_ray_triangle_intersect(
     const AT_Ray *ray,
-    const AT_Triangle *triangle, //TODO: define AT_Triangle somewhere
+    const AT_Triangle *triangle,
     AT_RayHit *out_hit
 );
 
