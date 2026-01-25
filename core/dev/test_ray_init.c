@@ -63,6 +63,9 @@ int main()
                                (Vector3){t1.v2.x, t1.v2.y, t1.v2.z},
                                (Vector3){t1.v3.x, t1.v3.y, t1.v3.z},
                                GREEN);
+
+                DrawSphere((Vector3){ray_hit.position.x, ray_hit.position.y, ray_hit.position.z},
+                    0.05f, BLUE);
             }
             EndMode3D();
         }
