@@ -29,7 +29,7 @@ typedef struct {
     float total_distance;
     uint32_t ray_id;
     uint32_t bounce_count;
-    AT_RayHitList *hits;
+    AT_RayHitList hits;
 } AT_Ray;
 
 // dynamic array structure
