@@ -55,6 +55,11 @@ bool AT_ray_triangle_intersect(
     AT_RayHit *out_hit
 );
 
+static inline void AT_ray_destroy(AT_Ray *ray)
+{
+    AT_da_free(ray->hits);
+}
+
 
 
 #endif //AT_RAY_H
