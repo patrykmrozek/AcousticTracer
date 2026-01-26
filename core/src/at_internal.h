@@ -11,15 +11,6 @@
 
 // Private Types (typedef + define)
 typedef struct {
-    AT_Vec3 origin;
-    AT_Vec3 direction;
-    float energy;
-    float total_distance;
-    uint32_t ray_id;
-    uint32_t bounce_count;
-} AT_Ray;
-
-typedef struct {
     AT_Vec3 position;
     AT_Vec3 normal;
     float t;
@@ -30,6 +21,16 @@ typedef struct {
     size_t count;
     size_t capacity;
 } AT_RayHits;
+
+typedef struct {
+    AT_Vec3 origin;
+    AT_Vec3 direction;
+    float energy;
+    float total_distance;
+    uint32_t ray_id;
+    uint32_t bounce_count;
+    AT_RayHits *hits;
+} AT_Ray;
 
 // dynamic array structure
 // called "items" instead of "bins" since the dynamic array macros are
