@@ -15,8 +15,6 @@ static inline AT_Ray AT_ray_init(
     const AT_Vec3 direction,
     uint32_t ray_id
 ) {
-    AT_RayHitList hits = {0};
-    AT_da_init(&hits);
 
     AT_Ray ray = {
         .origin = origin,
@@ -25,15 +23,16 @@ static inline AT_Ray AT_ray_init(
         .total_distance = 0.0f,
         .ray_id = ray_id,
         .bounce_count = 0,
-        .hits = &hits
     };
+    AT_da_init(&ray.hits);
+
     return ray;
 }
 
 //da wrapper
 static inline void AT_ray_add_hit(AT_Ray *ray, AT_RayHit hit)
 {
-    AT_da_append(ray->hits, hit);
+    AT_da_append(&ray->hits, hit);
 }
 
 static inline AT_Vec3 AT_ray_at(const AT_Ray *ray, float t)
@@ -57,7 +56,7 @@ bool AT_ray_triangle_intersect(
 
 static inline void AT_ray_destroy(AT_Ray *ray)
 {
-    AT_da_free(ray->hits);
+    AT_da_free(&ray->hits);
 }
 
 
