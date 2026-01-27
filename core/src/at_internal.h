@@ -13,7 +13,7 @@
 typedef struct AT_Ray AT_Ray;
 
 struct AT_Ray {
-    AT_Ray *parent;
+    AT_Ray *child;
     AT_Vec3 origin;
     AT_Vec3 direction;
     float energy;

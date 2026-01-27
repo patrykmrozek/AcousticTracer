@@ -1,9 +1,10 @@
 #include "../src/at_ray.h"
+#include "acoustic/at_math.h"
 
 #define EPSILON 1e-6f
 
 //Möller–Trumbore intersection alg
-bool AT_ray_triangle_intersect(const AT_Ray *ray, const AT_Triangle *triangle, AT_Ray *out_ray)
+bool AT_ray_triangle_intersect(AT_Ray *ray, const AT_Triangle *triangle, AT_Ray *out_ray)
 {
     AT_Vec3 edge1 = AT_vec3_sub(triangle->v2, triangle->v1);
     AT_Vec3 edge2 = AT_vec3_sub(triangle->v3, triangle->v1);
@@ -25,14 +26,20 @@ bool AT_ray_triangle_intersect(const AT_Ray *ray, const AT_Triangle *triangle, A
     float t = AT_vec3_dot(edge2, qvec) * inv_det;
     if (t < EPSILON) return false;
 
-    out_ray->origin = (AT_Vec3){
-        .x = ray->origin.x + ray->direction.x * t,
-        .y = ray->origin.y + ray->direction.y * t,
-        .z = ray->origin.z + ray->direction.z * t,
-    };
-    AT_Vec3 normal = AT_vec3_normalize(AT_vec3_cross(edge1, edge2));
-    if (AT_vec3_dot(normal, ray->direction) > 0) normal = AT_vec3_scale(normal, -1);
-    out_ray->direction = normal;
+    AT_Vec3 hit_point = {
+            .x = ray->origin.x + ray->direction.x * t,
+            .y = ray->origin.y + ray->direction.y * t,
+            .z = ray->origin.z + ray->direction.z * t,
+        };
+
+    if (AT_vec3_distance_sq(ray->origin, hit_point) < AT_vec3_distance_sq(ray->origin, out_ray->origin)) {
+        out_ray->origin = hit_point;
+        AT_Vec3 normal = AT_vec3_normalize(AT_vec3_cross(edge1, edge2));
+        if (AT_vec3_dot(normal, ray->direction) > 0) normal = AT_vec3_scale(normal, -1);
+        out_ray->direction = AT_ray_reflect(ray->direction, normal);
+
+        AT_ray_add_child(ray, out_ray);
+    }
 
     return true;
 }

@@ -14,7 +14,7 @@ int main()
 
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "ray test");
 
-    AT_Ray ray = AT_ray_init(
+    AT_Ray ray = *AT_ray_init(
         (AT_Vec3){0.5f, 0.5, 1.0f},
         (AT_Vec3){0.0f, 0.0f, -1.0f},
         0
@@ -26,14 +26,14 @@ int main()
         .v3 = {0.0f, 2.0f, 0.0f}
     };
 
-    AT_RayHit ray_hit = {0};
-    if (AT_ray_triangle_intersect(&ray, &t1, &ray_hit)) {
+    AT_Ray out_ray = {0};
+    if (AT_ray_triangle_intersect(&ray, &t1, &out_ray)) {
         printf("RAY HIT!\n");
     }
     printf("Hit Position: {%.2f, %.2f, %.2f} - Hit Normal: {%.2f, %.2f, %.2f} - t: %.2f\n",
-        ray_hit.position.x, ray_hit.position.y, ray_hit.position.z,
-        ray_hit.normal.x, ray_hit.normal.y, ray_hit.normal.z,
-        ray_hit.t);
+        out_ray.origin.x, out_ray.origin.y, out_ray.origin.z,
+        out_ray.direction.x, out_ray.direction.y, out_ray.direction.z,
+        AT_vec3_distance(ray.origin, out_ray.origin));
 
     SetTargetFPS(60);
 
@@ -63,7 +63,7 @@ int main()
                                (Vector3){t1.v3.x, t1.v3.y, t1.v3.z},
                                GREEN);
 
-                DrawSphere((Vector3){ray_hit.position.x, ray_hit.position.y, ray_hit.position.z},
+                DrawSphere((Vector3){out_ray.origin.x, out_ray.origin.y, out_ray.origin.z},
                     0.05f, BLUE);
             }
             EndMode3D();
