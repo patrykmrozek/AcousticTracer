@@ -1,4 +1,5 @@
 #include "acoustic/at.h"
+#include "acoustic/at_result.h"
 #include <stdio.h>
 
 int main()
@@ -14,10 +15,8 @@ int main()
     };
 
     AT_Model *model = NULL;
-    if (AT_model_create(&model, filepath) != AT_OK) {
-        fprintf(stderr, "Error creating model\n");
-        return 1;
-    }
+    AT_Result res = AT_model_create(&model, filepath);
+    AT_handle_result(res, "Error creating model\n");
 
     AT_SceneConfig conf = {
         .environment = model,
