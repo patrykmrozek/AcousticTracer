@@ -8,6 +8,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <float.h>
 
 AT_Triangle *AT_model_get_triangles(const AT_Model *model)
 {
@@ -21,6 +22,19 @@ AT_Triangle *AT_model_get_triangles(const AT_Model *model)
         };
     }
     return ts;
+}
+AT_RayHit AT_ray_get_closest_hit(const AT_Ray *ray)
+{
+    AT_RayHit closest_hit = {0};
+    float smallest_dist = FLT_MAX;
+    for (uint32_t i = 0; i < ray->hits.count; i++) {
+        float curr_dist = AT_vec3_distance_sq(ray->origin, ray->hits.items[i].position);
+        if (curr_dist < smallest_dist) {
+            smallest_dist = curr_dist;
+            closest_hit = ray->hits.items[i];
+        }
+    }
+    return closest_hit;
 }
 
 int main()
@@ -64,8 +78,6 @@ int main()
         .projection = CAMERA_PERSPECTIVE
     };
 
-
-
     while (!WindowShouldClose())
     {
         UpdateCamera(&camera, CAMERA_FREE);
@@ -78,7 +90,7 @@ int main()
                 (Vector3){ray.origin.x, ray.origin.y, ray.origin.z},
                 (Vector3){ray.direction.x, ray.direction.y, ray.direction.z}
                 }, RED);
-                //DrawModel(rl_model, (Vector3){ 0.0f, 0.0f, 0.0f }, 1, GREEN);
+
                 for (uint32_t i = 0; i < t_count; i++) {
                     DrawTriangle3D(
                         (Vector3){ts[i].v1.x, ts[i].v1.y, ts[i].v1.z},
@@ -88,14 +100,20 @@ int main()
                 }
                 DrawGrid(10, 1.0f);
 
-                for (uint32_t i = 0; i < ray.hits.count; i++) {
-                    DrawSphere(
-                        (Vector3){
-                            ray.hits.items[i].position.x,
-                            ray.hits.items[i].position.y,
-                            ray.hits.items[i].position.z,},
-                        0.1, BLUE);
-                }
+                //ray origin
+                DrawSphere((Vector3){
+                    ray.origin.x,
+                    ray.origin.y,
+                    ray.origin.z},
+                    0.1, RED);
+
+                AT_RayHit closest_hit = AT_ray_get_closest_hit(&ray);
+                DrawSphere(
+                    (Vector3){
+                        closest_hit.position.x,
+                        closest_hit.position.y,
+                        closest_hit.position.z},
+                    0.1, BLUE);
 
             }
             EndMode3D();
