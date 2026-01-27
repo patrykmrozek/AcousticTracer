@@ -9,47 +9,15 @@
 #include <stdint.h>
 #include <stdio.h>
 
-Mesh model_to_rl_mesh(const AT_Model *model)
-{
-    Mesh mesh = {0};
-
-    mesh.vertexCount   = model->vertex_count;
-    mesh.triangleCount = model->index_count / 3;
-
-    mesh.vertices = MemAlloc(sizeof(float) * 3 * mesh.vertexCount);
-    mesh.normals  = MemAlloc(sizeof(float) * 3 * mesh.vertexCount);
-    mesh.texcoords = MemAlloc(sizeof(float) * 2 * mesh.vertexCount);
-    mesh.indices  = MemAlloc(sizeof(unsigned int) * model->index_count);
-
-    for (int i = 0; i < model->vertex_count; i++) {
-        mesh.vertices[i*3 + 0] = model->vertices[i].x;
-        mesh.vertices[i*3 + 1] = model->vertices[i].y;
-        mesh.vertices[i*3 + 2] = model->vertices[i].z;
-    }
-
-    for (int i = 0; i < model->vertex_count; i++) {
-        mesh.normals[i*3 + 0] = model->normals[i].x;
-        mesh.normals[i*3 + 1] = model->normals[i].y;
-        mesh.normals[i*3 + 2] = model->normals[i].z;
-    }
-
-    for (int i = 0; i < model->index_count; i++) {
-        mesh.indices[i] = model->indices[i];
-    }
-
-    UploadMesh(&mesh, false);
-    return mesh;
-}
-
 AT_Triangle *AT_model_get_triangles(const AT_Model *model)
 {
     uint32_t triangle_count = model->index_count / 3;
     AT_Triangle *ts = (AT_Triangle*)malloc(sizeof(AT_Triangle) * triangle_count);
     for (uint32_t i = 0; i < triangle_count; i++) {
         ts[i] = (AT_Triangle){
-            .v1 = model->vertices[i*3 + 0],
-            .v2 = model->vertices[i*3 + 1],
-            .v3 = model->vertices[i*3 + 2]
+            .v1 = model->vertices[model->indices[i*3 + 0]],
+            .v2 = model->vertices[model->indices[i*3 + 1]],
+            .v3 = model->vertices[model->indices[i*3 + 2]]
         };
     }
     return ts;
@@ -86,9 +54,6 @@ int main()
     printf("Initializing Window\n");
     InitWindow(1280, 720, "Model Ray Test");
 
-    printf("Loading rl_model\n");
-    Model rl_model = LoadModelFromMesh(model_to_rl_mesh(model));
-
     SetTargetFPS(60);
 
     Camera3D camera = {
@@ -113,8 +78,25 @@ int main()
                 (Vector3){ray.origin.x, ray.origin.y, ray.origin.z},
                 (Vector3){ray.direction.x, ray.direction.y, ray.direction.z}
                 }, RED);
-                DrawModel(rl_model, (Vector3){ 0.0f, 0.0f, 0.0f }, 1, GREEN);
+                //DrawModel(rl_model, (Vector3){ 0.0f, 0.0f, 0.0f }, 1, GREEN);
+                for (uint32_t i = 0; i < t_count; i++) {
+                    DrawTriangle3D(
+                        (Vector3){ts[i].v1.x, ts[i].v1.y, ts[i].v1.z},
+                        (Vector3){ts[i].v2.x, ts[i].v2.y, ts[i].v2.z},
+                        (Vector3){ts[i].v3.x, ts[i].v3.y, ts[i].v3.z},
+                        GREEN);
+                }
                 DrawGrid(10, 1.0f);
+
+                for (uint32_t i = 0; i < ray.hits.count; i++) {
+                    DrawSphere(
+                        (Vector3){
+                            ray.hits.items[i].position.x,
+                            ray.hits.items[i].position.y,
+                            ray.hits.items[i].position.z,},
+                        0.1, BLUE);
+                }
+
             }
             EndMode3D();
             DrawFPS(10, 10);
