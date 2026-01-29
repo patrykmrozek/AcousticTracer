@@ -58,7 +58,7 @@ int main()
 
     AT_Settings settings = {
         .fps = 60,
-        .num_rays = 20,
+        .num_rays = 200,
         .voxel_size = 10
     };
 
@@ -90,7 +90,11 @@ int main()
 
 
         uint32_t t_count = sim->scene->environment->index_count / 3;
-        AT_Triangle *ts = AT_model_get_triangles(sim->scene->environment);
+        AT_Triangle *ts = NULL;
+        if (AT_model_get_triangles(&ts, sim->scene->environment) != AT_OK) {
+            fprintf(stderr, "Failed to get triangles from model\n");
+            return 1;
+        }
 
         while (!WindowShouldClose())
         {
@@ -129,7 +133,7 @@ int main()
                                 }
                             }
 
-                            if (rays[i].child) {
+                            if (rays[ray_idx].child) {
                                 DrawLine3D(
                                     (Vector3){rays[ray_idx].origin.x, rays[ray_idx].origin.y, rays[ray_idx].origin.z},
                                     (Vector3){rays[ray_idx].child->origin.x, rays[ray_idx].child->origin.y, rays[ray_idx].child->origin.z},
@@ -142,10 +146,6 @@ int main()
                             }
                         }
                     }
-
-
-                    uint32_t t_count = sim->scene->environment->index_count / 3;
-                    AT_Triangle *ts = AT_model_get_triangles(sim->scene->environment);
 
                     for (uint32_t i = 0; i < t_count; i++) {
                         DrawTriangle3D(
