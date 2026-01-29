@@ -106,13 +106,14 @@ int main()
                     for (uint32_t s = 0; s < sim->scene->num_sources; s++) {
                         for (uint32_t i = 0; i < sim->num_rays; i++) {
                             uint32_t ray_idx = s * sim->num_rays + i;
+                            AT_Ray ray = rays[ray_idx];
                             DrawSphere((Vector3){
-                            rays[ray_idx].origin.x,
-                            rays[ray_idx].origin.y,
-                            rays[ray_idx].origin.z},
+                            ray.origin.x,
+                            ray.origin.y,
+                            ray.origin.z},
                             0.1, RED);
 
-                            AT_Ray *curr = &rays[ray_idx];
+                            AT_Ray *curr = &ray;
                             while (curr->child) {
                                 curr = curr->child;
                                 DrawSphere(
@@ -130,15 +131,15 @@ int main()
                                 }
                             }
 
-                            if (rays[ray_idx].child) {
+                            if (ray.child) {
                                 DrawLine3D(
-                                    (Vector3){rays[ray_idx].origin.x, rays[ray_idx].origin.y, rays[ray_idx].origin.z},
-                                    (Vector3){rays[ray_idx].child->origin.x, rays[ray_idx].child->origin.y, rays[ray_idx].child->origin.z},
+                                    (Vector3){ray.origin.x, ray.origin.y, ray.origin.z},
+                                    (Vector3){ray.child->origin.x, ray.child->origin.y, ray.child->origin.z},
                                     RED);
                             } else {
                                 DrawRay((Ray){
-                                (Vector3){rays[ray_idx].origin.x, rays[ray_idx].origin.y, rays[ray_idx].origin.z},
-                                (Vector3){rays[ray_idx].direction.x, rays[ray_idx].direction.y, rays[ray_idx].direction.z}
+                                (Vector3){ray.origin.x, ray.origin.y, ray.origin.z},
+                                (Vector3){ray.direction.x, ray.direction.y, ray.direction.z}
                                 }, RED);
                             }
                         }
