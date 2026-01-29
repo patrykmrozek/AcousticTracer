@@ -102,7 +102,7 @@ AT_Result AT_simulation_run(AT_Simulation *simulation)
             AT_Ray *ray = &simulation->rays[ray_idx];
             uint32_t bounce_count = 0;
             //while (ray->energy > MIN_RAY_ENERGY_THRESHOLD) {
-            while (bounce_count++ < 3) {
+            while (bounce_count++ < 5) {
                 AT_Ray closest = AT_ray_init((AT_Vec3){
                     FLT_MAX, FLT_MAX, FLT_MAX},
                     (AT_Vec3){0},

@@ -58,7 +58,7 @@ int main()
 
     AT_Settings settings = {
         .fps = 60,
-        .num_rays = 200,
+        .num_rays = 50,
         .voxel_size = 10
     };
 
@@ -85,9 +85,6 @@ int main()
             .fovy = 60.0f,
             .projection = CAMERA_PERSPECTIVE
         };
-
-        //rlDisableBackfaceCulling();
-
 
         uint32_t t_count = sim->scene->environment->index_count / 3;
         AT_Triangle *ts = NULL;
