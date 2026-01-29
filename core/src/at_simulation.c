@@ -78,9 +78,17 @@ AT_Result AT_simulation_run(AT_Simulation *simulation)
         //init rays for this source
             for (uint32_t r = 0; r < simulation->num_rays; r++) {
                 uint32_t ray_idx = s * simulation->num_rays + r;
+
+                //gpt ahh code
+                AT_Vec3 varied_direction = simulation->scene->sources[s].direction;
+                varied_direction.x += ((float)rand() / RAND_MAX - 0.5f) * 0.2f;  // ±0.1
+                varied_direction.y += ((float)rand() / RAND_MAX - 0.5f) * 0.2f;  // ±0.1
+                varied_direction.z += ((float)rand() / RAND_MAX - 0.5f) * 0.2f;  // ±0.1
+                varied_direction = AT_vec3_normalize(varied_direction);
+
                 simulation->rays[ray_idx] = AT_ray_init(
                     simulation->scene->sources[s].position,
-                    simulation->scene->sources[s].direction,
+                    varied_direction,
                     ray_idx //ray index
                 );
             }
@@ -89,7 +97,9 @@ AT_Result AT_simulation_run(AT_Simulation *simulation)
         for (uint32_t i = 0; i < simulation->num_rays; i++) {
             uint32_t ray_idx = s * simulation->num_rays + i;
             AT_Ray *ray = &simulation->rays[ray_idx];
-            while (ray->energy > MIN_RAY_ENERGY_THRESHOLD) {
+            uint32_t bounce_count = 0;
+            //while (ray->energy > MIN_RAY_ENERGY_THRESHOLD) {
+            while (bounce_count++ < 3) {
                 AT_Ray closest = AT_ray_init((AT_Vec3){
                     FLT_MAX, FLT_MAX, FLT_MAX},
                     (AT_Vec3){0},
