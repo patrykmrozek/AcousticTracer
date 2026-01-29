@@ -21,6 +21,17 @@ typedef struct AT_Model AT_Model;
 */
 AT_Result AT_model_create(AT_Model **out_model, const char *filepath);
 
+
+/* \brief Constructs all triangles in a given Model.
+   \relates AT_Model
+
+   \param model Pointer to an initialised AT_Model.
+
+   \retval Pointer to an allocated array of triangles.
+ */
+AT_Triangle *AT_model_get_triangles(const AT_Model *model)
+
+
 /** \brief Destroys an allocated AT_Model.
     \relates AT_Model
 
