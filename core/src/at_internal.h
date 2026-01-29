@@ -59,8 +59,8 @@ struct AT_Simulation {
     AT_Vec3 dimensions;
     AT_Vec3 grid_dimensions;
     float voxel_size;
-    uint32_t num_rays;
     float bin_width;
+    uint32_t num_rays;
     uint8_t fps;
 };
 

@@ -1,12 +1,16 @@
 #include "acoustic/at_simulation.h"
 #include "acoustic/at.h"
 #include "acoustic/at_math.h"
+#include "acoustic/at_model.h"
 #include "acoustic/at_scene.h"
 #include "../src/at_voxel.h"
+#include "at_internal.h"
+#include "at_ray.h"
 
 #include <stdint.h>
 #include <stdlib.h>
 #include <math.h>
+#include <float.h>
 
 AT_Result AT_simulation_create(AT_Simulation **out_simulation, const AT_Scene *scene, const AT_Settings *settings)
 {
@@ -16,7 +20,8 @@ AT_Result AT_simulation_create(AT_Simulation **out_simulation, const AT_Scene *s
     AT_Simulation *simulation = calloc(1, sizeof(AT_Simulation));
     if (!simulation) return AT_ERR_ALLOC_ERROR;
 
-    simulation->rays = (AT_Ray*)malloc(sizeof(AT_Ray) * settings->num_rays);
+    //need to store all rays per source
+    simulation->rays = (AT_Ray*)malloc(sizeof(AT_Ray) * settings->num_rays * scene->num_sources);
     if (!simulation->rays) {
         free(simulation);
         return AT_ERR_ALLOC_ERROR;
@@ -58,13 +63,56 @@ AT_Result AT_simulation_create(AT_Simulation **out_simulation, const AT_Scene *s
     return AT_OK;
 }
 
-AT_Result AT_simulation_run(AT_Simulation *simulation) {
+
+#define MIN_RAY_ENERGY_THRESHOLD 10.0
+
+AT_Result AT_simulation_run(AT_Simulation *simulation)
+{
     if (!simulation) return AT_ERR_INVALID_ARGUMENT;
 
+    uint32_t triangle_count = simulation->scene->environment->index_count / 3;
+    AT_Triangle *triangles = AT_model_get_triangles(simulation->scene->environment);
 
+    //initialize and trace rays at every source
+    for (uint32_t s = 0; s < simulation->scene->num_sources; s++) {
+        //init rays for this source
+            for (uint32_t r = 0; r < simulation->num_rays; r++) {
+                uint32_t ray_idx = s * simulation->num_rays + r;
+                simulation->rays[ray_idx] = AT_ray_init(
+                    simulation->scene->sources[s].position,
+                    simulation->scene->sources[s].direction,
+                    ray_idx //ray index
+                );
+            }
 
+        //trace rays for this source
+        for (uint32_t i = 0; i < simulation->num_rays; i++) {
+            uint32_t ray_idx = s * simulation->num_rays + i;
+            AT_Ray *ray = &simulation->rays[ray_idx];
+            while (ray->energy > MIN_RAY_ENERGY_THRESHOLD) {
+                AT_Ray closest = AT_ray_init((AT_Vec3){
+                    FLT_MAX, FLT_MAX, FLT_MAX},
+                    (AT_Vec3){0},
+                    ray_idx);
+                bool intersects = false;
+                for (uint32_t t = 0; t < triangle_count; t++) {
+                    if (AT_ray_triangle_intersect(ray, &triangles[t], &closest)) {
+                        intersects = true;
+                    }
+                }
+                if (!intersects) break;
+
+                AT_Ray *child = (AT_Ray*)malloc(sizeof(AT_Ray));
+                *child = closest;
+                child->child = NULL;
+                ray->child = child;
+                ray = ray->child;
+            }
+        }
+    }
     return AT_OK;
 }
+
 
 void AT_simulation_destroy(AT_Simulation *simulation) {
     if (!simulation) return;
@@ -75,6 +123,13 @@ void AT_simulation_destroy(AT_Simulation *simulation) {
 
     for (uint32_t i = 0; i < num_voxels; i++) {
         AT_voxel_cleanup(&simulation->voxel_grid[i]);
+    }
+
+    uint32_t total_rays = simulation->scene->num_sources * simulation->num_rays;
+    for (uint32_t i = 0; i < total_rays; i++) {
+        if (simulation->rays[i].child) {
+            AT_ray_destroy_children(simulation->rays[i].child);
+        }
     }
 
     free(simulation->voxel_grid);

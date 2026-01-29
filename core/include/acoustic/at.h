@@ -72,14 +72,6 @@ void AT_model_destroy(
     AT_Model *model
 );
 
-/** \brief Calculates the min and max of a model for AABB collision.
-    \relates AT_AABB
-
-    \param out_aabb Pointer to an empty initialised AT_AABB.
-    \param model Pointer to the model.
-
-    \retval void
-*/
 void AT_model_to_AABB(
     AT_AABB *out_aabb,
     const AT_Model *model
