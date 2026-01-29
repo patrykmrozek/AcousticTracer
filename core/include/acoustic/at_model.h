@@ -22,6 +22,17 @@ typedef struct AT_Model AT_Model;
 AT_Result AT_model_create(AT_Model **out_model, const char *filepath);
 
 
+/** \brief Calculates the min and max of a model for AABB collision.
+    \relates AT_AABB
+
+    \param out_aabb Pointer to an empty initialised AT_AABB.
+    \param model Pointer to the model.
+
+    \retval void
+*/
+void AT_model_to_AABB(AT_AABB *out_aabb, const AT_Model *model);
+
+
 /* \brief Constructs all triangles in a given Model.
    \relates AT_Model
 
@@ -29,7 +40,7 @@ AT_Result AT_model_create(AT_Model **out_model, const char *filepath);
 
    \retval Pointer to an allocated array of triangles.
  */
-AT_Triangle *AT_model_get_triangles(const AT_Model *model)
+AT_Triangle *AT_model_get_triangles(const AT_Model *model);
 
 
 /** \brief Destroys an allocated AT_Model.
