@@ -163,8 +163,8 @@ int main()
 
     CloseWindow();
     free(ts);
-    AT_scene_destroy(scene);
     AT_simulation_destroy(sim);
+    AT_scene_destroy(scene);
     AT_model_destroy(model);
 
     return 0;
