@@ -21,7 +21,7 @@ AT_Result AT_simulation_create(AT_Simulation **out_simulation, const AT_Scene *s
     if (!simulation) return AT_ERR_ALLOC_ERROR;
 
     //need to store all rays per source
-    simulation->rays = (AT_Ray*)malloc(sizeof(AT_Ray) * settings->num_rays * scene->num_sources);
+    simulation->rays = (AT_Ray*)calloc(settings->num_rays * scene->num_sources, sizeof(AT_Ray));
     if (!simulation->rays) {
         free(simulation);
         return AT_ERR_ALLOC_ERROR;
@@ -71,27 +71,30 @@ AT_Result AT_simulation_run(AT_Simulation *simulation)
     if (!simulation) return AT_ERR_INVALID_ARGUMENT;
 
     uint32_t triangle_count = simulation->scene->environment->index_count / 3;
-    AT_Triangle *triangles = AT_model_get_triangles(simulation->scene->environment);
+    AT_Triangle *triangles = NULL;
+    if (AT_model_get_triangles(&triangles, simulation->scene->environment) != AT_OK) {
+        return AT_ERR_ALLOC_ERROR;
+    }
 
     //initialize and trace rays at every source
     for (uint32_t s = 0; s < simulation->scene->num_sources; s++) {
         //init rays for this source
-            for (uint32_t r = 0; r < simulation->num_rays; r++) {
-                uint32_t ray_idx = s * simulation->num_rays + r;
+        for (uint32_t r = 0; r < simulation->num_rays; r++) {
+            uint32_t ray_idx = s * simulation->num_rays + r;
 
-                //gpt ahh code
-                AT_Vec3 varied_direction = simulation->scene->sources[s].direction;
-                varied_direction.x += ((float)rand() / RAND_MAX - 0.5f) * 0.2f;  // ±0.1
-                varied_direction.y += ((float)rand() / RAND_MAX - 0.5f) * 0.2f;  // ±0.1
-                varied_direction.z += ((float)rand() / RAND_MAX - 0.5f) * 0.2f;  // ±0.1
-                varied_direction = AT_vec3_normalize(varied_direction);
+            //gpt ahh code
+            AT_Vec3 varied_direction = simulation->scene->sources[s].direction;
+            varied_direction.x += ((float)rand() / RAND_MAX - 0.5f) * 0.2f;  // ±0.1
+            varied_direction.y += ((float)rand() / RAND_MAX - 0.5f) * 0.2f;  // ±0.1
+            varied_direction.z += ((float)rand() / RAND_MAX - 0.5f) * 0.2f;  // ±0.1
+            varied_direction = AT_vec3_normalize(varied_direction);
 
-                simulation->rays[ray_idx] = AT_ray_init(
-                    simulation->scene->sources[s].position,
-                    varied_direction,
-                    ray_idx //ray index
-                );
-            }
+            simulation->rays[ray_idx] = AT_ray_init(
+                simulation->scene->sources[s].position,
+                varied_direction,
+                ray_idx //ray index
+            );
+        }
 
         //trace rays for this source
         for (uint32_t i = 0; i < simulation->num_rays; i++) {
@@ -113,6 +116,7 @@ AT_Result AT_simulation_run(AT_Simulation *simulation)
                 if (!intersects) break;
 
                 AT_Ray *child = (AT_Ray*)malloc(sizeof(AT_Ray));
+                if (!child) return AT_ERR_ALLOC_ERROR;
                 *child = closest;
                 child->child = NULL;
                 ray->child = child;

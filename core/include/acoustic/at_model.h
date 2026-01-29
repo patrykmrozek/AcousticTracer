@@ -40,7 +40,7 @@ void AT_model_to_AABB(AT_AABB *out_aabb, const AT_Model *model);
 
    \retval Pointer to an allocated array of triangles.
  */
-AT_Triangle *AT_model_get_triangles(const AT_Model *model);
+AT_Result AT_model_get_triangles(AT_Triangle **out_triangles, const AT_Model *model);
 
 
 /** \brief Destroys an allocated AT_Model.

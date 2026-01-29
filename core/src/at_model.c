@@ -217,10 +217,11 @@ void AT_model_to_AABB(AT_AABB *out_aabb, const AT_Model *model)
 }
 
 
-AT_Triangle *AT_model_get_triangles(const AT_Model *model)
+AT_Result AT_model_get_triangles(AT_Triangle **out_triangles, const AT_Model *model)
 {
     uint32_t triangle_count = model->index_count / 3;
     AT_Triangle *ts = (AT_Triangle*)malloc(sizeof(AT_Triangle) * triangle_count);
+    if (!ts) return AT_ERR_ALLOC_ERROR;
     for (uint32_t i = 0; i < triangle_count; i++) {
         ts[i] = (AT_Triangle){
             .v1 = model->vertices[model->indices[i*3 + 0]],
@@ -228,7 +229,8 @@ AT_Triangle *AT_model_get_triangles(const AT_Model *model)
             .v3 = model->vertices[model->indices[i*3 + 2]]
         };
     }
-    return ts;
+    *out_triangles = ts;
+    return AT_OK;
 }
 
 
