@@ -50,8 +50,10 @@ struct AT_Model {
 };
 
 struct AT_Simulation {
+    //using the scene struct within the simulation struct we can access its members like this:
+    // simulation->scene->sources etc..
+    const AT_Scene *scene; //borrowed: must remain valid for the lifetime of AT_Simulation
     AT_Voxel *voxel_grid;
-    AT_Source *sources;
     AT_Ray *rays;
     AT_Vec3 origin;
     AT_Vec3 dimensions;
