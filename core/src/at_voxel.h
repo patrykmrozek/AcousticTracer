@@ -20,7 +20,7 @@ static inline AT_Result AT_voxel_bin_append(AT_Voxel *voxel, float bin)
     return AT_OK;
 }
 
-void AT_voxel_ray_step(AT_Simulation simulation, AT_Vec3 ray_start, AT_Vec3 ray_end, float ray_energy);
+void AT_voxel_ray_step(AT_Simulation *simulation, AT_Vec3 ray_origin, AT_Vec3 ray_end, AT_Vec3 ray_direction, float ray_energy);
 
 static inline void AT_voxel_cleanup(AT_Voxel *voxel)
 {
