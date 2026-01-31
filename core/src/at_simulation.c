@@ -145,6 +145,8 @@ AT_Result AT_simulation_run(AT_Simulation *simulation)
 
             //need to implement..
             AT_voxel_ray_step(simulation, ray_start, ray_end, ray->energy);
+
+            ray = ray->child;
         }
     }
 
