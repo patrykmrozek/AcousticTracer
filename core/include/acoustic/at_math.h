@@ -60,10 +60,10 @@ static inline AT_Vec3 AT_vec3_sub(AT_Vec3 a, AT_Vec3 b)
     return (AT_Vec3){ a.x - b.x, a.y - b.y, a.z - b.z };
 }
 
-/** \brief Calculates the inverse of a matrix.
+/** \brief Calculates the inverse of a vector.
     \relates AT_Vec3
 
-    \retval AT_Vec3 The inverse of the input matrix.
+    \retval AT_Vec3 The inverse of the input vector.
 */
 static inline AT_Vec3 AT_vec3_inv(AT_Vec3 v)
 {
