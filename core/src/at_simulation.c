@@ -134,7 +134,7 @@ AT_Result AT_simulation_run(AT_Simulation *simulation)
             AT_Vec3 ray_start = ray->origin;
             //if the ray has a child, use its origin as the end
             //otherwise set the end as the direction scaled by the maximum distance in the scene
-            AT_Vec3 ra_end = ray->child ?
+            AT_Vec3 ray_end = ray->child ?
                 ray->child->origin :
                 AT_vec3_scale(
                     ray->direction,
@@ -142,6 +142,9 @@ AT_Result AT_simulation_run(AT_Simulation *simulation)
                         simulation->scene->world_AABB.min,
                         simulation->scene->world_AABB.max)
                 );
+
+            //need to implement..
+            AT_voxel_ray_step(simulation, ray_start, ray_end, ray->energy);
         }
     }
 
