@@ -121,6 +121,7 @@
         (_a) > (_b) ? (_a) : (_b); \
     })
 
+//clamps x between [a, b]
 #define AT_clamp(a, x, b) (((x) < (a)) ? (a) : \
 		((b) < (x)) ? (b) : (x))
 

@@ -25,7 +25,8 @@ typedef struct {
 
     \retval AT_Vec3 Vector with coordinate values of those given in function call.
 */
-static inline AT_Vec3 AT_vec3(float x, float y, float z) {
+static inline AT_Vec3 AT_vec3(float x, float y, float z)
+{
     return (AT_Vec3){ x, y, z };
 }
 
@@ -34,7 +35,8 @@ static inline AT_Vec3 AT_vec3(float x, float y, float z) {
 
     \retval AT_Vec3 Vector with all values initialised at 0.
 */
-static inline AT_Vec3 AT_vec3_zero(void) {
+static inline AT_Vec3 AT_vec3_zero(void)
+{
     return (AT_Vec3){ 0.0f, 0.0f, 0.0f };
 }
 
@@ -43,7 +45,8 @@ static inline AT_Vec3 AT_vec3_zero(void) {
 
     \retval AT_Vec3 The result of the vector addition.
 */
-static inline AT_Vec3 AT_vec3_add(AT_Vec3 a, AT_Vec3 b) {
+static inline AT_Vec3 AT_vec3_add(AT_Vec3 a, AT_Vec3 b)
+{
     return (AT_Vec3){ a.x + b.x, a.y + b.y, a.z + b.z };
 }
 
@@ -52,8 +55,23 @@ static inline AT_Vec3 AT_vec3_add(AT_Vec3 a, AT_Vec3 b) {
 
     \retval AT_Vec3 The result of the vector subtraction.
 */
-static inline AT_Vec3 AT_vec3_sub(AT_Vec3 a, AT_Vec3 b) {
+static inline AT_Vec3 AT_vec3_sub(AT_Vec3 a, AT_Vec3 b)
+{
     return (AT_Vec3){ a.x - b.x, a.y - b.y, a.z - b.z };
+}
+
+/** \brief Calculates the inverse of a matrix.
+    \relates AT_Vec3
+
+    \retval AT_Vec3 The inverse of the input matrix.
+*/
+static inline AT_Vec3 AT_vec3_inv(AT_Vec3 v)
+{
+    return (AT_Vec3){
+        v.x != 0.0f ? 1.0f / v.x : FLT_MAX,
+        v.y != 0.0f ? 1.0f / v.y : FLT_MAX,
+        v.z != 0.0f ? 1.0f / v.z : FLT_MAX
+    };
 }
 
 /** \brief Scales an AT_Vec3 by a given scalar.
@@ -64,7 +82,8 @@ static inline AT_Vec3 AT_vec3_sub(AT_Vec3 a, AT_Vec3 b) {
 
     \retval AT_Vec3 The result of the scaling the vector by \a s.
 */
-static inline AT_Vec3 AT_vec3_scale(AT_Vec3 v, float s) {
+static inline AT_Vec3 AT_vec3_scale(AT_Vec3 v, float s)
+{
     return (AT_Vec3){ v.x * s, v.y * s, v.z * s };
 }
 
@@ -73,7 +92,8 @@ static inline AT_Vec3 AT_vec3_scale(AT_Vec3 v, float s) {
 
     \retval float The result of the vector dot operation.
 */
-static inline float AT_vec3_dot(AT_Vec3 a, AT_Vec3 b) {
+static inline float AT_vec3_dot(AT_Vec3 a, AT_Vec3 b)
+{
     return a.x*b.x + a.y*b.y + a.z*b.z;
 }
 
@@ -82,7 +102,8 @@ static inline float AT_vec3_dot(AT_Vec3 a, AT_Vec3 b) {
 
     \retval AT_Vec3 The result of the vector cross multiplication.
 */
-static inline AT_Vec3 AT_vec3_cross(AT_Vec3 a, AT_Vec3 b) {
+static inline AT_Vec3 AT_vec3_cross(AT_Vec3 a, AT_Vec3 b)
+{
     return (AT_Vec3){
         a.y*b.z - a.z*b.y,
         a.z*b.x - a.x*b.z,
@@ -95,7 +116,8 @@ static inline AT_Vec3 AT_vec3_cross(AT_Vec3 a, AT_Vec3 b) {
 
     \retval float The length of the given AT_Vec3.
 */
-static inline float AT_vec3_length(AT_Vec3 v) {
+static inline float AT_vec3_length(AT_Vec3 v)
+{
     return sqrtf(AT_vec3_dot(v, v));
 }
 
@@ -104,7 +126,8 @@ static inline float AT_vec3_length(AT_Vec3 v) {
 
     \retval AT_Vec3 A normalized AT_Vec3.
 */
-static inline AT_Vec3 AT_vec3_normalize(AT_Vec3 v) {
+static inline AT_Vec3 AT_vec3_normalize(AT_Vec3 v)
+{
     float len = AT_vec3_length(v);
     return (len > 0.0f) ? AT_vec3_scale(v, 1.0f / len) : AT_vec3_zero();
 }
@@ -114,7 +137,8 @@ static inline AT_Vec3 AT_vec3_normalize(AT_Vec3 v) {
 
     \retval float The distance between two AT_Vec3's.
  */
-static inline float AT_vec3_distance(AT_Vec3 a, AT_Vec3 b) {
+static inline float AT_vec3_distance(AT_Vec3 a, AT_Vec3 b)
+{
     return sqrt((b.x - a.x) * (b.x - a.x) +
                 (b.y - a.y) * (b.y - a.y) +
                 (b.z - a.z) * (b.z - a.z));
@@ -125,7 +149,8 @@ static inline float AT_vec3_distance(AT_Vec3 a, AT_Vec3 b) {
 
     \retval float The squared distance between two AT_Vec3's.
  */
-static inline float AT_vec3_distance_sq(AT_Vec3 a, AT_Vec3 b) {
+static inline float AT_vec3_distance_sq(AT_Vec3 a, AT_Vec3 b)
+{
     return (b.x - a.x) * (b.x - a.x) +
            (b.y - a.y) * (b.y - a.y) +
            (b.z - a.z) * (b.z - a.z);
