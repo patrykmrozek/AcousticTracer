@@ -60,6 +60,16 @@ static inline AT_Vec3 AT_vec3_sub(AT_Vec3 a, AT_Vec3 b)
     return (AT_Vec3){ a.x - b.x, a.y - b.y, a.z - b.z };
 }
 
+/** \brief Product of two AT_Vec3.
+    \relates AT_Vec3
+
+    \retval AT_Vec3 The result of the vector multiplication.
+*/
+static inline AT_Vec3 AT_vec3_mul(AT_Vec3 a, AT_Vec3 b)
+{
+    return (AT_Vec3){ a.x * b.x, a.y * b.y, a.z * b.z };
+}
+
 /** \brief Calculates the inverse of a vector.
     \relates AT_Vec3
 
