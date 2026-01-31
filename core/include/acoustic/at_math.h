@@ -6,6 +6,7 @@
 #define AT_MATH_H
 
 #include <math.h>
+#include <float.h>
 
 /** \brief Groups three floats to represent a vector of size 3.
  */
@@ -129,4 +130,19 @@ static inline float AT_vec3_distance_sq(AT_Vec3 a, AT_Vec3 b) {
            (b.y - a.y) * (b.y - a.y) +
            (b.z - a.z) * (b.z - a.z);
 }
+
+/* \brief Computes per axis step distance used in DDA.
+   \relates AT_Vec3
+
+  \retval AT_Vec3 Per axis step distance.
+ */
+static inline AT_Vec3 AT_vec3_delta(AT_Vec3 v)
+{
+    return (AT_Vec3){
+        v.x != 0.0f ? fabsf(1.0f / v.x) : FLT_MAX,
+        v.y != 0.0f ? fabsf(1.0f / v.y) : FLT_MAX,
+        v.z != 0.0f ? fabsf(1.0f / v.z) : FLT_MAX
+    };
+}
+
 #endif // AT_MATH_H
