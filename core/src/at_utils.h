@@ -32,6 +32,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <stdint.h>
+#include "acoustic/at_math.h"
 
 /* DYNAMIC ARRAYS */
 
@@ -119,5 +120,21 @@
     ({ \
         (_a) > (_b) ? (_a) : (_b); \
     })
+
+
+// returns the sign of a float (position +1, negative -1)
+static inline int AT_get_sign_float(const float f)
+{
+    return (f > 0.0f) - (f < 0.0f);
+}
+
+inline AT_Vec3 AT_get_sign_vec3(const AT_Vec3 v)
+{
+   return (AT_Vec3){
+       AT_get_sign_float(v.x),
+       AT_get_sign_float(v.y),
+       AT_get_sign_float(v.z)
+   };
+}
 
 #endif //AT_UTILS_H
