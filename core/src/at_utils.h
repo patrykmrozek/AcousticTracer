@@ -121,6 +121,8 @@
         (_a) > (_b) ? (_a) : (_b); \
     })
 
+#define AT_clamp(a, x, b) (((x) < (a)) ? (a) : \
+		((b) < (x)) ? (b) : (x))
 
 // returns the sign of a float (position +1, negative -1)
 static inline int AT_get_sign_float(const float f)
