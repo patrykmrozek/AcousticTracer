@@ -124,6 +124,28 @@ AT_Result AT_simulation_run(AT_Simulation *simulation)
             }
         }
     }
+
+    //DDA
+
+    for (uint32_t i = 0; i < simulation->num_rays; i++) {
+        AT_Ray *ray = &simulation->rays[i];
+
+        while (ray) {
+            AT_Vec3 ray_start = ray->origin;
+            //if the ray has a child, use its origin as the end
+            //otherwise set the end as the direction scaled by the maximum distance in the scene
+            AT_Vec3 ra_end = ray->child ?
+                ray->child->origin :
+                AT_vec3_scale(
+                    ray->direction,
+                    AT_vec3_distance(
+                        simulation->scene->world_AABB.min,
+                        simulation->scene->world_AABB.max)
+                );
+        }
+    }
+
+
     return AT_OK;
 }
 
