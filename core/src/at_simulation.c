@@ -131,7 +131,6 @@ AT_Result AT_simulation_run(AT_Simulation *simulation)
         AT_Ray *ray = &simulation->rays[i];
 
         while (ray) {
-            AT_Vec3 ray_start = ray->origin;
             //if the ray has a child, use its origin as the end
             //otherwise set the end as the direction scaled by the maximum distance in the scene
             AT_Vec3 ray_end = ray->child ?
@@ -144,7 +143,7 @@ AT_Result AT_simulation_run(AT_Simulation *simulation)
                 );
 
             //need to implement..
-            AT_voxel_ray_step(simulation, ray_start, ray_end, ray->energy);
+            AT_voxel_ray_step(simulation, ray->origin, ray->direction, ray_end, ray->energy);
 
             ray = ray->child;
         }
