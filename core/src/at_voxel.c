@@ -80,6 +80,7 @@ void AT_voxel_ray_step(AT_Simulation *simulation, AT_Ray *ray, AT_Vec3 ray_end)
             (uint32_t)pos.x;
 
         AT_Voxel *voxel = &simulation->voxel_grid[voxel_idx];
+        AT_voxel_init(voxel);
 
         float t_current = fminf(t_max.x, fminf(t_max.y, t_max.z));
         if (t_current > ray_length) break; //if we reached the end of the ray
@@ -93,6 +94,12 @@ void AT_voxel_ray_step(AT_Simulation *simulation, AT_Ray *ray, AT_Vec3 ray_end)
         float total_world_dist = ray->total_distance + (t * simulation->voxel_size);
         float curr_time = total_world_dist / SPEED_OF_SOUND;
         size_t bin_index = (size_t)(curr_time / simulation->bin_width);
+
+        //grow bin count
+        while (voxel->count <= bin_index) {
+            AT_voxel_bin_append(voxel, 0.0f);
+        }
+
         if (AT_voxel_add_energy(voxel, ray->energy, bin_index) != AT_OK) {
             break;
         }
