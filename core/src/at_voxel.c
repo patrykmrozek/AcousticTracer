@@ -1,3 +1,4 @@
+#include "at_voxel.h"
 #include "../src/at_internal.h"
 #include "acoustic/at_math.h"
 #include "at_utils.h"
@@ -5,7 +6,11 @@
 
 #define VOXEL_MAX_STEPS 100
 
-void AT_voxel_ray_step(AT_Simulation *simulation, AT_Vec3 ray_origin, AT_Vec3 ray_end, AT_Vec3 ray_direction, float ray_energy)
+void AT_voxel_ray_step(
+    AT_Simulation *simulation,
+    AT_Vec3 ray_origin, AT_Vec3 ray_end,
+    AT_Vec3 ray_direction, float ray_energy
+)
 {
 
     // convert ray origin to voxel space
@@ -72,7 +77,13 @@ void AT_voxel_ray_step(AT_Simulation *simulation, AT_Vec3 ray_origin, AT_Vec3 ra
 
         //this is where we add energy to voxels bin
         //implement something like this
-        //AT_voxel_add_energy(voxel, ray_energy bin_index);
+        //to get the bin_index we woudl have to know the length of the ray at this point,
+        // this would include the length of its parents (if it has any)
+        // we cant just use the current t, as then new rays would be adding energy to old bins
+        //
+        if (AT_voxel_add_energy(voxel, ray_energy, bin_index) != AT_OK) {
+            break;
+        }
 
         //now we look for smallest t_max and advance through it
         //t_max.x smallest
