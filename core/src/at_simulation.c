@@ -92,6 +92,7 @@ AT_Result AT_simulation_run(AT_Simulation *simulation)
             simulation->rays[ray_idx] = AT_ray_init(
                 simulation->scene->sources[s].position,
                 varied_direction,
+                0.0f,
                 ray_idx //ray index
             );
         }
@@ -106,6 +107,7 @@ AT_Result AT_simulation_run(AT_Simulation *simulation)
                 AT_Ray closest = AT_ray_init((AT_Vec3){
                     FLT_MAX, FLT_MAX, FLT_MAX},
                     (AT_Vec3){0},
+                    ray->total_distance,
                     ray_idx);
                 bool intersects = false;
                 for (uint32_t t = 0; t < triangle_count; t++) {
@@ -121,6 +123,9 @@ AT_Result AT_simulation_run(AT_Simulation *simulation)
                 child->child = NULL;
                 ray->child = child;
                 ray = ray->child;
+                AT_Vec3 hit_point = closest.origin;
+                child->total_distance = ray->total_distance +
+                    AT_vec3_distance_sq(ray->origin, hit_point);
             }
         }
     }
@@ -135,15 +140,20 @@ AT_Result AT_simulation_run(AT_Simulation *simulation)
             //otherwise set the end as the direction scaled by the maximum distance in the scene
             AT_Vec3 ray_end = ray->child ?
                 ray->child->origin :
-                AT_vec3_scale(
-                    ray->direction,
-                    AT_vec3_distance(
-                        simulation->scene->world_AABB.min,
-                        simulation->scene->world_AABB.max)
-                );
+                    AT_vec3_add(
+                      ray->origin,
+                      AT_vec3_scale(
+                          ray->direction,
+                          AT_vec3_distance(
+                              simulation->scene->world_AABB.min,
+                              simulation->scene->world_AABB.max
+                          )
+                      )
+                  );
+
 
             //need to implement..
-            AT_voxel_ray_step(simulation, ray->origin, ray->direction, ray_end, ray->energy);
+            AT_voxel_ray_step(simulation, ray, ray_end);
 
             ray = ray->child;
         }
