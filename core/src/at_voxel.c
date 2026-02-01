@@ -5,35 +5,39 @@
 #include <stdint.h>
 
 #define VOXEL_MAX_STEPS 100
+#define SPEED_OF_SOUND 343.0f
 
-void AT_voxel_ray_step(
-    AT_Simulation *simulation,
-    AT_Vec3 ray_origin, AT_Vec3 ray_end,
-    AT_Vec3 ray_direction, float ray_energy
-)
+void AT_voxel_ray_step(AT_Simulation *simulation, AT_Ray *ray, AT_Vec3 ray_end)
 {
+    //the ray segment spans from p0 (origin) to p1 (end)
+    // out current position within the segement is "t"
 
-    // convert ray origin to voxel space
-    // (world_pos - grid_origin) / voxel_size
-    AT_Vec3 entry_point = AT_vec3_scale(
-        AT_vec3_sub(ray_origin, simulation->origin),
+    //origin in voxel space
+    AT_Vec3 p0 = AT_vec3_scale(
+        AT_vec3_sub(ray->origin, simulation->origin),
+        1.0f / simulation->voxel_size
+    );
+
+    //ray end in voxel space
+    AT_Vec3 p1 = AT_vec3_scale(
+        AT_vec3_sub(ray_end, simulation->origin),
         1.0f / simulation->voxel_size
     );
 
     //step direction (+1 or -1 per axis)
-    const AT_Vec3 step = AT_get_sign_vec3(ray_direction);
+    const AT_Vec3 step = AT_get_sign_vec3(ray->direction);
 
     //distance along "t" to move one voxel
-    const AT_Vec3 delta = AT_vec3_delta(ray_direction);
+    const AT_Vec3 delta = AT_vec3_delta(ray->direction);
 
     const int grid_x = simulation->grid_dimensions.x;
     const int grid_y = simulation->grid_dimensions.y;
     const int grid_z = simulation->grid_dimensions.z;
 
     AT_Vec3i pos = (AT_Vec3i){
-        AT_clamp((int)floorf(entry_point.x), 0, grid_x - 1),
-        AT_clamp((int)floorf(entry_point.y), 0, grid_y - 1),
-        AT_clamp((int)floorf(entry_point.z), 0, grid_z - 1)
+        AT_clamp((int)floorf(p0.x), 0, grid_x - 1),
+        AT_clamp((int)floorf(p0.y), 0, grid_y - 1),
+        AT_clamp((int)floorf(p0.z), 0, grid_z - 1)
     };
 
     //distance along ray until we cross next voxel boundary each axis
@@ -44,22 +48,27 @@ void AT_voxel_ray_step(
     AT_Vec3 t_max;
 
     t_max.x = (step.x > 0) ?
-        ((pos.x + 1.0f) - entry_point.x) * delta.x :
-        (entry_point.x - pos.x) * delta.x;
+        ((pos.x + 1.0f) - p0.x) * delta.x :
+        (p0.x - pos.x) * delta.x;
 
     t_max.y = (step.y > 0) ?
-        ((pos.y + 1.0f) - entry_point.y) * delta.y :
-        (entry_point.y - pos.y) * delta.y;
+        ((pos.y + 1.0f) - p0.y) * delta.y :
+        (p0.y - pos.y) * delta.y;
 
     t_max.z = (step.z > 0) ?
-        ((pos.z + 1.0f) - entry_point.z) * delta.z :
-        (entry_point.z - pos.z) * delta.z;
+        ((pos.z + 1.0f) - p0.z) * delta.z :
+        (p0.z - pos.z) * delta.z;
 
     float ray_length = AT_vec3_length(
-        AT_vec3_sub(ray_origin, ray_end)
+        AT_vec3_sub(ray->origin, ray_end)
     );
 
-    for (uint32_t steps = 0; steps < VOXEL_MAX_STEPS; steps++) {
+    //curr pos within ray segment
+    float t = 0.0f;
+    const float t_end = AT_vec3_length(AT_vec3_sub(p1, p0));
+
+    //while we havent yet reached the end of the ray segment
+    while (t < t_end) {
         if (pos.x < 0 || pos.x >= grid_x ||
             pos.y < 0 || pos.y >= grid_y ||
             pos.z < 0 || pos.z >= grid_z) break;
@@ -81,7 +90,10 @@ void AT_voxel_ray_step(
         // this would include the length of its parents (if it has any)
         // we cant just use the current t, as then new rays would be adding energy to old bins
         //
-        if (AT_voxel_add_energy(voxel, ray_energy, bin_index) != AT_OK) {
+        float total_world_dist = ray->total_distance + (t * simulation->voxel_size);
+        float curr_time = total_world_dist / SPEED_OF_SOUND;
+        size_t bin_index = (size_t)(curr_time / simulation->bin_width);
+        if (AT_voxel_add_energy(voxel, ray->energy, bin_index) != AT_OK) {
             break;
         }
 
