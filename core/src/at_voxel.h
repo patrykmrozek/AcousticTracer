@@ -4,6 +4,7 @@
 #include "acoustic/at.h"
 #include "at_internal.h"
 #include "../src/at_utils.h"
+#include <stddef.h>
 
 //these are pretty much voxel specific wrappers of the dynamic array
 static inline AT_Result AT_voxel_init(AT_Voxel *voxel)
@@ -17,6 +18,13 @@ static inline AT_Result AT_voxel_bin_append(AT_Voxel *voxel, float bin)
 {
     if (!voxel) return AT_ERR_INVALID_ARGUMENT;
     AT_da_append(voxel, bin);
+    return AT_OK;
+}
+
+static inline AT_Result AT_voxel_add_energy(AT_Voxel *voxel, float energy, size_t bin_index)
+{
+    if (bin_index >= voxel->capacity) return AT_ERR_INVALID_ARGUMENT;
+    voxel->items[bin_index] += energy;
     return AT_OK;
 }
 
