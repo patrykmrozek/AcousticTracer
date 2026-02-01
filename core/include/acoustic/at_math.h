@@ -14,6 +14,10 @@ typedef struct {
     float x, y, z;
 } AT_Vec3;
 
+typedef struct {
+    int x, y, z;
+} AT_Vec3i;
+
 /** \brief Groups three AT_Vec3 to represent a triangle.
  */
 typedef struct {
