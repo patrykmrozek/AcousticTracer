@@ -59,10 +59,6 @@ void AT_voxel_ray_step(AT_Simulation *simulation, AT_Ray *ray, AT_Vec3 ray_end)
         ((pos.z + 1.0f) - p0.z) * delta.z :
         (p0.z - pos.z) * delta.z;
 
-    float ray_length = AT_vec3_length(
-        AT_vec3_sub(ray->origin, ray_end)
-    );
-
     //curr pos within ray segment
     float t = 0.0f;
     const float t_end = AT_vec3_length(AT_vec3_sub(p1, p0));
@@ -80,10 +76,11 @@ void AT_voxel_ray_step(AT_Simulation *simulation, AT_Ray *ray, AT_Vec3 ray_end)
             (uint32_t)pos.x;
 
         AT_Voxel *voxel = &simulation->voxel_grid[voxel_idx];
-        AT_voxel_init(voxel);
 
         float t_current = fminf(t_max.x, fminf(t_max.y, t_max.z));
-        if (t_current > ray_length) break; //if we reached the end of the ray
+        if (t_current > t_end) break; //if we reached the end of the ray
+
+        t = t_current;
 
         //this is where we add energy to voxels bin
         //implement something like this

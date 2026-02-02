@@ -11,6 +11,15 @@
 
 Color cols[3] = {BLACK, LIGHTGRAY, DARKGRAY};
 
+static float AT_voxel_get_energy(AT_Voxel *voxel)
+{
+    float sum = 0.0f;
+    for (size_t i = 0; i < voxel->count; i++) {
+        sum += voxel->items[i];
+    }
+    return sum;
+}
+
 int main()
 {
     printf("Voxel Ray Step\n");
@@ -49,7 +58,7 @@ int main()
 
     AT_Settings settings = {
         .fps = 60,
-        .num_rays = 1,
+        .num_rays = 5,
         .voxel_size = 1
     };
 
@@ -154,23 +163,27 @@ int main()
 
                                 AT_Voxel *v = &sim->voxel_grid[i];
 
+                                float energy = AT_voxel_get_energy(v);
+
                                 Vector3 pos = {
                                     sim->origin.x + (x + 0.5f) * sim->voxel_size,
                                     sim->origin.y + (y + 0.5f) * sim->voxel_size,
                                     sim->origin.z + (z + 0.5f) * sim->voxel_size,
                                 };
 
+                                if (energy <= 0.0f) continue;
+
+                                printf("Voxel (%i): Energy: %f\n", i, energy);
+
                                 DrawCubeV(
                                     pos,
                                     (Vector3){sim->voxel_size, sim->voxel_size, sim->voxel_size},
-                                    Fade(RED, 0.2)
+                                    Fade(RED, 0.3)
                                 );
 
                             }
                         }
                     }
-
-
 
                     DrawGrid(sim->voxel_size, 1.0f);
                 }
