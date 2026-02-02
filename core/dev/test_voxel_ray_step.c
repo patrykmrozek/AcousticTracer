@@ -1,13 +1,13 @@
 #include "acoustic/at.h"
 #include "../src/at_internal.h"
 #include "acoustic/at_model.h"
-#include "../src/at_voxel.h"
 
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #include "../external/raylib.h"
+#include "rlgl.h"
 
 Color cols[3] = {BLACK, LIGHTGRAY, DARKGRAY};
 
@@ -58,7 +58,7 @@ int main()
 
     AT_Settings settings = {
         .fps = 60,
-        .num_rays = 5,
+        .num_rays = 20,
         .voxel_size = 1
     };
 
@@ -84,6 +84,7 @@ int main()
             .fovy = 60.0f,
             .projection = CAMERA_PERSPECTIVE
         };
+        rlDisableBackfaceCulling();
 
         uint32_t t_count = sim->scene->environment->index_count / 3;
         AT_Triangle *ts = NULL;
@@ -178,7 +179,7 @@ int main()
                                 DrawCubeV(
                                     pos,
                                     (Vector3){sim->voxel_size, sim->voxel_size, sim->voxel_size},
-                                    Fade(RED, 0.3)
+                                    Fade(RED, energy/1000)
                                 );
 
                             }
