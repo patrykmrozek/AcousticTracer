@@ -1,7 +1,7 @@
-#include "at_voxel.h"
-#include "../src/at_internal.h"
 #include "acoustic/at_math.h"
-#include "at_utils.h"
+#include "at_voxel.h"
+#include "at_internal.h"
+#include "../src/at_utils.h"
 #include <stdint.h>
 
 #define VOXEL_MAX_STEPS 100

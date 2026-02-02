@@ -131,7 +131,7 @@ static inline int AT_get_sign_float(const float f)
     return (f > 0.0f) - (f < 0.0f);
 }
 
-inline AT_Vec3 AT_get_sign_vec3(const AT_Vec3 v)
+static inline AT_Vec3 AT_get_sign_vec3(const AT_Vec3 v)
 {
    return (AT_Vec3){
        AT_get_sign_float(v.x),

@@ -42,6 +42,7 @@ int main()
         rays[i] = AT_ray_init(
             (AT_Vec3){0},
             (AT_Vec3){i*(1.0f/MAX_RAYS), 0.1f, -1.0f},
+            0.0f,
             i);
     }
 
@@ -57,7 +58,7 @@ int main()
         uint32_t count = 0;
         AT_Ray *ray = &rays[i];
         while (count++ < 5) {
-            AT_Ray closest = AT_ray_init((AT_Vec3){ FLT_MAX, FLT_MAX, FLT_MAX }, (AT_Vec3){0}, 0);
+            AT_Ray closest = AT_ray_init((AT_Vec3){ FLT_MAX, FLT_MAX, FLT_MAX }, (AT_Vec3){0}, 0.0f, 0);
             bool intersects = false;
             for (uint32_t j = 0; j < t_count; j++) {
                 if(AT_ray_triangle_intersect(ray, &ts[j], &closest)) intersects = true;
