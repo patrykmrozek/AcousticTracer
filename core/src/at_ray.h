@@ -8,8 +8,6 @@
 #include <stdbool.h>
 #include <string.h>
 
-#define AT_RAY_MAX_ENERGY 100.0f
-
 static inline AT_Ray AT_ray_init(
     const AT_Vec3 origin,
     const AT_Vec3 direction,
@@ -19,7 +17,7 @@ static inline AT_Ray AT_ray_init(
     AT_Ray ray = {
     .origin = origin,
     .direction = AT_vec3_normalize(direction),
-    .energy = AT_RAY_MAX_ENERGY,
+    .energy = 1.0f,
     .total_distance = 0.0f,
     .ray_id = ray_id,
     .bounce_count = 0,

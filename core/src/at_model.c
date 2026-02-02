@@ -6,6 +6,7 @@
 #include "acoustic/at_math.h"
 #include "cgltf.h"
 
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <float.h>
@@ -119,13 +120,14 @@ AT_Result AT_model_create(AT_Model **out_model, const char *filepath)
         return AT_ERR_ALLOC_ERROR;
     }
 
+    uint32_t tri = 0;
+    uint32_t *triangle_materials = malloc(sizeof(uint32_t) * (total_indices / 3));
+
     for (unsigned long i = 0; i < mesh->primitives_count; i++) {
 
         size_t base_vertex = vertex_index;
 
         cgltf_primitive *primitive = &mesh->primitives[i];
-
-        // TODO: Material per triangle - or per primitive?
 
         cgltf_accessor *pos_accessor = NULL;
         for (size_t i = 0; i < primitive->attributes_count; i++) {
@@ -155,6 +157,11 @@ AT_Result AT_model_create(AT_Model **out_model, const char *filepath)
         }
         index_index += index_count;
 
+        // Materials - set to be plastic for now
+        for (uint32_t i = 0; i < index_count; i+=3) {
+            triangle_materials[tri++] = AT_MATERIAL_PLASTIC;
+        }
+
         // Normals
         cgltf_accessor *norm_accessor = NULL;
         for (size_t i = 0; i < primitive->attributes_count; i++) {
@@ -177,6 +184,7 @@ AT_Result AT_model_create(AT_Model **out_model, const char *filepath)
         free(vertices);
         free(indices);
         free(normals);
+        free(triangle_materials);
         return AT_ERR_ALLOC_ERROR;
     }
 
@@ -185,6 +193,7 @@ AT_Result AT_model_create(AT_Model **out_model, const char *filepath)
     model->indices = indices;
     model->vertices = vertices;
     model->normals = normals;
+    model->triangle_materials = triangle_materials;
 
     *out_model = model;
 
@@ -199,6 +208,7 @@ void AT_model_destroy(AT_Model *model)
     free(model->vertices);
     free(model->indices);
     free(model->normals);
+    free(model->triangle_materials);
     free(model);
 }
 
