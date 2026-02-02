@@ -125,6 +125,8 @@ AT_Result AT_model_create(AT_Model **out_model, const char *filepath)
 
         cgltf_primitive *primitive = &mesh->primitives[i];
 
+        // TODO: Material per triangle - or per primitive?
+
         cgltf_accessor *pos_accessor = NULL;
         for (size_t i = 0; i < primitive->attributes_count; i++) {
             if (primitive->attributes[i].type == cgltf_attribute_type_position) {

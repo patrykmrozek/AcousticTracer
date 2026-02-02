@@ -26,7 +26,13 @@ typedef enum {
 typedef enum {
     AT_MATERIAL_CONCRETE,
     AT_MATERIAL_PLASTIC,
-    AT_MATERIAL_WOOD
+    AT_MATERIAL_WOOD,
+    AT_MATERIAL_COUNT,
+} AT_MaterialEnum;
+
+typedef struct {
+    float absorption;
+    // TODO: diffuse, scatter, etc
 } AT_Material;
 
 /** \brief Groups the information required for the sound source.
@@ -42,7 +48,7 @@ typedef struct {
 typedef struct {
   const AT_Source *sources; /**< Dynamic array of AT_Source types. */
   uint32_t num_sources;
-  AT_Material material; /**< Material of the room. */
+  AT_MaterialEnum material; /**< Material of the room. */
 
   // Borrowed: must remain valid for the entire lifetime of the scene
   const AT_Model *environment; /**< Pointer to the room object. */
