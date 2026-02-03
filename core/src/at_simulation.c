@@ -54,6 +54,7 @@ AT_Result AT_simulation_create(AT_Simulation **out_simulation, const AT_Scene *s
     simulation->dimensions = dimensions;
     simulation->fps = settings->fps;
     simulation->num_rays = settings->num_rays;
+    simulation->num_voxels = num_voxels;
     simulation->grid_dimensions = (AT_Vec3){grid_x, grid_y, grid_z}; //dimensions in terms of voxels
     simulation->voxel_size = settings->voxel_size;
     simulation->bin_width = 1.0f / settings->fps;

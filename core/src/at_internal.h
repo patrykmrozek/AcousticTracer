@@ -8,6 +8,7 @@
 
 #include "acoustic/at.h"
 #include "acoustic/at_math.h"
+#include <stdint.h>
 
 // Private Types (typedef + define)
 typedef struct AT_Ray AT_Ray;
@@ -61,6 +62,7 @@ struct AT_Simulation {
     float voxel_size;
     float bin_width;
     uint32_t num_rays;
+    uint32_t num_voxels;
     uint8_t fps;
 };
 
