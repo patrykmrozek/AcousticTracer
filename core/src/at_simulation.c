@@ -121,6 +121,7 @@ AT_Result AT_simulation_run(AT_Simulation *simulation)
                 if (!child) return AT_ERR_ALLOC_ERROR;
                 *child = closest;
                 child->child = NULL;
+                child->ray_id = ray->ray_id + simulation->num_rays;
                 ray->child = child;
                 ray = ray->child;
                 AT_Vec3 hit_point = closest.origin;
@@ -151,8 +152,6 @@ AT_Result AT_simulation_run(AT_Simulation *simulation)
                       )
                   );
 
-
-            //need to implement..
             AT_voxel_ray_step(simulation, ray, ray_end);
 
             ray = ray->child;

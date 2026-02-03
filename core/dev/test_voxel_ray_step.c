@@ -144,14 +144,6 @@ int main()
                         }
                     }
 
-                    for (uint32_t i = 0; i < t_count; i++) {
-                        DrawTriangle3D(
-                            (Vector3){ts[i].v1.x, ts[i].v1.y, ts[i].v1.z},
-                            (Vector3){ts[i].v2.x, ts[i].v2.y, ts[i].v2.z},
-                            (Vector3){ts[i].v3.x, ts[i].v3.y, ts[i].v3.z},
-                            (Color)cols[i%3]);
-                    }
-
                     //draw voxels
                     for (uint32_t z = 0; z < sim->grid_dimensions.z; z++) {
                         for (uint32_t y = 0; y < sim->grid_dimensions.y; y++) {
@@ -174,7 +166,7 @@ int main()
 
                                 if (energy <= 0.0f) continue;
 
-                                printf("Voxel (%i): Energy: %f\n", i, energy);
+                                //printf("Voxel (%i): Num Bins: %zu Energy: %f\n", i, v->count, energy);
 
                                 DrawCubeV(
                                     pos,
@@ -185,6 +177,16 @@ int main()
                             }
                         }
                     }
+
+                    for (uint32_t i = 0; i < t_count; i++) {
+                        DrawTriangle3D(
+                            (Vector3){ts[i].v1.x, ts[i].v1.y, ts[i].v1.z},
+                            (Vector3){ts[i].v2.x, ts[i].v2.y, ts[i].v2.z},
+                            (Vector3){ts[i].v3.x, ts[i].v3.y, ts[i].v3.z},
+                            Fade(BLACK, 0.1));
+                        }
+
+
 
                     DrawGrid(sim->voxel_size, 1.0f);
                 }
