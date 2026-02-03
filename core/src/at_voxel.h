@@ -5,6 +5,7 @@
 #include "at_internal.h"
 #include "../src/at_utils.h"
 #include <stddef.h>
+#include <stdint.h>
 
 //these are pretty much voxel specific wrappers of the dynamic array
 static inline AT_Result AT_voxel_init(AT_Voxel *voxel)
@@ -30,7 +31,28 @@ static inline AT_Result AT_voxel_add_energy(AT_Voxel *voxel, float energy, size_
     return AT_OK;
 }
 
+static inline void AT_voxel_print(AT_Voxel *voxel)
+{
+    printf("[");
+    for (size_t i = 0; i < voxel->count; i++) {
+        printf("%f, ", voxel->items[i]);
+    }
+    printf("]\n");
+}
+
 void AT_voxel_ray_step(AT_Simulation *simulation, AT_Ray *ray, AT_Vec3 ray_end);
+
+
+static inline uint32_t AT_voxel_get_num_bins(AT_Simulation *simulation)
+{
+    uint32_t max_count = 0;
+    for (uint32_t i = 0; i < simulation->num_voxels; i++) {
+        if (simulation->voxel_grid[i].count > max_count) {
+            max_count = simulation->voxel_grid[i].count;
+        }
+    }
+    return max_count;
+}
 
 static inline void AT_voxel_cleanup(AT_Voxel *voxel)
 {
