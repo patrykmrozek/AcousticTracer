@@ -6,6 +6,7 @@
 
 #define VOXEL_MAX_STEPS 100
 #define SPEED_OF_SOUND 343.0f
+#define SLOWER_SPEED 0.1f
 
 void AT_voxel_ray_step(AT_Simulation *simulation, AT_Ray *ray, AT_Vec3 ray_end)
 {
@@ -96,7 +97,9 @@ void AT_voxel_ray_step(AT_Simulation *simulation, AT_Ray *ray, AT_Vec3 ray_end)
         // we cant just use the current t, as then new rays would be adding energy to old bins
         float total_world_dist = ray->total_distance + (t * simulation->voxel_size);
         float curr_time = total_world_dist / SPEED_OF_SOUND;
+        //float curr_time = total_world_dist / SLOWER_SPEED;
         size_t bin_index = (size_t)(curr_time / simulation->bin_width);
+
 
         //grow bin count
         while (voxel->count <= bin_index) {
