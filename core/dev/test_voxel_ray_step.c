@@ -1,6 +1,6 @@
 #include "acoustic/at.h"
-#include "../src/at_internal.h"
 #include "acoustic/at_model.h"
+#include "../src/at_voxel.h"
 
 #include <stdint.h>
 #include <stdio.h>
@@ -11,10 +11,11 @@
 
 Color cols[3] = {BLACK, LIGHTGRAY, DARKGRAY};
 
-static float AT_voxel_get_energy(AT_Voxel *voxel)
+static float AT_voxel_get_energy(AT_Voxel *voxel, uint32_t index)
 {
     float sum = 0.0f;
-    for (size_t i = 0; i < voxel->count; i++) {
+    for (size_t i = 0; i < index; i++) {
+        if (i >= voxel->count) break;
         sum += voxel->items[i];
     }
     return sum;
@@ -73,6 +74,10 @@ int main()
         return 1;
     }
 
+    uint32_t bin_count = AT_voxel_get_num_bins(sim);
+    uint32_t curr_bin = 0;
+    printf("BIN COUNT: %i\n", bin_count);
+
     InitWindow(1280, 720, "Voxel Ray Test");
 
         SetTargetFPS(60);
@@ -101,6 +106,7 @@ int main()
                 ClearBackground(RAYWHITE);
                 BeginMode3D(camera);
                 {
+                /*
                     AT_Ray *rays = sim->rays;
                     for (uint32_t s = 0; s < sim->scene->num_sources; s++) {
                         for (uint32_t i = 0; i < sim->num_rays; i++) {
@@ -143,6 +149,7 @@ int main()
                             }
                         }
                     }
+                    */
 
                     //draw voxels
                     for (uint32_t z = 0; z < sim->grid_dimensions.z; z++) {
@@ -156,7 +163,8 @@ int main()
 
                                 AT_Voxel *v = &sim->voxel_grid[i];
 
-                                float energy = AT_voxel_get_energy(v);
+                                printf("CURR BIN(%i): %i\n", curr_bin, curr_bin%bin_count);
+                                float energy = AT_voxel_get_energy(v, curr_bin++%bin_count);
 
                                 Vector3 pos = {
                                     sim->origin.x + (x + 0.5f) * sim->voxel_size,
@@ -166,7 +174,8 @@ int main()
 
                                 if (energy <= 0.0f) continue;
 
-                                //printf("Voxel (%i): Num Bins: %zu Energy: %f\n", i, v->count, energy);
+                                //printf("Voxel (%i): Num Bins: %zu Energy: %f\t", i, v->count, energy);
+                                //AT_voxel_print(v);
 
                                 DrawCubeV(
                                     pos,
