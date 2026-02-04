@@ -14,7 +14,7 @@ Color cols[3] = {BLACK, LIGHTGRAY, DARKGRAY};
 static float AT_voxel_get_energy(AT_Voxel *voxel, uint32_t index)
 {
     float sum = 0.0f;
-    for (size_t i = 0; i < index; i++) {
+    for (size_t i = 0; i <= index; i++) {
         if (i >= voxel->count) break;
         sum += voxel->items[i];
     }
@@ -60,7 +60,7 @@ int main()
     AT_Settings settings = {
         .fps = 60,
         .num_rays = 20,
-        .voxel_size = 1
+        .voxel_size = 0.5
     };
 
     AT_Simulation *sim = NULL;
@@ -83,7 +83,7 @@ int main()
         SetTargetFPS(60);
 
         Camera3D camera = {
-            .position = { 1.5f, 2.5f, 1.0f },
+            .position = { 0.0f, 15.0f, 30.f },
             .target = { 0.0f, 0.0f, 0.0f },
             .up = { 0.0f, 1.0f, 0.0f },
             .fovy = 60.0f,
@@ -106,12 +106,13 @@ int main()
                 ClearBackground(RAYWHITE);
                 BeginMode3D(camera);
                 {
-                /*
+                    /*
                     AT_Ray *rays = sim->rays;
                     for (uint32_t s = 0; s < sim->scene->num_sources; s++) {
                         for (uint32_t i = 0; i < sim->num_rays; i++) {
                             uint32_t ray_idx = s * sim->num_rays + i;
                             AT_Ray ray = rays[ray_idx];
+                            printf("Ray(%i): total_dist: %f\n", ray.ray_id, ray.total_distance);
                             DrawSphere((Vector3){
                             ray.origin.x,
                             ray.origin.y,
@@ -121,6 +122,7 @@ int main()
                             AT_Ray *curr = &ray;
                             while (curr->child) {
                                 curr = curr->child;
+                                printf("Child Ray(%i): total_dist: %f\n", curr->ray_id, curr->total_distance);
                                 DrawSphere(
                                     (Vector3){
                                         curr->origin.x,
@@ -163,8 +165,12 @@ int main()
 
                                 AT_Voxel *v = &sim->voxel_grid[i];
 
-                                printf("CURR BIN(%i): %i\n", curr_bin, curr_bin%bin_count);
-                                float energy = AT_voxel_get_energy(v, curr_bin++%bin_count);
+                                //printf("CURR BIN(%i): %i\n", curr_bin, curr_bin%bin_count);
+                                float energy = AT_voxel_get_energy(v, curr_bin%bin_count);
+                                //float energy = AT_voxel_get_energy(v, 2);
+
+                                if (IsKeyDown(KEY_L)) curr_bin++;
+                                //float energy = AT_voxel_get_energy(v, 2);
 
                                 Vector3 pos = {
                                     sim->origin.x + (x + 0.5f) * sim->voxel_size,
@@ -175,7 +181,7 @@ int main()
                                 if (energy <= 0.0f) continue;
 
                                 //printf("Voxel (%i): Num Bins: %zu Energy: %f\t", i, v->count, energy);
-                                //AT_voxel_print(v);
+                                AT_voxel_print(v);
 
                                 DrawCubeV(
                                     pos,

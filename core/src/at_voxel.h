@@ -35,13 +35,12 @@ static inline void AT_voxel_print(AT_Voxel *voxel)
 {
     printf("[");
     for (size_t i = 0; i < voxel->count; i++) {
-        printf("%f, ", voxel->items[i]);
+        printf("%.1f, ", voxel->items[i]);
     }
     printf("]\n");
 }
 
 void AT_voxel_ray_step(AT_Simulation *simulation, AT_Ray *ray, AT_Vec3 ray_end);
-
 
 static inline uint32_t AT_voxel_get_num_bins(AT_Simulation *simulation)
 {
