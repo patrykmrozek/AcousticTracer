@@ -123,11 +123,11 @@ AT_Result AT_simulation_run(AT_Simulation *simulation)
                 *child = closest;
                 child->child = NULL;
                 child->ray_id = ray->ray_id + simulation->num_rays;
-                ray->child = child;
-                ray = ray->child;
                 AT_Vec3 hit_point = closest.origin;
                 child->total_distance = ray->total_distance +
-                    AT_vec3_distance_sq(ray->origin, hit_point);
+                    AT_vec3_distance(ray->origin, hit_point);
+                ray->child = child;
+                ray = ray->child;
             }
         }
     }
@@ -154,7 +154,6 @@ AT_Result AT_simulation_run(AT_Simulation *simulation)
                   );
 
             AT_voxel_ray_step(simulation, ray, ray_end);
-
             ray = ray->child;
         }
     }
