@@ -59,8 +59,8 @@ int main()
 
     AT_Settings settings = {
         .fps = 60,
-        .num_rays = 20,
-        .voxel_size = 0.5
+        .num_rays = 10,
+        .voxel_size = 1
     };
 
     AT_Simulation *sim = NULL;
@@ -192,7 +192,7 @@ int main()
                                     DrawCubeV(
                                         pos,
                                         (Vector3){sim->voxel_size, sim->voxel_size, sim->voxel_size},
-                                        Fade(RED, energy/1000)
+                                        Fade(RED, energy/10)
                                     );
                                     AT_voxel_print(v);
                                     continue;

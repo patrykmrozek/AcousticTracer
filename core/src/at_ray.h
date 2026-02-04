@@ -18,7 +18,7 @@ static inline AT_Ray AT_ray_init(
     AT_Ray ray = {
     .origin = origin,
     .direction = AT_vec3_normalize(direction),
-    .energy = AT_RAY_MAX_ENERGY,
+    .energy = 1.0f,
     .total_distance = current_distance,
     .ray_id = ray_id,
     .bounce_count = 0,

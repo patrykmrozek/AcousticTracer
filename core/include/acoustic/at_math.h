@@ -18,6 +18,11 @@ typedef struct {
     int x, y, z;
 } AT_Vec3i;
 
+typedef struct {
+    AT_Vec3 min, max;
+    AT_Vec3 midpoint;
+} AT_AABB;
+
 /** \brief Groups three AT_Vec3 to represent a triangle.
  */
 typedef struct {

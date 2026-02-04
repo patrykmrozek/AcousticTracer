@@ -126,6 +126,7 @@ AT_Result AT_simulation_run(AT_Simulation *simulation)
                 AT_Vec3 hit_point = closest.origin;
                 child->total_distance = ray->total_distance +
                     AT_vec3_distance(ray->origin, hit_point);
+                child->energy = ray->energy * (1.0f - AT_MATERIAL_TABLE[simulation->scene->environment->triangle_materials[tri_idx]].absorption);
                 ray->child = child;
                 ray = ray->child;
             }
