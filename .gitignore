@@ -20,3 +20,6 @@ build/
 # Mac files
 **/.DS_Store
 .DS_Store
+
+#env fle
+**/.env

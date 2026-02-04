@@ -1,24 +1,38 @@
-import UploadForm from "./components/UploadForm";
-import "./index.css"; // Ensure styles are imported
+import { UserProvider, useUser } from "./lib/context/user";
+import { Routes, Route, Navigate } from "react-router";
+import { Dashboard, Login, Scene } from "./pages/index.ts";
 
-function App() {
+function AppContent() {
+  const { current, isLoading } = useUser();
+
+  if (isLoading) {
+    return <div className="loading-container">Loading...</div>;
+  }
+
   return (
-    <div className="container">
-      <div className="header">
-        <h1 className="h1">AcousticTracer</h1>
-        <div className="muted">Skeleton mode</div>
-      </div>
-
-      <div className="card">
-        <div className="muted">
-          TODO: Implement upload, polling, and playback.
-        </div>
-      </div>
-      <div className="upload">
-        <UploadForm />
-      </div>
-    </div>
+    <Routes>
+      {!current ? (
+        <>
+          <Route path="/login" element={<Login />} />
+          <Route path="*" element={<Navigate to="/login" />} />
+        </>
+      ) : (
+        <>
+          <Route path="/login" element={<Navigate to="/dashboard" />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/scene/:id" element={<Scene />} />
+          <Route path="*" element={<Navigate to="/dashboard" />} />
+        </>
+      )}
+      Home
+    </Routes>
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <UserProvider>
+      <AppContent />
+    </UserProvider>
+  );
+}

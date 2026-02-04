@@ -1,10 +1,12 @@
 #include "acoustic/at_model.h"
 #include "../src/at_internal.h"
 #include "../src/at_utils.h"
+#include "../src/at_aabb.h"
 #include "acoustic/at.h"
 #include "acoustic/at_math.h"
 #include "cgltf.h"
 
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <float.h>
@@ -118,6 +120,9 @@ AT_Result AT_model_create(AT_Model **out_model, const char *filepath)
         return AT_ERR_ALLOC_ERROR;
     }
 
+    uint32_t tri = 0;
+    uint32_t *triangle_materials = malloc(sizeof(uint32_t) * (total_indices / 3));
+
     for (unsigned long i = 0; i < mesh->primitives_count; i++) {
 
         size_t base_vertex = vertex_index;
@@ -152,6 +157,11 @@ AT_Result AT_model_create(AT_Model **out_model, const char *filepath)
         }
         index_index += index_count;
 
+        // Materials - set to be plastic for now
+        for (uint32_t i = 0; i < index_count; i+=3) {
+            triangle_materials[tri++] = AT_MATERIAL_PLASTIC;
+        }
+
         // Normals
         cgltf_accessor *norm_accessor = NULL;
         for (size_t i = 0; i < primitive->attributes_count; i++) {
@@ -174,6 +184,7 @@ AT_Result AT_model_create(AT_Model **out_model, const char *filepath)
         free(vertices);
         free(indices);
         free(normals);
+        free(triangle_materials);
         return AT_ERR_ALLOC_ERROR;
     }
 
@@ -182,6 +193,7 @@ AT_Result AT_model_create(AT_Model **out_model, const char *filepath)
     model->indices = indices;
     model->vertices = vertices;
     model->normals = normals;
+    model->triangle_materials = triangle_materials;
 
     *out_model = model;
 
@@ -196,6 +208,7 @@ void AT_model_destroy(AT_Model *model)
     free(model->vertices);
     free(model->indices);
     free(model->normals);
+    free(model->triangle_materials);
     free(model);
 }
 
@@ -215,6 +228,7 @@ void AT_model_to_AABB(AT_AABB *out_aabb, const AT_Model *model)
 
     out_aabb->min = min_vec;
     out_aabb->max = max_vec;
+    out_aabb->midpoint = AT_AABB_calc_midpoint(out_aabb);
 }
 
 
@@ -229,6 +243,7 @@ AT_Result AT_model_get_triangles(AT_Triangle **out_triangles, const AT_Model *mo
             .v2 = model->vertices[model->indices[i*3 + 1]],
             .v3 = model->vertices[model->indices[i*3 + 2]]
         };
+        ts[i].aabb = AT_AABB_from_triangle(&ts[i]);
     }
     *out_triangles = ts;
     return AT_OK;

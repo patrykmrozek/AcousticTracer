@@ -8,8 +8,6 @@
 #include <stdbool.h>
 #include <string.h>
 
-#define AT_RAY_MAX_ENERGY 100.0f
-
 static inline AT_Ray AT_ray_init(
     const AT_Vec3 origin,
     const AT_Vec3 direction,

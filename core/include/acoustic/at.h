@@ -4,7 +4,7 @@
 #ifndef AT_H
 #define AT_H
 
-#include "at_math.h"
+#include "acoustic/at_math.h"
 #include <stdint.h>
 #include <stddef.h>
 
@@ -26,15 +26,14 @@ typedef enum {
 typedef enum {
     AT_MATERIAL_CONCRETE,
     AT_MATERIAL_PLASTIC,
-    AT_MATERIAL_WOOD
-} AT_Material;
+    AT_MATERIAL_WOOD,
+    AT_MATERIAL_COUNT,
+} AT_MaterialType;
 
-/** \brief Groups the min and max of a voxel for AABB collision detection.
- */
 typedef struct {
-    AT_Vec3 min;
-    AT_Vec3 max;
-} AT_AABB;
+    float absorption;
+    // TODO: diffuse, scatter, etc
+} AT_Material;
 
 /** \brief Groups the information required for the sound source.
  */
@@ -49,7 +48,7 @@ typedef struct {
 typedef struct {
   const AT_Source *sources; /**< Dynamic array of AT_Source types. */
   uint32_t num_sources;
-  AT_Material material; /**< Material of the room. */
+  AT_MaterialType material; /**< Material of the room. */
 
   // Borrowed: must remain valid for the entire lifetime of the scene
   const AT_Model *environment; /**< Pointer to the room object. */

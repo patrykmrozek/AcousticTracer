@@ -1,8 +1,26 @@
-// TODO: R3F scene root (Canvas, camera, controls, lights)
-// Suggested exports:
-// - default function SceneCanvas({ children, ...props })
-// - export function useSceneControls(...)
+import { Canvas } from "@react-three/fiber";
+import { Stage, OrbitControls, Gltf } from "@react-three/drei";
+import { Suspense } from "react";
 
-export default function SceneCanvas() {
-  return null;
+interface SceneCanvasProps {
+  modelUrl: string | null;
+}
+
+function Model({ url }: { url: string }) {
+  return <Gltf src={url} castShadow receiveShadow />;
+}
+
+export default function SceneCanvas({ modelUrl }: SceneCanvasProps) {
+  if (!modelUrl) return null;
+
+  return (
+    <Canvas shadows camera={{ position: [4, 4, 4], fov: 50 }}>
+      <Suspense fallback={null}>
+        <Stage environment="city" intensity={0.5} adjustCamera={true} shadows>
+          <Model url={modelUrl} />
+        </Stage>
+      </Suspense>
+      <OrbitControls makeDefault />
+    </Canvas>
+  );
 }

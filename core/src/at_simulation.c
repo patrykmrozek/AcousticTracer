@@ -65,7 +65,7 @@ AT_Result AT_simulation_create(AT_Simulation **out_simulation, const AT_Scene *s
 }
 
 
-#define MIN_RAY_ENERGY_THRESHOLD 10.0
+#define MIN_RAY_ENERGY_THRESHOLD 0.8f
 
 AT_Result AT_simulation_run(AT_Simulation *simulation)
 {
@@ -102,18 +102,18 @@ AT_Result AT_simulation_run(AT_Simulation *simulation)
         for (uint32_t i = 0; i < simulation->num_rays; i++) {
             uint32_t ray_idx = s * simulation->num_rays + i;
             AT_Ray *ray = &simulation->rays[ray_idx];
-            uint32_t bounce_count = 0;
-            //while (ray->energy > MIN_RAY_ENERGY_THRESHOLD) {
-            while (bounce_count++ < 5) {
+            while (ray->energy > MIN_RAY_ENERGY_THRESHOLD) {
                 AT_Ray closest = AT_ray_init((AT_Vec3){
                     FLT_MAX, FLT_MAX, FLT_MAX},
                     (AT_Vec3){0},
                     ray->total_distance,
                     ray_idx);
                 bool intersects = false;
+                uint32_t tri_idx = 0;
                 for (uint32_t t = 0; t < triangle_count; t++) {
                     if (AT_ray_triangle_intersect(ray, &triangles[t], &closest)) {
                         intersects = true;
+                        tri_idx = t;
                     }
                 }
                 if (!intersects) break;

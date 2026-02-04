@@ -6,9 +6,14 @@
 import { useState } from "react";
 import { createSimulation } from "../api/simulations";
 
-export default function UploadForm() {
+interface UploadFormProps {
+  onClose?: () => void;
+}
+
+export default function UploadForm({ onClose }: UploadFormProps) {
   const [file, setFile] = useState<File | null>(null);
   const [formData, setFormData] = useState({
+    name: "Room",
     voxel_size: 0.1,
     floor_material: "concrete",
     wall_material: "plaster",
@@ -29,17 +34,14 @@ export default function UploadForm() {
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     if (!file) {
-      alert("Please select a GLB/GLTF file");
+      alert("Please select a GLB file");
       return;
     }
 
     try {
-      // Construct the payload matching docs/communication_standards.md
-      // Note: In a real app, this would likely be a FormData object with the file
-      // and a JSON string for the metadata, or two separate calls.
-      // For now, we mock the call.
       console.log("Submitting simulation:", { file, ...formData });
       await createSimulation({ file, ...formData });
+      if (onClose) onClose();
     } catch (err) {
       console.error("Failed to create simulation", err);
       alert("Simulation creation failed (check console)");
@@ -49,19 +51,35 @@ export default function UploadForm() {
   return (
     <div className="modal-overlay">
       <div className="card modal-content">
-        <h3 className="h1 form-title">New Simulation</h3>
-
+        <div className="upload-form-header">
+          <h3 className="h1 upload-form-title">New Simulation</h3>
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="close-button"
+              aria-label="Close"
+            >
+              &times;
+            </button>
+          )}
+        </div>
         <form onSubmit={handleSubmit} className="form-stack">
           {/* File Upload */}
-          <div>
-            <label className="label">Room Model (.glb/.gltf)</label>
-            <input
-              type="file"
-              accept=".glb,.gltf"
-              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-              required
-              className="input"
-            />
+          <div className="row">
+            <div>
+              <label className="label">Name</label>
+              <input type="text" className="input" />
+            </div>
+            <div>
+              <label className="label">Room Model (.glb)</label>
+              <input
+                type="file"
+                accept=".glb,.gltf"
+                onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                required
+                className="input"
+              />
+            </div>
           </div>
 
           {/* Simulation Config */}
@@ -174,9 +192,7 @@ export default function UploadForm() {
             </div>
           </div>
 
-          <button type="submit" className="button w-full mt-2">
-            Start Simulation
-          </button>
+          <button className="button w-full mt-2">Start Simulation</button>
         </form>
       </div>
     </div>

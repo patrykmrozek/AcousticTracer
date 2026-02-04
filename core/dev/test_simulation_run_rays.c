@@ -58,7 +58,7 @@ int main()
 
     AT_Settings settings = {
         .fps = 60,
-        .num_rays = 50,
+        .num_rays = 10,
         .voxel_size = 10
     };
 

@@ -22,6 +22,7 @@ typedef struct {
  */
 typedef struct {
     AT_Vec3 v1, v2, v3;
+    AT_AABB aabb;
 } AT_Triangle;
 
 /** \brief AT_Vec3 constructor for a given point.
@@ -119,10 +120,9 @@ static inline float AT_vec3_dot(AT_Vec3 a, AT_Vec3 b)
 static inline AT_Vec3 AT_vec3_cross(AT_Vec3 a, AT_Vec3 b)
 {
     return (AT_Vec3){
-        a.y*b.z - a.z*b.y,
-        a.z*b.x - a.x*b.z,
-        a.x*b.y - a.y*b.x
-    };
+        a.y * b.z - a.z * b.y,
+        a.z * b.x - a.x * b.z,
+        a.x * b.y - a.y * b.x};
 }
 
 /** \brief Calculate the length of an AT_Vec3.
