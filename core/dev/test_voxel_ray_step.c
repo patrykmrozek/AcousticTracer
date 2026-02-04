@@ -90,6 +90,7 @@ int main()
             .projection = CAMERA_PERSPECTIVE
         };
         rlDisableBackfaceCulling();
+        rlDisableDepthMask();
 
         uint32_t t_count = sim->scene->environment->index_count / 3;
         AT_Triangle *ts = NULL;
@@ -153,6 +154,14 @@ int main()
                     }
                     */
 
+                    for (uint32_t i = 0; i < t_count; i++) {
+                            Vector3 v1 = {ts[i].v1.x, ts[i].v1.y, ts[i].v1.z};
+                            Vector3 v2 = {ts[i].v2.x, ts[i].v2.y, ts[i].v2.z};
+                            Vector3 v3 = {ts[i].v3.x, ts[i].v3.y, ts[i].v3.z};
+                            DrawLine3D(v1, v2, BLACK);
+                            DrawLine3D(v2, v3, BLACK);
+                            DrawLine3D(v3, v1, BLACK);
+                        }
                     //draw voxels
                     for (uint32_t z = 0; z < sim->grid_dimensions.z; z++) {
                         for (uint32_t y = 0; y < sim->grid_dimensions.y; y++) {
@@ -166,7 +175,8 @@ int main()
                                 AT_Voxel *v = &sim->voxel_grid[i];
 
                                 //printf("CURR BIN(%i): %i\n", curr_bin, curr_bin%bin_count);
-                                float energy = AT_voxel_get_energy(v, curr_bin%bin_count);
+                                float energy = AT_voxel_get_energy(v, curr_bin++%bin_count);
+                                printf("ENERGY: %f\n", energy);
                                 //float energy = AT_voxel_get_energy(v, 2);
 
                                 if (IsKeyDown(KEY_L)) curr_bin++;
@@ -178,28 +188,27 @@ int main()
                                     sim->origin.z + (z + 0.5f) * sim->voxel_size,
                                 };
 
-                                if (energy <= 0.0f) continue;
-
-                                //printf("Voxel (%i): Num Bins: %zu Energy: %f\t", i, v->count, energy);
-                                AT_voxel_print(v);
-
-                                DrawCubeV(
-                                    pos,
-                                    (Vector3){sim->voxel_size, sim->voxel_size, sim->voxel_size},
-                                    Fade(RED, energy/1000)
-                                );
+                                if (energy > 0.0f) {
+                                    DrawCubeV(
+                                        pos,
+                                        (Vector3){sim->voxel_size, sim->voxel_size, sim->voxel_size},
+                                        Fade(RED, energy/1000)
+                                    );
+                                    AT_voxel_print(v);
+                                    continue;
+                                } else {
+                                    //printf("Voxel (%i): Num Bins: %zu Energy: %f\t", i, v->count, energy);
+                                    DrawCubeV(
+                                         pos,
+                                         (Vector3){sim->voxel_size, sim->voxel_size, sim->voxel_size},
+                                         Fade(BLUE, 1.0f/100)
+                                    );
+                                }
 
                             }
                         }
                     }
 
-                    for (uint32_t i = 0; i < t_count; i++) {
-                        DrawTriangle3D(
-                            (Vector3){ts[i].v1.x, ts[i].v1.y, ts[i].v1.z},
-                            (Vector3){ts[i].v2.x, ts[i].v2.y, ts[i].v2.z},
-                            (Vector3){ts[i].v3.x, ts[i].v3.y, ts[i].v3.z},
-                            Fade(BLACK, 0.1));
-                        }
 
 
 
