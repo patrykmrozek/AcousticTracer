@@ -14,7 +14,7 @@ export default function SceneCanvas({ modelUrl }: SceneCanvasProps) {
   if (!modelUrl) return null;
 
   return (
-    <Canvas shadows camera={{ position: [4, 4, 4], fov: 50 }}>
+    <Canvas shadows camera={{ position: [10, 10, 10], fov: 50 }}>
       <Suspense fallback={null}>
         <Stage environment="city" intensity={0.5} adjustCamera={true} shadows>
           <Model url={modelUrl} />

@@ -34,7 +34,7 @@ export default function UploadForm({ onClose }: UploadFormProps) {
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     if (!file) {
-      alert("Please select a GLB file");
+      alert("Only GLB file type accepted");
       return;
     }
 
@@ -49,43 +49,72 @@ export default function UploadForm({ onClose }: UploadFormProps) {
   };
 
   return (
-    <div className="modal-overlay">
-      <div className="card modal-content">
-        <div className="upload-form-header">
-          <h3 className="h1 upload-form-title">New Simulation</h3>
+    <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm z-1000 p-4 bg-black/75">
+      <div className="bg-bg-card rounded-xl p-6 shadow-md w-[550px] max-h-[90vh] overflow-y-auto border border-border-primary">
+        <div className="flex justify-between items-center mb-8 pb-4 border-b border-border-primary">
+          <h3 className="m-0 text-lg font-semibold text-text-primary">
+            New Simulation
+          </h3>
           {onClose && (
             <button
               onClick={onClose}
-              className="close-button"
+              className="text-2xl font-bold p-1 leading-none rounded cursor-pointer transition-all duration-200 text-text-secondary bg-transparent hover:text-text-primary hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-button-primary focus-visible:outline-offset-2"
               aria-label="Close"
             >
               &times;
             </button>
           )}
         </div>
-        <form onSubmit={handleSubmit} className="form-stack">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           {/* File Upload */}
-          <div className="row">
+          <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="label">Name</label>
-              <input type="text" className="input" />
+              <label className="block text-xs font-semibold text-text-secondary mb-1.5 uppercase tracking-wide">
+                Name
+              </label>
+              <input
+                type="text"
+                className="w-full py-2.5 px-3 border border-border-primary bg-input-bg text-text-primary rounded-lg text-sm transition-colors focus:outline-none focus:border-button-primary"
+              />
             </div>
             <div>
-              <label className="label">Room Model (.glb)</label>
-              <input
-                type="file"
-                accept=".glb,.gltf"
-                onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-                required
-                className="input"
-              />
+              <label className="block text-xs font-semibold text-text-secondary mb-1.5 uppercase tracking-wide">
+                Room Model (.glb)
+              </label>
+              <div className="relative">
+                <input
+                  type="file"
+                  id="model-upload"
+                  accept=".glb"
+                  onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                  required
+                  className="hidden"
+                />
+                <label
+                  htmlFor="model-upload"
+                  className="flex items-center w-full py-2 px-2 border border-border-primary bg-input-bg rounded-lg text-sm transition-colors cursor-pointer hover:border-button-primary"
+                >
+                  <span className="bg-button-primary text-white px-3 py-1.5 rounded text-xs mr-3 font-medium hover:bg-opacity-90 transition-opacity">
+                    Browse
+                  </span>
+                  <span
+                    className={`truncate ${
+                      !file ? "text-text-secondary" : "text-text-primary"
+                    }`}
+                  >
+                    {file ? file.name : "No file selected"}
+                  </span>
+                </label>
+              </div>
             </div>
           </div>
 
           {/* Simulation Config */}
-          <div className="row">
+          <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="label">Voxel Size (m)</label>
+              <label className="block text-xs font-semibold text-text-secondary mb-1.5 uppercase tracking-wide">
+                Voxel Size (m)
+              </label>
               <input
                 type="number"
                 step="0.01"
@@ -93,85 +122,95 @@ export default function UploadForm({ onClose }: UploadFormProps) {
                 value={formData.voxel_size}
                 onChange={handleChange}
                 required
-                className="input"
+                className="w-full py-2.5 px-3 border border-border-primary bg-input-bg text-text-primary rounded-lg text-sm transition-colors focus:outline-none focus:border-button-primary"
               />
             </div>
             <div>
-              <label className="label">FPS</label>
+              <label className="block text-xs font-semibold text-text-secondary mb-1.5 uppercase tracking-wide">
+                FPS
+              </label>
               <input
                 type="number"
                 name="fps"
                 value={formData.fps}
                 onChange={handleChange}
                 required
-                className="input"
+                className="w-full py-2.5 px-3 border border-border-primary bg-input-bg text-text-primary rounded-lg text-sm transition-colors focus:outline-none focus:border-button-primary"
               />
             </div>
           </div>
 
           <div>
-            <label className="label">Rays</label>
+            <label className="block text-xs font-semibold text-text-secondary mb-1.5 uppercase tracking-wide">
+              Rays
+            </label>
             <input
               type="number"
               name="num_rays"
               value={formData.num_rays}
               onChange={handleChange}
               required
-              className="input"
+              className="w-full py-2.5 px-3 border border-border-primary bg-input-bg text-text-primary rounded-lg text-sm transition-colors focus:outline-none focus:border-button-primary"
             />
           </div>
 
           <div>
-            <label className="label">Genetics Iterations</label>
+            <label className="block text-xs font-semibold text-text-secondary mb-1.5 uppercase tracking-wide">
+              Genetics Iterations
+            </label>
             <input
               type="number"
               name="num_iterations"
               value={formData.num_iterations}
               onChange={handleChange}
               required
-              className="input"
+              className="w-full py-2.5 px-3 border border-border-primary bg-input-bg text-text-primary rounded-lg text-sm transition-colors focus:outline-none focus:border-button-primary"
             />
           </div>
 
           {/* Materials */}
-          <div className="section-divider">
-            <span className="section-title">Materials</span>
-            <div className="form-stack">
+          <div className="border-t border-border-primary pt-4 mt-2">
+            <span className="text-sm font-semibold text-text-primary mb-3 flex items-center gap-2">
+              Materials
+            </span>
+            <div className="flex flex-col gap-4">
               <input
                 placeholder="Floor Material"
                 name="floor_material"
                 value={formData.floor_material}
                 onChange={handleChange}
-                className="input"
+                className="w-full py-2.5 px-3 border border-border-primary bg-input-bg text-text-primary rounded-lg text-sm transition-colors focus:outline-none focus:border-button-primary"
               />
               <input
                 placeholder="Wall Material"
                 name="wall_material"
                 value={formData.wall_material}
                 onChange={handleChange}
-                className="input"
+                className="w-full py-2.5 px-3 border border-border-primary bg-input-bg text-text-primary rounded-lg text-sm transition-colors focus:outline-none focus:border-button-primary"
               />
               <input
                 placeholder="Roof Material"
                 name="roof_material"
                 value={formData.roof_material}
                 onChange={handleChange}
-                className="input"
+                className="w-full py-2.5 px-3 border border-border-primary bg-input-bg text-text-primary rounded-lg text-sm transition-colors focus:outline-none focus:border-button-primary"
               />
             </div>
           </div>
 
           {/* Area */}
-          <div className="section-divider">
-            <span className="section-title">Selected Area Dimensions</span>
-            <div className="form-grid-3">
+          <div className="border-t border-border-primary pt-4 mt-2">
+            <span className="text-sm font-semibold text-text-primary mb-3 flex items-center gap-2">
+              Selected Area Dimensions
+            </span>
+            <div className="grid grid-cols-3 gap-3">
               <input
                 placeholder="X"
                 type="number"
                 name="area_x"
                 value={formData.area_x}
                 onChange={handleChange}
-                className="input"
+                className="w-full py-2.5 px-3 border border-border-primary bg-input-bg text-text-primary rounded-lg text-sm transition-colors focus:outline-none focus:border-button-primary"
               />
               <input
                 placeholder="Y"
@@ -179,7 +218,7 @@ export default function UploadForm({ onClose }: UploadFormProps) {
                 name="area_y"
                 value={formData.area_y}
                 onChange={handleChange}
-                className="input"
+                className="w-full py-2.5 px-3 border border-border-primary bg-input-bg text-text-primary rounded-lg text-sm transition-colors focus:outline-none focus:border-button-primary"
               />
               <input
                 placeholder="Z"
@@ -187,12 +226,14 @@ export default function UploadForm({ onClose }: UploadFormProps) {
                 name="area_z"
                 value={formData.area_z}
                 onChange={handleChange}
-                className="input"
+                className="w-full py-2.5 px-3 border border-border-primary bg-input-bg text-text-primary rounded-lg text-sm transition-colors focus:outline-none focus:border-button-primary"
               />
             </div>
           </div>
 
-          <button className="button w-full mt-2">Start Simulation</button>
+          <button className="w-full mt-2 px-4 py-2.5 rounded-lg bg-button-primary text-white font-semibold text-sm transition-colors cursor-pointer border-none hover:bg-button-hover focus-visible:outline-2 focus-visible:outline-button-primary focus-visible:outline-offset-2 disabled:opacity-60 disabled:cursor-not-allowed">
+            Start Simulation
+          </button>
         </form>
       </div>
     </div>
