@@ -39,9 +39,9 @@ int main()
 
     int num_sources = 1;
     AT_Source s1 = {
-        .direction = {0.2, -0.1, 0},
+        .direction = {{0.2, -0.1, 0}},
         .intensity = 50.0,
-        .position = {1, 2, 0}
+        .position = {{1, 2, 0}}
     };
 
     AT_SceneConfig conf = {
@@ -175,8 +175,8 @@ int main()
                                 AT_Voxel *v = &sim->voxel_grid[i];
 
                                 //printf("CURR BIN(%i): %i\n", curr_bin, curr_bin%bin_count);
-                                float energy = AT_voxel_get_energy(v, curr_bin++%bin_count);
-                                printf("ENERGY: %f\n", energy);
+                                float energy = AT_voxel_get_energy(v, curr_bin%bin_count);
+                                //printf("ENERGY: %f\n", energy);
                                 //float energy = AT_voxel_get_energy(v, 2);
 
                                 if (IsKeyDown(KEY_L)) curr_bin++;
@@ -192,7 +192,7 @@ int main()
                                     DrawCubeV(
                                         pos,
                                         (Vector3){sim->voxel_size, sim->voxel_size, sim->voxel_size},
-                                        Fade(RED, energy/10)
+                                        Fade(RED, energy)
                                     );
                                     AT_voxel_print(v);
                                     continue;

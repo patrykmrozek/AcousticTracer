@@ -35,7 +35,7 @@ static inline void AT_voxel_print(AT_Voxel *voxel)
 {
     printf("[");
     for (size_t i = 0; i < voxel->count; i++) {
-        printf("%.1f, ", voxel->items[i]);
+        printf("%.3f, ", voxel->items[i]);
     }
     printf("]\n");
 }
