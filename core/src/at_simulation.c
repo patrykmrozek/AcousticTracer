@@ -66,7 +66,7 @@ AT_Result AT_simulation_create(AT_Simulation **out_simulation, const AT_Scene *s
 
 
 #define MIN_RAY_ENERGY_THRESHOLD 0.01f
-#define SOURCE_ENERGY 1.0f //this can be the power of the sound source defined by the user
+#define SOURCE_ENERGY 10.0f //this can be the power of the sound source defined by the user
 
 AT_Result AT_simulation_run(AT_Simulation *simulation)
 {
@@ -99,45 +99,45 @@ AT_Result AT_simulation_run(AT_Simulation *simulation)
                 ray_idx //ray index
             );
         }
+    }
 
-        //trace rays for this source
-        for (uint32_t i = 0; i < simulation->num_rays; i++) {
-            uint32_t ray_idx = s * simulation->num_rays + i;
-            AT_Ray *ray = &simulation->rays[ray_idx];
-            while (ray->energy > MIN_RAY_ENERGY_THRESHOLD) {
-                AT_Ray closest = AT_ray_init((AT_Vec3){{FLT_MAX, FLT_MAX, FLT_MAX}},
-                    (AT_Vec3){0},
-                    ray->total_distance,
-                    ray->energy,
-                    ray_idx);
-                bool intersects = false;
-                uint32_t tri_idx = 0;
-                for (uint32_t t = 0; t < triangle_count; t++) {
-                    if (AT_ray_triangle_intersect(ray, &triangles[t], &closest)) {
-                        intersects = true;
-                        tri_idx = t;
-                    }
+    //trace rays for this source
+    uint32_t total_rays = simulation->scene->num_sources * simulation->num_rays;
+    for (uint32_t i = 0; i < total_rays; i++) {
+        AT_Ray *ray = &simulation->rays[i];
+        while (ray->energy > MIN_RAY_ENERGY_THRESHOLD) {
+            AT_Ray closest = AT_ray_init((AT_Vec3){{FLT_MAX, FLT_MAX, FLT_MAX}},
+                (AT_Vec3){0},
+                ray->total_distance,
+                ray->energy,
+                i);
+            bool intersects = false;
+            uint32_t tri_idx = 0;
+            for (uint32_t t = 0; t < triangle_count; t++) {
+                if (AT_ray_triangle_intersect(ray, &triangles[t], &closest)) {
+                    intersects = true;
+                    tri_idx = t;
                 }
-                if (!intersects) break;
-
-                AT_Ray *child = (AT_Ray*)malloc(sizeof(AT_Ray));
-                if (!child) return AT_ERR_ALLOC_ERROR;
-                *child = closest;
-                child->child = NULL;
-                child->ray_id = ray->ray_id + simulation->num_rays;
-                AT_Vec3 hit_point = closest.origin;
-                child->total_distance = ray->total_distance +
-                    AT_vec3_distance(ray->origin, hit_point);
-                child->energy = ray->energy * (1.0f - AT_MATERIAL_TABLE[simulation->scene->environment->triangle_materials[tri_idx]].absorption);
-                ray->child = child;
-                ray = ray->child;
             }
+            if (!intersects) break;
+
+            AT_Ray *child = (AT_Ray*)malloc(sizeof(AT_Ray));
+            if (!child) return AT_ERR_ALLOC_ERROR;
+            *child = closest;
+            child->child = NULL;
+            child->ray_id = ray->ray_id + simulation->num_rays;
+            AT_Vec3 hit_point = closest.origin;
+            child->total_distance = ray->total_distance +
+                AT_vec3_distance(ray->origin, hit_point);
+            child->energy = ray->energy * (1.0f - AT_MATERIAL_TABLE[simulation->scene->environment->triangle_materials[tri_idx]].absorption);
+            ray->child = child;
+            ray = ray->child;
         }
     }
 
     //DDA
 
-    for (uint32_t i = 0; i < simulation->num_rays; i++) {
+    for (uint32_t i = 0; i < total_rays; i++) {
         AT_Ray *ray = &simulation->rays[i];
 
         while (ray) {
