@@ -3,9 +3,9 @@
 
 #include "../src/at_internal.h"
 #include "acoustic/at_math.h"
-#include "../src/at_utils.h"
 
 #include <stdbool.h>
+#include <stdlib.h>
 #include <string.h>
 
 static inline AT_Ray AT_ray_init(
