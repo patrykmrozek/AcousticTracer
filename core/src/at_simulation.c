@@ -55,7 +55,7 @@ AT_Result AT_simulation_create(AT_Simulation **out_simulation, const AT_Scene *s
     simulation->fps = settings->fps;
     simulation->num_rays = settings->num_rays;
     simulation->num_voxels = num_voxels;
-    simulation->grid_dimensions = (AT_Vec3){grid_x, grid_y, grid_z}; //dimensions in terms of voxels
+    simulation->grid_dimensions = (AT_Vec3){{grid_x, grid_y, grid_z}}; //dimensions in terms of voxels
     simulation->voxel_size = settings->voxel_size;
     simulation->bin_width = 1.0f / settings->fps;
 
@@ -103,8 +103,7 @@ AT_Result AT_simulation_run(AT_Simulation *simulation)
             uint32_t ray_idx = s * simulation->num_rays + i;
             AT_Ray *ray = &simulation->rays[ray_idx];
             while (ray->energy > MIN_RAY_ENERGY_THRESHOLD) {
-                AT_Ray closest = AT_ray_init((AT_Vec3){
-                    FLT_MAX, FLT_MAX, FLT_MAX},
+                AT_Ray closest = AT_ray_init((AT_Vec3){{FLT_MAX, FLT_MAX, FLT_MAX}},
                     (AT_Vec3){0},
                     ray->total_distance,
                     ray_idx);
