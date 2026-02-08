@@ -65,7 +65,8 @@ AT_Result AT_simulation_create(AT_Simulation **out_simulation, const AT_Scene *s
 }
 
 
-#define MIN_RAY_ENERGY_THRESHOLD 0.8f
+#define MIN_RAY_ENERGY_THRESHOLD 0.01f
+#define SOURCE_ENERGY 1.0f //this can be the power of the sound source defined by the user
 
 AT_Result AT_simulation_run(AT_Simulation *simulation)
 {
@@ -94,6 +95,7 @@ AT_Result AT_simulation_run(AT_Simulation *simulation)
                 simulation->scene->sources[s].position,
                 varied_direction,
                 0.0f,
+                SOURCE_ENERGY / simulation->num_rays,
                 ray_idx //ray index
             );
         }
@@ -106,6 +108,7 @@ AT_Result AT_simulation_run(AT_Simulation *simulation)
                 AT_Ray closest = AT_ray_init((AT_Vec3){{FLT_MAX, FLT_MAX, FLT_MAX}},
                     (AT_Vec3){0},
                     ray->total_distance,
+                    ray->energy,
                     ray_idx);
                 bool intersects = false;
                 uint32_t tri_idx = 0;
@@ -157,8 +160,6 @@ AT_Result AT_simulation_run(AT_Simulation *simulation)
             ray = ray->child;
         }
     }
-
-
     return AT_OK;
 }
 
