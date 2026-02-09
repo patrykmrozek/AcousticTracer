@@ -13,12 +13,16 @@ Color cols[3] = {BLACK, LIGHTGRAY, DARKGRAY};
 
 static float AT_voxel_get_energy(AT_Voxel *voxel, uint32_t index)
 {
+    /*
     float sum = 0.0f;
     for (size_t i = 0; i <= index; i++) {
         if (i >= voxel->count) break;
         sum += voxel->items[i];
     }
     return sum;
+    */
+    if (index >= voxel->count) return 0.0f;
+    return voxel->items[index];
 }
 
 int main()
@@ -39,7 +43,7 @@ int main()
 
     int num_sources = 1;
     AT_Source s1 = {
-        .direction = {{0.2, -0.1, 0}},
+        .direction = {{0.2, 0.0, 0}},
         .intensity = 50.0,
         .position = {{1, 2, 0}}
     };
@@ -59,7 +63,7 @@ int main()
 
     AT_Settings settings = {
         .fps = 60,
-        .num_rays = 10,
+        .num_rays = 1000,
         .voxel_size = 1
     };
 
@@ -77,6 +81,8 @@ int main()
     uint32_t bin_count = AT_voxel_get_num_bins(sim);
     uint32_t curr_bin = 0;
     printf("BIN COUNT: %i\n", bin_count);
+
+    printf("VOXEL COUNT: %i\n", sim->num_voxels);
 
     InitWindow(1280, 720, "Voxel Ray Test");
 
@@ -113,7 +119,6 @@ int main()
                         for (uint32_t i = 0; i < sim->num_rays; i++) {
                             uint32_t ray_idx = s * sim->num_rays + i;
                             AT_Ray ray = rays[ray_idx];
-                            printf("Ray(%i): total_dist: %f\n", ray.ray_id, ray.total_distance);
                             DrawSphere((Vector3){
                             ray.origin.x,
                             ray.origin.y,
@@ -123,7 +128,7 @@ int main()
                             AT_Ray *curr = &ray;
                             while (curr->child) {
                                 curr = curr->child;
-                                printf("Child Ray(%i): total_dist: %f\n", curr->ray_id, curr->total_distance);
+                                //printf("Child Ray(%i): total_dist: %f\n", curr->ray_id, curr->total_distance);
                                 DrawSphere(
                                     (Vector3){
                                         curr->origin.x,
@@ -131,6 +136,7 @@ int main()
                                         curr->origin.z,
                                     }, 0.01, BLUE
                                 );
+
                                 if (curr->child) {
                                     DrawLine3D(
                                         (Vector3){curr->origin.x, curr->origin.y, curr->origin.z},
@@ -138,7 +144,6 @@ int main()
                                         PURPLE);
                                 }
                             }
-
                             if (ray.child) {
                                 DrawLine3D(
                                     (Vector3){ray.origin.x, ray.origin.y, ray.origin.z},
@@ -162,11 +167,14 @@ int main()
                             DrawLine3D(v2, v3, BLACK);
                             DrawLine3D(v3, v1, BLACK);
                         }
+
+                    if (IsKeyPressed(KEY_L)) curr_bin++;
+                    if (IsKeyPressed(KEY_K) && curr_bin > 0) curr_bin--;
+
                     //draw voxels
                     for (uint32_t z = 0; z < sim->grid_dimensions.z; z++) {
                         for (uint32_t y = 0; y < sim->grid_dimensions.y; y++) {
                             for (uint32_t x = 0; x < sim->grid_dimensions.x; x++) {
-
                                 uint32_t i =
                                     z * sim->grid_dimensions.y * sim->grid_dimensions.x +
                                     y * sim->grid_dimensions.x +
@@ -176,10 +184,8 @@ int main()
 
                                 //printf("CURR BIN(%i): %i\n", curr_bin, curr_bin%bin_count);
                                 float energy = AT_voxel_get_energy(v, curr_bin%bin_count);
-                                //printf("ENERGY: %f\n", energy);
                                 //float energy = AT_voxel_get_energy(v, 2);
-
-                                if (IsKeyDown(KEY_L)) curr_bin++;
+                                //printf("ENERGY: %f\n", energy);
                                 //float energy = AT_voxel_get_energy(v, 2);
 
                                 Vector3 pos = {
@@ -189,12 +195,15 @@ int main()
                                 };
 
                                 if (energy > 0.0f) {
+                                    float normalized_energy = energy * sim->num_rays;
+                                    float alpha = fminf(normalized_energy, 1.0f);
+                                    //printf("VOXEL (%i): %f\n", i, v->items[curr_bin%bin_count]);
                                     DrawCubeV(
                                         pos,
                                         (Vector3){sim->voxel_size, sim->voxel_size, sim->voxel_size},
-                                        Fade(RED, energy)
+                                        Fade(RED, alpha)
                                     );
-                                    AT_voxel_print(v);
+                                    //AT_voxel_print(v);
                                     continue;
                                 } else {
                                     //printf("Voxel (%i): Num Bins: %zu Energy: %f\t", i, v->count, energy);
@@ -208,10 +217,6 @@ int main()
                             }
                         }
                     }
-
-
-
-
                     DrawGrid(sim->voxel_size, 1.0f);
                 }
                 EndMode3D();
