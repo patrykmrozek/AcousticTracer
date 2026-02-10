@@ -13,29 +13,26 @@ void AT_voxel_ray_step(AT_Simulation *simulation, AT_Ray *ray, AT_Vec3 ray_end)
     //the ray segment spans from p0 (origin) to p1 (end)
     // out current position within the segement is "t"
 
-    printf("Ray: %i: ", ray->ray_id);
+    float world_ray_length = AT_vec3_distance(ray->origin, ray_end);
+    if (world_ray_length <= 0.0f) return;
 
     //origin in voxel space
     AT_Vec3 p0 = AT_vec3_scale(
         AT_vec3_sub(ray->origin, simulation->origin),
         1.0f / simulation->voxel_size
     );
-    printf("p0: {%f, %f, %f}, ", p0.x, p0.y, p0.z);
 
     //ray end in voxel space
     AT_Vec3 p1 = AT_vec3_scale(
         AT_vec3_sub(ray_end, simulation->origin),
         1.0f / simulation->voxel_size
     );
-    printf("p1: {%f, %f, %f}, ", p1.x, p1.y, p1.z);
 
     //step direction (+1 or -1 per axis)
     const AT_Vec3 step = AT_get_sign_vec3(ray->direction);
-    printf("Step: {%.1f, %.1f, %.1f}, ", step.x, step.y, step.z);
 
     //distance along "t" to move one voxel
     const AT_Vec3 delta = AT_vec3_delta(ray->direction);
-    printf("Delta: {%f, %f, %f}, ", delta.x, delta.y, delta.z);
 
     const int grid_x = simulation->grid_dimensions.x;
     const int grid_y = simulation->grid_dimensions.y;
@@ -66,11 +63,19 @@ void AT_voxel_ray_step(AT_Simulation *simulation, AT_Ray *ray, AT_Vec3 ray_end)
         ((pos.z + 1.0f) - p0.z) * delta.z :
         (p0.z - pos.z) * delta.z;
 
-    printf("t_max: {%f, %f, %f} \n", t_max.x, t_max.y, t_max.z);
+    /*
+    printf("Ray: %i: CHILD:%p ", ray->ray_id, ray->child);
+    printf("p0: {%f, %f, %f}, ", p0.x, p0.y, p0.z);
+    printf("p1: {%f, %f, %f}, ", p1.x, p1.y, p1.z);
+    printf("Step: {%.1f, %.1f, %.1f}, ", step.x, step.y, step.z);
+    printf("Delta: {%f, %f, %f}", delta.x, delta.y, delta.z);
+    printf("t_max: {%f, %f, %f}\n", t_max.x, t_max.y, t_max.z);
+    */
 
     //curr pos within ray segment
     float t = 0.0f;
     const float t_end = AT_vec3_length(AT_vec3_sub(p1, p0));
+    float t_prev = 0.0f;
 
     //while we havent yet reached the end of the ray segment
     while (t < t_end) {
@@ -84,30 +89,42 @@ void AT_voxel_ray_step(AT_Simulation *simulation, AT_Ray *ray, AT_Vec3 ray_end)
             (uint32_t)pos.y * grid_x +
             (uint32_t)pos.x;
 
-        AT_Voxel *voxel = &simulation->voxel_grid[voxel_idx];
 
         float t_current = fminf(t_max.x, fminf(t_max.y, t_max.z));
-        if (t_current > t_end) break; //if we reached the end of the ray
+        if (t_current > t_end) t_current = t_end; //if we reached the end of the ray segment
 
-        t = t_current;
+        float t_segment = t_current - t_prev; //how far we moved in voxel space
+        float world_segment = t_segment * simulation->voxel_size; //how far in world space
 
-        //this is where we add energy to voxels bin
-        //to get the bin_index we woudl have to know the length of the ray at this point,
-        // this would include the length of its parents (if it has any)
-        // we cant just use the current t, as then new rays would be adding energy to old bins
-        float total_world_dist = ray->total_distance + (t * simulation->voxel_size);
+        float t_midpoint = t_prev + t_segment * 0.5f; //center point of curr voxel
+        //total dist from source to this midpoint
+        float total_world_dist = ray->total_distance + (t_midpoint * simulation->voxel_size);
+
+        //inverse square law - attenuation
+        float dist_from_source = fmaxf(total_world_dist, 0.1f);
+        float intensity_factor = 1.0f / (1.0f + dist_from_source * 0.01f);
+
+        float energy_deposit = (ray->energy * world_segment / world_ray_length) * intensity_factor;
+
         float curr_time = total_world_dist / SPEED_OF_SOUND;
         //float curr_time = total_world_dist / SLOWER_SPEED;
+
         size_t bin_index = (size_t)(curr_time / simulation->bin_width);
+        //printf("BIN INDEX: %zu\n", bin_index);
+
+        AT_Voxel *voxel = &simulation->voxel_grid[voxel_idx];
 
         //grow bin count
         while (voxel->count <= bin_index) {
             AT_voxel_bin_append(voxel, 0.0f);
         }
 
-        if (AT_voxel_add_energy(voxel, ray->energy, bin_index) != AT_OK) {
+        if (AT_voxel_add_energy(voxel, energy_deposit, bin_index) != AT_OK) {
             break;
         }
+
+        t_prev = t_current;
+        t = t_current;
 
         //now we look for smallest t_max and advance through it
         //t_max.x smallest
