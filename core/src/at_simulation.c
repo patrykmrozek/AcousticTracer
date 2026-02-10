@@ -65,8 +65,8 @@ AT_Result AT_simulation_create(AT_Simulation **out_simulation, const AT_Scene *s
 }
 
 
-#define MIN_RAY_ENERGY_THRESHOLD 0.01f
-#define SOURCE_ENERGY 10.0f //this can be the power of the sound source defined by the user
+#define MIN_RAY_ENERGY_THRESHOLD 0.001f
+#define SOURCE_ENERGY 1.0f //this can be the power of the sound source defined by the user
 
 AT_Result AT_simulation_run(AT_Simulation *simulation)
 {
@@ -77,6 +77,8 @@ AT_Result AT_simulation_run(AT_Simulation *simulation)
     if (AT_model_get_triangles(&triangles, simulation->scene->environment) != AT_OK) {
         return AT_ERR_ALLOC_ERROR;
     }
+
+    uint32_t num_children = 0;
 
     //initialize and trace rays at every source
     for (uint32_t s = 0; s < simulation->scene->num_sources; s++) {
@@ -132,8 +134,11 @@ AT_Result AT_simulation_run(AT_Simulation *simulation)
             child->energy = ray->energy * (1.0f - AT_MATERIAL_TABLE[simulation->scene->environment->triangle_materials[tri_idx]].absorption);
             ray->child = child;
             ray = ray->child;
+            num_children++;
         }
     }
+
+    printf("Number of child rays: %i\n", num_children);
 
     //DDA
 
@@ -160,6 +165,7 @@ AT_Result AT_simulation_run(AT_Simulation *simulation)
             ray = ray->child;
         }
     }
+    free(triangles);
     return AT_OK;
 }
 
