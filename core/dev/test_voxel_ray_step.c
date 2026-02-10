@@ -11,16 +11,18 @@
 
 Color cols[3] = {BLACK, LIGHTGRAY, DARKGRAY};
 
-static float AT_voxel_get_energy(AT_Voxel *voxel, uint32_t index)
+static float AT_voxel_get_energy_sum(AT_Voxel *voxel, uint32_t index)
 {
-    /*
     float sum = 0.0f;
     for (size_t i = 0; i <= index; i++) {
         if (i >= voxel->count) break;
         sum += voxel->items[i];
     }
     return sum;
-    */
+}
+
+static float AT_voxel_get_energy_curr(AT_Voxel *voxel, uint32_t index)
+{
     if (index >= voxel->count) return 0.0f;
     return voxel->items[index];
 }
@@ -63,7 +65,7 @@ int main()
 
     AT_Settings settings = {
         .fps = 60,
-        .num_rays = 1000,
+        .num_rays = 10,
         .voxel_size = 1
     };
 
@@ -113,7 +115,6 @@ int main()
                 ClearBackground(RAYWHITE);
                 BeginMode3D(camera);
                 {
-                    /*
                     AT_Ray *rays = sim->rays;
                     for (uint32_t s = 0; s < sim->scene->num_sources; s++) {
                         for (uint32_t i = 0; i < sim->num_rays; i++) {
@@ -157,7 +158,6 @@ int main()
                             }
                         }
                     }
-                    */
 
                     for (uint32_t i = 0; i < t_count; i++) {
                             Vector3 v1 = {ts[i].v1.x, ts[i].v1.y, ts[i].v1.z};
@@ -183,7 +183,7 @@ int main()
                                 AT_Voxel *v = &sim->voxel_grid[i];
 
                                 //printf("CURR BIN(%i): %i\n", curr_bin, curr_bin%bin_count);
-                                float energy = AT_voxel_get_energy(v, curr_bin%bin_count);
+                                float energy = AT_voxel_get_energy_curr(v, curr_bin%bin_count);
                                 //float energy = AT_voxel_get_energy(v, 2);
                                 //printf("ENERGY: %f\n", energy);
                                 //float energy = AT_voxel_get_energy(v, 2);
