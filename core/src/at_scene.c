@@ -1,6 +1,7 @@
 #include "acoustic/at_scene.h"
 #include "acoustic/at.h"
 #include "../src/at_internal.h"
+#include "acoustic/at_math.h"
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -30,6 +31,9 @@ AT_Result AT_scene_create(AT_Scene **out_scene, const AT_SceneConfig* config)
     }
 
     memcpy(scene->sources, config->sources, sizeof(AT_Source) * config->num_sources);
+    //for (uint32_t i = 0; i < scene->num_sources; i++) {
+      //  scene->sources[i].direction = AT_vec3_normalize(scene->sources[i].direction);
+      //}
 
     *out_scene = scene;
     return AT_OK;
