@@ -1,7 +1,6 @@
 #include "../src/at_ray.h"
 #include "acoustic/at_math.h"
 
-#define EPSILON 1e-6f
 
 //Möller–Trumbore intersection alg
 bool AT_ray_triangle_intersect(AT_Ray *ray, const AT_Triangle *triangle, AT_Ray *out_ray)
