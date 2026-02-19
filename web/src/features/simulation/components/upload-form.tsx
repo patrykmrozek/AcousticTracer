@@ -12,7 +12,6 @@ export default function UploadForm({ onClose }: UploadFormProps) {
   const [isUploading, setIsUploading] = useState(false);
   const navigate = useNavigate();
   const setPendingFile = useSceneStore((state) => state.setPendingFile);
-  const pendingFile = useSceneStore((state) => state.pendingFile);
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();

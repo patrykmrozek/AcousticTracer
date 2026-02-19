@@ -3,7 +3,7 @@ import * as THREE from "three";
 
 interface SceneState {
   config: {
-    modelPath: string;
+    fileName: string;
     voxelSize: number;
     numRays: number;
     fps: number;
@@ -22,7 +22,7 @@ interface SceneState {
 
 export const useSceneStore = create<SceneState>()((set, get) => ({
   config: {
-    modelPath: "",
+    fileName: "",
     voxelSize: 2,
     numRays: 10000,
     fps: 60,
@@ -44,7 +44,7 @@ export const useSceneStore = create<SceneState>()((set, get) => ({
       pendingFile: file,
       config: {
         ...state.config,
-        modelPath: file ? file.name : state.config.modelPath,
+        fileName: file ? file.name : state.config.fileName,
       },
     })),
   setMaterial: (value) =>

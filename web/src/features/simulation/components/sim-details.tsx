@@ -55,12 +55,6 @@ export default function SimDetails({ simDetails }: SimDetailsProps) {
               </span>
             </div>
             <div className="flex justify-between">
-              <span>Iterations:</span>
-              <span className="text-text-primary">
-                {simDetails.num_iterations}
-              </span>
-            </div>
-            <div className="flex justify-between">
               <span>Voxel Size:</span>
               <span className="text-text-primary">
                 {simDetails.voxel_size}

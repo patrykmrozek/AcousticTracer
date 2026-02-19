@@ -83,6 +83,7 @@ export default function Scene() {
       await createMutation.mutateAsync({
         userId: current.$id,
         name: simDetails?.name || "Untitled",
+        fileName: "test",
         fileId,
         config,
         dimensions: { x: size.x, y: size.y, z: size.z },

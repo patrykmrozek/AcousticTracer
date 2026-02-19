@@ -11,10 +11,8 @@ export interface SimulationDocument extends Models.Document {
   voxel_size: number;
   fps: number;
   num_rays: number;
-  num_iterations: number;
-  floor_material: string;
-  wall_material: string;
-  roof_material: string;
+  material: string;
+  file_name: string;
   // Dimensions
   area_x?: number;
   area_y?: number;

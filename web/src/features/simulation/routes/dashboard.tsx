@@ -107,7 +107,6 @@ export default function Dashboard() {
                   <th className="px-6 py-4">Voxel Size</th>
                   <th className="px-6 py-4">FPS</th>
                   <th className="px-6 py-4">Rays</th>
-                  <th className="px-6 py-4">Iterations</th>
                   <th className="px-6 py-4"></th>
                 </tr>
               </thead>
@@ -127,7 +126,7 @@ export default function Dashboard() {
                 ) : error ? (
                   <tr>
                     <td
-                      colSpan={8}
+                      colSpan={7}
                       className="text-center px-6 py-5 text-danger"
                     >
                       Failed to load simulations: {error.message}
@@ -142,7 +141,7 @@ export default function Dashboard() {
                 ) : simulations.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={8}
+                      colSpan={7}
                       className="text-center px-6 py-5 text-text-secondary"
                     >
                       No simulations found. Create one to get started.
@@ -182,9 +181,6 @@ export default function Dashboard() {
                       </td>
                       <td className="px-6 py-5 align-middle text-text-secondary leading-snug">
                         {sim.config.numRays.toLocaleString()}
-                      </td>
-                      <td className="px-6 py-5 align-middle text-text-secondary leading-snug">
-                        {sim.config.numIterations}
                       </td>
                       <td className="px-6 py-5 align-middle text-text-secondary leading-snug rounded-r-lg text-right">
                         <button

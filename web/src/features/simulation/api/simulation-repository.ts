@@ -1,6 +1,5 @@
 import { ID, Query, type Models } from "appwrite";
 import { tablesDB, storage } from "@/lib/appwrite";
-import type { SimulationConfig } from "@/features/simulation/types";
 import type { SimulationDocument } from "@/api/contracts";
 
 const CONFIG = {
@@ -19,7 +18,13 @@ export interface Simulation {
   inputFileId: string;
   resultFileId?: string;
   computeTimeMs?: number;
-  config: SimulationConfig;
+  fileName: string;
+  config: {
+    voxelSize: number;
+    fps: number;
+    numRays: number;
+    material: string;
+  };
   dimensions?: {
     x: number;
     y: number;
@@ -36,7 +41,13 @@ export interface CreateSimulationParams {
   userId: string;
   name: string;
   fileId: string;
-  config: SimulationConfig;
+  fileName: string;
+  config: {
+    voxelSize: number;
+    fps: number;
+    numRays: number;
+    material: string;
+  };
   dimensions: { x: number; y: number; z: number };
 }
 
@@ -59,16 +70,12 @@ function documentToSimulation(doc: SimulationDocument): Simulation {
     inputFileId: doc.input_file_id,
     resultFileId: doc.result_file_id,
     computeTimeMs: doc.compute_time_ms,
+    fileName: doc.file_name,
     config: {
       voxelSize: doc.voxel_size,
       fps: doc.fps,
       numRays: doc.num_rays,
-      numIterations: doc.num_iterations,
-      materials: {
-        floor: doc.floor_material,
-        wall: doc.wall_material,
-        roof: doc.roof_material,
-      },
+      material: doc.material,
     },
     dimensions:
       doc.area_x && doc.area_y && doc.area_z
@@ -88,13 +95,11 @@ function simulationToRowData(params: CreateSimulationParams) {
     status: "pending" as const,
     user_id: params.userId,
     input_file_id: params.fileId,
+    file_name: params.fileName,
     voxel_size: params.config.voxelSize,
     fps: params.config.fps,
     num_rays: params.config.numRays,
-    num_iterations: params.config.numIterations,
-    floor_material: params.config.materials.floor,
-    wall_material: params.config.materials.wall,
-    roof_material: params.config.materials.roof,
+    material: params.config.material,
     area_x: params.dimensions.x,
     area_y: params.dimensions.y,
     area_z: params.dimensions.z,
