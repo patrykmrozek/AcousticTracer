@@ -3,6 +3,7 @@ import {
   useCreateSimulation,
   useSimulationDetail,
   useUploadSimulationFile,
+  runRaytracer,
 } from "@/api/simulations";
 import SceneCanvas from "../components/scene-viewer";
 import SimDetails from "../components/sim-details";
@@ -51,7 +52,7 @@ export default function Scene() {
   console.log("IdOfFile: ", idOfFile);
   const modelUrl = useMemo(() => {
     if (idOfFile === "new" && pendingFile) {
-      setVoxelSize(0.5)
+      setVoxelSize(0.5);
       return URL.createObjectURL(pendingFile);
     }
     if (simulation?.inputFileId) {
@@ -86,6 +87,7 @@ export default function Scene() {
         config,
         dimensions: { x: size.x, y: size.y, z: size.z },
       });
+      console.log(await runRaytracer(config));
       navigate("/dashboard");
     } catch (err: any) {
       alert(`Failed to start simulation: ${err.message}`);

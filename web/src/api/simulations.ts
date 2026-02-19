@@ -25,3 +25,5 @@ export {
   useDeleteSimulation,
   useUploadSimulationFile,
 } from "@/features/simulation/api/use-simulation-hooks";
+
+export { runRaytracer } from "@/features/simulation/api/raytracer";
