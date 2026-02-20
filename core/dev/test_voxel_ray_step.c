@@ -31,7 +31,7 @@ int main()
 {
     printf("Voxel Ray Step\n");
 
-    const char *filepath = "../assets/glb/L_room_roof.glb";
+    const char *filepath = "../assets/glb/box_room_no_roof.glb";
 
     AT_Model *model = NULL;
     if (AT_model_create(&model, filepath) != AT_OK) {
@@ -45,7 +45,7 @@ int main()
 
     int num_sources = 1;
     AT_Source s1 = {
-        .direction = {{0.2f, 0.5f, 0.2f}},
+        .direction = {{0.2f, 0.2f, 0.2f}},
         .intensity = 1000.0f,
         .position = {{0.2f, 0, -1.0f}}
     };
@@ -63,10 +63,13 @@ int main()
         return 1;
     }
 
+    scene->world_AABB.min = AT_vec3_scale(scene->world_AABB.min, 2);
+    scene->world_AABB.max = AT_vec3_scale(scene->world_AABB.max, 2);
+
     AT_Settings settings = {
         .fps = 60,
         .num_rays = 10000,
-        .voxel_size = 0.5
+        .voxel_size = 0.4
     };
 
     AT_Simulation *sim = NULL;
@@ -116,7 +119,6 @@ int main()
                 BeginMode3D(camera);
                 {
                     /*
-                    uint32_t child_count = 0;
                     AT_Ray *rays = sim->rays;
                     for (uint32_t s = 0; s < sim->scene->num_sources; s++) {
                         for (uint32_t i = 0; i < sim->num_rays; i++) {
@@ -147,8 +149,6 @@ int main()
                                         (Vector3){curr->child->origin.x, curr->child->origin.y, curr->child->origin.z},
                                         PURPLE);
                                 }
-                                if (child_count > 3) break;
-                                child_count++;
                             }
 
 
@@ -167,6 +167,19 @@ int main()
                         }
                     }
                     */
+
+                    DrawBoundingBox((BoundingBox){
+                        (Vector3){
+                            scene->world_AABB.min.x,
+                            scene->world_AABB.min.y,
+                            scene->world_AABB.min.z
+                        },
+                        (Vector3){
+                            scene->world_AABB.max.x,
+                            scene->world_AABB.max.y,
+                            scene->world_AABB.max.z
+                        }},
+                        RED);
 
                     for (uint32_t i = 0; i < t_count; i++) {
                             Vector3 v1 = {ts[i].v1.x, ts[i].v1.y, ts[i].v1.z};
