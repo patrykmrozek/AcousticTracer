@@ -72,6 +72,8 @@ AT_Result AT_simulation_run(AT_Simulation *simulation)
 {
     if (!simulation) return AT_ERR_INVALID_ARGUMENT;
 
+    const float min_energy_threshold = 0.8f / simulation->num_rays;
+
     uint32_t triangle_count = simulation->scene->environment->index_count / 3;
     AT_Triangle *triangles = NULL;
     if (AT_model_get_triangles(&triangles, simulation->scene->environment) != AT_OK) {
@@ -107,7 +109,7 @@ AT_Result AT_simulation_run(AT_Simulation *simulation)
     uint32_t total_rays = simulation->scene->num_sources * simulation->num_rays;
     for (uint32_t i = 0; i < total_rays; i++) {
         AT_Ray *ray = &simulation->rays[i];
-        while (ray->energy > MIN_RAY_ENERGY_THRESHOLD) {
+        while (ray->energy > min_energy_threshold) {
             AT_Ray closest = AT_ray_init((AT_Vec3){{FLT_MAX, FLT_MAX, FLT_MAX}},
                 (AT_Vec3){0},
                 ray->total_distance,
@@ -122,13 +124,18 @@ AT_Result AT_simulation_run(AT_Simulation *simulation)
                 }
             }
             if (!intersects) break;
-
             AT_Ray *child = (AT_Ray*)malloc(sizeof(AT_Ray));
             if (!child) return AT_ERR_ALLOC_ERROR;
             *child = closest;
             child->child = NULL;
             child->ray_id = ray->ray_id + simulation->num_rays;
             AT_Vec3 hit_point = closest.origin;
+
+            //slightly offset child origin to avoid percision issues (when hitting corners and such)
+            const float SURFACE_EPSILON = 0.001f;
+            AT_Vec3 offset = AT_vec3_scale(closest.direction, SURFACE_EPSILON);
+            child->origin = AT_vec3_add(hit_point, offset);
+
             child->total_distance = ray->total_distance +
                 AT_vec3_distance(ray->origin, hit_point);
             child->energy = ray->energy * (1.0f - AT_MATERIAL_TABLE[simulation->scene->environment->triangle_materials[tri_idx]].absorption);
