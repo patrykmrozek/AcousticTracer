@@ -27,16 +27,6 @@ static float AT_voxel_get_energy_curr(AT_Voxel *voxel, uint32_t index)
     return voxel->items[index];
 }
 
-static float AT_voxel_get_energy_range(AT_Voxel *voxel, uint32_t range, uint32_t index)
-{
-    float sum = 0.0f;
-    for (size_t i = 0; i <= range; i++) {
-        if (i + range >= voxel->count) break;
-        sum += voxel->items[index + i];
-    }
-    return sum;
-}
-
 int main()
 {
     printf("Voxel Ray Step\n");
@@ -55,9 +45,9 @@ int main()
 
     int num_sources = 1;
     AT_Source s1 = {
-        .direction = {{0.2, 0.5, 0.2}},
-        .intensity = 1000.0,
-        .position = {{0.0, 0, -1.0}}
+        .direction = {{0.2f, 0.5f, 0.2f}},
+        .intensity = 1000.0f,
+        .position = {{0.2f, 0, -1.0f}}
     };
 
     AT_SceneConfig conf = {
@@ -75,7 +65,7 @@ int main()
 
     AT_Settings settings = {
         .fps = 60,
-        .num_rays = 1000,
+        .num_rays = 10000,
         .voxel_size = 0.5
     };
 
@@ -125,6 +115,7 @@ int main()
                 ClearBackground(RAYWHITE);
                 BeginMode3D(camera);
                 {
+                    /*
                     uint32_t child_count = 0;
                     AT_Ray *rays = sim->rays;
                     for (uint32_t s = 0; s < sim->scene->num_sources; s++) {
@@ -175,6 +166,7 @@ int main()
 
                         }
                     }
+                    */
 
                     for (uint32_t i = 0; i < t_count; i++) {
                             Vector3 v1 = {ts[i].v1.x, ts[i].v1.y, ts[i].v1.z};
@@ -201,7 +193,7 @@ int main()
 
                                 //printf("CURR BIN(%i): %i\n", curr_bin, curr_bin%bin_count);
                                 //float energy = AT_voxel_get_energy_curr(v, curr_bin%bin_count);
-                                float energy = AT_voxel_get_energy_range(v, 0, curr_bin%bin_count);
+                                float energy = AT_voxel_get_energy_curr(v, curr_bin%bin_count);
                                 //float energy = AT_voxel_get_energy(v, 2);
                                 //printf("ENERGY: %f\n", energy);
                                 //float energy = AT_voxel_get_energy(v, 2);
@@ -222,10 +214,10 @@ int main()
                                         Fade(RED, alpha)
                                     );
                                     //AT_voxel_print(v);
+                                    //printf("Voxel (%i): Num Bins: %zu Energy: %f\t\n", i, v->count, energy);
                                     continue;
 
                                  } // else {
-                                //     //printf("Voxel (%i): Num Bins: %zu Energy: %f\t", i, v->count, energy);
                                 //     DrawCubeV(
                                 //          pos,
                                 //          (Vector3){sim->voxel_size, sim->voxel_size, sim->voxel_size},
