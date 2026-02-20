@@ -111,9 +111,9 @@ AT_Result AT_simulation_run(AT_Simulation *simulation)
         AT_Ray *ray = &simulation->rays[i];
         while (ray->energy > min_energy_threshold) {
             AT_Ray closest = AT_ray_init((AT_Vec3){{FLT_MAX, FLT_MAX, FLT_MAX}},
-                (AT_Vec3){0},
-                ray->total_distance,
-                ray->energy,
+                (AT_Vec3){{0, 0, 0}},
+                0.0f,
+                0.0f,
                 i);
             bool intersects = false;
             uint32_t tri_idx = 0;
@@ -136,8 +136,7 @@ AT_Result AT_simulation_run(AT_Simulation *simulation)
             AT_Vec3 offset = AT_vec3_scale(closest.direction, SURFACE_EPSILON);
             child->origin = AT_vec3_add(hit_point, offset);
 
-            child->total_distance = ray->total_distance +
-                AT_vec3_distance(ray->origin, hit_point);
+            child->total_distance = ray->total_distance + AT_vec3_distance(ray->origin, hit_point);
             child->energy = ray->energy * (1.0f - AT_MATERIAL_TABLE[simulation->scene->environment->triangle_materials[tri_idx]].absorption);
             ray->child = child;
             ray = ray->child;
