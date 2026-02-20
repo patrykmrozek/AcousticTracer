@@ -29,6 +29,15 @@ void AT_voxel_ray_step(AT_Simulation *simulation, AT_Ray *ray, AT_Vec3 ray_end)
         1.0f / simulation->voxel_size
     );
 
+    const int grid_x = simulation->grid_dimensions.x;
+    const int grid_y = simulation->grid_dimensions.y;
+    const int grid_z = simulation->grid_dimensions.z;
+
+    if (p0.x < 0.0f || p0.y < 0.0f || p0.z < 0.0f ||
+        p0.x >= grid_x || p0.y >= grid_y || p0.z >= grid_z) {
+            return;
+        }
+
     //step direction (+1 or -1 per axis)
     //const AT_Vec3 step = AT_get_sign_vec3(ray->direction);
     const AT_Vec3 step = (AT_Vec3) {{
@@ -40,9 +49,6 @@ void AT_voxel_ray_step(AT_Simulation *simulation, AT_Ray *ray, AT_Vec3 ray_end)
     //distance along "t" to move one voxel
     const AT_Vec3 delta = AT_vec3_delta(ray->direction);
 
-    const int grid_x = simulation->grid_dimensions.x;
-    const int grid_y = simulation->grid_dimensions.y;
-    const int grid_z = simulation->grid_dimensions.z;
 
     AT_Vec3i pos = (AT_Vec3i){
         AT_clamp((int)floorf(p0.x), 0, grid_x - 1),
@@ -92,7 +98,6 @@ void AT_voxel_ray_step(AT_Simulation *simulation, AT_Ray *ray, AT_Vec3 ray_end)
             (uint32_t)pos.z * grid_y * grid_x +
             (uint32_t)pos.y * grid_x +
             (uint32_t)pos.x;
-
 
         //printf("VOXEL IDX: %i\n", voxel_idx);
         float t_current = fminf(t_max.x, fminf(t_max.y, t_max.z));
