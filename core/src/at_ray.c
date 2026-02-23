@@ -36,9 +36,10 @@ bool AT_ray_triangle_intersect(AT_Ray *ray, const AT_Triangle *triangle, AT_Ray 
         AT_Vec3 normal = AT_vec3_normalize(AT_vec3_cross(edge1, edge2));
         if (AT_vec3_dot(normal, ray->direction) > 0) normal = AT_vec3_scale(normal, -1);
         out_ray->direction = AT_ray_reflect(ray->direction, normal);
+        return true;
     }
 
-    return true;
+    return false;
 }
 
 void AT_ray_destroy_children(AT_Ray *ray) {
