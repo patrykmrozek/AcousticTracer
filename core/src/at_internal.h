@@ -23,7 +23,6 @@ struct AT_Ray {
     float total_distance;
     uint32_t ray_id;
     uint32_t bounce_count;
-    bool has_hit;
     bool has_died;
 };
 

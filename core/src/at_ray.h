@@ -20,7 +20,6 @@ static inline AT_Ray AT_ray_init(
     .origin = origin,
     .direction = AT_vec3_normalize(direction),
     .hit_point = {0},
-    .has_hit = false,
     .has_died = false,
     //accoustic energy transported by ray (initially, overall sound energy didived equally among rays)
     .energy = energy,

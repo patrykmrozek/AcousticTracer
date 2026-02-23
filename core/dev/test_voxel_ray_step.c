@@ -147,7 +147,7 @@ int main()
                             }
 
 
-                            if (ray.has_hit) {
+                            if (ray.child) {
                                 DrawLine3D(
                                     (Vector3){ray.origin.x, ray.origin.y, ray.origin.z},
                                     (Vector3){ray.child->origin.x, ray.child->origin.y, ray.child->origin.z},

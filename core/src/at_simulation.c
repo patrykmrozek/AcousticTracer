@@ -131,7 +131,7 @@ AT_Result AT_simulation_run(AT_Simulation *simulation)
             child->ray_id = ray->ray_id + simulation->num_rays;
             //AT_Vec3 hit_point = closest.origin;
             ray->hit_point = closest.origin;
-            ray->has_hit = true;
+            //ray->has_hit = true;
 
             //slightly offset child origin to avoid percision issues (when hitting corners and such)
             const float SURFACE_EPSILON = 0.001f;
@@ -157,7 +157,7 @@ AT_Result AT_simulation_run(AT_Simulation *simulation)
         while (ray) {
             AT_Vec3 ray_end;
             //if the ray has an endpoint, set it
-            if (ray->child || ray->has_hit) {
+            if (ray->child) {
                 ray_end = ray->hit_point;
             //if the ray doesnt have an end point but hasnt died, continue it for max_AABB distance
             } else if (!ray->has_died) {
