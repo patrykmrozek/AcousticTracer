@@ -31,7 +31,7 @@ int main()
 {
     printf("Voxel Ray Step\n");
 
-    const char *filepath = "../assets/glb/polygon_room.gltf";
+    const char *filepath = "../assets/glb/box_room_no_roof.glb";
 
     AT_Model *model = NULL;
     if (AT_model_create(&model, filepath) != AT_OK) {
@@ -63,12 +63,12 @@ int main()
         return 1;
     }
 
-    // scene->world_AABB.min = AT_vec3_scale(scene->world_AABB.min, 2);
-    // scene->world_AABB.max = AT_vec3_scale(scene->world_AABB.max, 2);
+    scene->world_AABB.min = AT_vec3_scale(scene->world_AABB.min, 2);
+    scene->world_AABB.max = AT_vec3_scale(scene->world_AABB.max, 2);
 
     AT_Settings settings = {
         .fps = 60,
-        .num_rays = 10000,
+        .num_rays = 1000,
         .voxel_size = 0.3f
     };
 
@@ -118,7 +118,6 @@ int main()
                 ClearBackground(RAYWHITE);
                 BeginMode3D(camera);
                 {
-                    /*
                     AT_Ray *rays = sim->rays;
                     for (uint32_t s = 0; s < sim->scene->num_sources; s++) {
                         for (uint32_t i = 0; i < sim->num_rays; i++) {
@@ -131,28 +130,24 @@ int main()
                             0.1, RED);
 
                             AT_Ray *curr = &ray;
-                            while (curr->child) {
-                                curr = curr->child;
-                                //printf("Child Ray(%i): total_dist: %f\n", curr->ray_id, curr->total_distance);
-                                DrawSphere(
-                                    (Vector3){
-                                        curr->origin.x,
-                                        curr->origin.y,
-                                        curr->origin.z,
-                                    }, 0.01, BLUE
-                                );
-
-
+                            while (curr) {
                                 if (curr->child) {
                                     DrawLine3D(
                                         (Vector3){curr->origin.x, curr->origin.y, curr->origin.z},
                                         (Vector3){curr->child->origin.x, curr->child->origin.y, curr->child->origin.z},
-                                        PURPLE);
+                                        PURPLE
+                                    );
+                                } else {
+                                    DrawRay((Ray){
+                                        (Vector3){curr->origin.x, curr->origin.y, curr->origin.z},
+                                        (Vector3){curr->direction.x, curr->direction.y, curr->direction.z}
+                                    }, GREEN);
                                 }
+                                curr = curr->child;
                             }
 
 
-                            if (ray.child) {
+                            if (ray.has_hit) {
                                 DrawLine3D(
                                     (Vector3){ray.origin.x, ray.origin.y, ray.origin.z},
                                     (Vector3){ray.child->origin.x, ray.child->origin.y, ray.child->origin.z},
@@ -161,12 +156,11 @@ int main()
                                 DrawRay((Ray){
                                 (Vector3){ray.origin.x, ray.origin.y, ray.origin.z},
                                 (Vector3){ray.direction.x, ray.direction.y, ray.direction.z}
-                                }, RED);
+                                }, BLUE);
                             }
 
                         }
                     }
-                    */
 
                     DrawBoundingBox((BoundingBox){
                         (Vector3){
