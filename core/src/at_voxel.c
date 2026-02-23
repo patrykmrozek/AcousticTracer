@@ -49,7 +49,6 @@ void AT_voxel_ray_step(AT_Simulation *simulation, AT_Ray *ray, AT_Vec3 ray_end)
     //distance along "t" to move one voxel
     const AT_Vec3 delta = AT_vec3_delta(ray->direction);
 
-
     AT_Vec3i pos = (AT_Vec3i){
         AT_clamp((int)floorf(p0.x), 0, grid_x - 1),
         AT_clamp((int)floorf(p0.y), 0, grid_y - 1),
@@ -118,8 +117,8 @@ void AT_voxel_ray_step(AT_Simulation *simulation, AT_Ray *ray, AT_Vec3 ray_end)
 
             float energy_deposit = (ray->energy * world_segment / world_ray_length) * intensity_factor;
 
-            //float curr_time = total_world_dist / SPEED_OF_SOUND;
-            float curr_time = total_world_dist / SLOWER_SPEED;
+            float curr_time = total_world_dist / SPEED_OF_SOUND;
+            //float curr_time = total_world_dist / SLOWER_SPEED;
 
             size_t bin_index = (size_t)(curr_time / simulation->bin_width);
             //printf("BIN INDEX: %zu\n", bin_index);

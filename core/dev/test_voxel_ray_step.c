@@ -31,7 +31,7 @@ int main()
 {
     printf("Voxel Ray Step\n");
 
-    const char *filepath = "../assets/glb/box_room_no_roof.glb";
+    const char *filepath = "../assets/glb/polygon_room.gltf";
 
     AT_Model *model = NULL;
     if (AT_model_create(&model, filepath) != AT_OK) {
@@ -40,12 +40,12 @@ int main()
     }
 
     for (uint32_t i = 0; i < model->vertex_count; i++) {
-         model->vertices[i] = AT_vec3_scale(model->vertices[i], 10);
+         model->vertices[i] = AT_vec3_scale(model->vertices[i], 10.0f);
     }
 
     int num_sources = 1;
     AT_Source s1 = {
-        .direction = {{0.2f, 0.2f, 0.2f}},
+        .direction = {{0.2f, -0.2f, 0.2f}},
         .intensity = 1000.0f,
         .position = {{0.2f, 0, -1.0f}}
     };
@@ -63,13 +63,13 @@ int main()
         return 1;
     }
 
-    scene->world_AABB.min = AT_vec3_scale(scene->world_AABB.min, 2);
-    scene->world_AABB.max = AT_vec3_scale(scene->world_AABB.max, 2);
+    // scene->world_AABB.min = AT_vec3_scale(scene->world_AABB.min, 2);
+    // scene->world_AABB.max = AT_vec3_scale(scene->world_AABB.max, 2);
 
     AT_Settings settings = {
         .fps = 60,
         .num_rays = 10000,
-        .voxel_size = 0.4
+        .voxel_size = 0.3f
     };
 
     AT_Simulation *sim = NULL;
