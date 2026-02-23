@@ -31,7 +31,7 @@ int main()
 {
     printf("Voxel Ray Step\n");
 
-    const char *filepath = "../assets/glb/box_room_no_roof.glb";
+    const char *filepath = "../assets/glb/L_room_roof.glb";
 
     AT_Model *model = NULL;
     if (AT_model_create(&model, filepath) != AT_OK) {
@@ -68,7 +68,7 @@ int main()
 
     AT_Settings settings = {
         .fps = 60,
-        .num_rays = 1000,
+        .num_rays = 10000,
         .voxel_size = 0.3f
     };
 
@@ -137,7 +137,7 @@ int main()
                                         (Vector3){curr->child->origin.x, curr->child->origin.y, curr->child->origin.z},
                                         PURPLE
                                     );
-                                } else {
+                                } else if (!curr->has_died) {
                                     DrawRay((Ray){
                                         (Vector3){curr->origin.x, curr->origin.y, curr->origin.z},
                                         (Vector3){curr->direction.x, curr->direction.y, curr->direction.z}
