@@ -10,7 +10,7 @@ bool AT_ray_triangle_intersect(AT_Ray *ray, const AT_Triangle *triangle, AT_Ray 
 
     AT_Vec3 pvec = AT_vec3_cross(ray->direction, edge2);
     float det  = AT_vec3_dot(edge1, pvec);
-    if (det < EPSILON) return false;
+    if (fabs(det) < EPSILON) return false;
 
     float inv_det = 1.0f / det;
     AT_Vec3 tvec = AT_vec3_sub(ray->origin, triangle->v1);

@@ -131,7 +131,6 @@ AT_Result AT_simulation_run(AT_Simulation *simulation)
             child->ray_id = ray->ray_id + simulation->num_rays;
             //AT_Vec3 hit_point = closest.origin;
             ray->hit_point = closest.origin;
-            //ray->has_hit = true;
 
             //slightly offset child origin to avoid percision issues (when hitting corners and such)
             const float SURFACE_EPSILON = 0.001f;

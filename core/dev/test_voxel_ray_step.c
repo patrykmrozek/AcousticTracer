@@ -31,7 +31,7 @@ int main()
 {
     printf("Voxel Ray Step\n");
 
-    const char *filepath = "../assets/glb/L_room_roof.glb";
+    const char *filepath = "../assets/glb/L_room_roof.gltf";
 
     AT_Model *model = NULL;
     if (AT_model_create(&model, filepath) != AT_OK) {
