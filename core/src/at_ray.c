@@ -10,7 +10,7 @@ bool AT_ray_triangle_intersect(AT_Ray *ray, const AT_Triangle *triangle, AT_Ray 
 
     AT_Vec3 pvec = AT_vec3_cross(ray->direction, edge2);
     float det  = AT_vec3_dot(edge1, pvec);
-    if (fabs(det) < EPSILON) return false;
+    if (det < EPSILON) return false;
 
     float inv_det = 1.0f / det;
     AT_Vec3 tvec = AT_vec3_sub(ray->origin, triangle->v1);
@@ -23,7 +23,8 @@ bool AT_ray_triangle_intersect(AT_Ray *ray, const AT_Triangle *triangle, AT_Ray 
     if (v < 0 || u + v > 1) return false;
 
     float t = AT_vec3_dot(edge2, qvec) * inv_det;
-    if (t < EPSILON) return false;
+    const float MIN_T = 1e-6f;
+    if (t < MIN_T) return false;
 
     AT_Vec3 hit_point = {
             .x = ray->origin.x + ray->direction.x * t,
