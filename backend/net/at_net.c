@@ -162,7 +162,7 @@ void AT_raytracer()
         cJSON *cjson = cJSON_Parse(body_start);
         cJSON *j;
 
-        j = cJSON_GetObjectItemCaseSensitive(cjson, "modelPath");
+        j = cJSON_GetObjectItemCaseSensitive(cjson, "fileName");
         if (cJSON_IsString(j)) {
             strncpy(filename, j->valuestring, sizeof(filename) - 1);
             snprintf(filepath, sizeof(filepath), "../assets/glb/%s", filename);
