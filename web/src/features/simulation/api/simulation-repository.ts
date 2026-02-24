@@ -24,18 +24,19 @@ export interface Simulation {
     fps: number;
     numRays: number;
     material: string;
-  };
-  dimensions?: {
-    x: number;
-    y: number;
-    z: number;
+    selectedSource: {
+      x: number;
+      y: number;
+      z: number;
+    };
   };
 }
-export interface StagingSimDetails{
+export interface StagingSimDetails {
   status: "staging";
   name: string;
   inputFileId: null;
-};
+}
+
 export type SimDetails = Simulation | StagingSimDetails;
 
 export interface SimulationList {
@@ -53,8 +54,12 @@ export interface CreateSimulationParams {
     fps: number;
     numRays: number;
     material: string;
+    selectedSource: {
+      x: number;
+      y: number;
+      z: number;
+    };
   };
-  worldDimensions: { x: number; y: number; z: number };
 }
 
 export interface UpdateSimulationParams {
@@ -82,15 +87,12 @@ function documentToSimulation(doc: SimulationDocument): Simulation {
       fps: doc.fps,
       numRays: doc.num_rays,
       material: doc.material,
+      selectedSource:{
+        x: doc.selected_x,
+        y: doc.selected_y,
+        z: doc.selected_z
+      }
     },
-    dimensions:
-      doc.area_x && doc.area_y && doc.area_z
-        ? {
-            x: doc.area_x,
-            y: doc.area_y,
-            z: doc.area_z,
-          }
-        : undefined,
   };
 }
 
@@ -106,9 +108,9 @@ function simulationToRowData(params: CreateSimulationParams) {
     fps: params.config.fps,
     num_rays: params.config.numRays,
     material: params.config.material,
-    area_x: params.worldDimensions.x, // Now storing world dimensions (meters)
-    area_y: params.worldDimensions.y,
-    area_z: params.worldDimensions.z,
+    selected_x: params.config.selectedSource.x,
+    selected_y: params.config.selectedSource.y,
+    selected_z: params.config.selectedSource.z,
   };
 }
 

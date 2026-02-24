@@ -2,16 +2,16 @@ import { useRef, useMemo, useLayoutEffect, useEffect } from "react";
 import * as THREE from "three";
 import { useSceneStore } from "../stores/scene-store";
 export default function VoxelGrid() {
-  
   const meshRef = useRef<THREE.InstancedMesh>(null);
 
   // Subscribe to the data this component needs
   const bounds = useSceneStore((state) => state.bounds);
   const voxelSize = useSceneStore((state) => state.config.voxelSize);
   const visible = useSceneStore((state) => state.showGrid);
+  const selectedSource = useSceneStore((state) => state.config.selectedSource);
   const setGridDimensions = useSceneStore((state) => state.setGridDimensions);
   const setWorldDimensions = useSceneStore((state) => state.setWorldDimensions);
-
+  const setSelectedSource = useSceneStore((state) => state.setSelectedSource);
   const { count, gridDims } = useMemo(() => {
     if (!bounds) {
       return { count: 0, gridDims: { nx: 0, ny: 0, nz: 0 } };
@@ -24,24 +24,26 @@ export default function VoxelGrid() {
     const ny = Math.ceil(size.y / voxelSize);
     const nz = Math.ceil(size.z / voxelSize);
     const dims = { nx, ny, nz };
-
+    setSelectedSource({ x: 1, y: 2, z: 5 });
+    console.log(selectedSource)
     return {
       count: nx * ny * nz,
       gridDims: dims,
     };
   }, [bounds, voxelSize]);
 
+
   // Update store with computed dimensions
   useLayoutEffect(() => {
     if (!bounds) {
       setGridDimensions(null);
       setWorldDimensions(null);
+      setSelectedSource({x: 0, y: 0,z:0});
       return;
     }
 
     const size = new THREE.Vector3();
     bounds.getSize(size);
-
     setWorldDimensions({ x: size.x, y: size.y, z: size.z });
     setGridDimensions(gridDims);
   }, [bounds, gridDims, setGridDimensions, setWorldDimensions]);
@@ -87,6 +89,7 @@ export default function VoxelGrid() {
       ref={meshRef}
       args={[undefined, undefined, count]}
       visible={visible}
+      // onClick={() => setSelectedSource({ x: 1, y: 4, z: 5 })}
     >
       <boxGeometry args={[voxelSize, voxelSize, voxelSize]} />
       <meshStandardMaterial
