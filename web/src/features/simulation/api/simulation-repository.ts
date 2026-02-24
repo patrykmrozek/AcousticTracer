@@ -31,6 +31,12 @@ export interface Simulation {
     z: number;
   };
 }
+export interface StagingSimDetails{
+  status: "staging";
+  name: string;
+  inputFileId: null;
+};
+export type SimDetails = Simulation | StagingSimDetails;
 
 export interface SimulationList {
   simulations: Simulation[];
@@ -48,14 +54,14 @@ export interface CreateSimulationParams {
     numRays: number;
     material: string;
   };
-  dimensions: { x: number; y: number; z: number };
+  worldDimensions: { x: number; y: number; z: number };
 }
 
 export interface UpdateSimulationParams {
   status?: Simulation["status"];
   resultFileId?: string;
   computeTimeMs?: number;
-} 
+}
 
 // Auto-convert snake_case to camelCase
 
@@ -100,9 +106,9 @@ function simulationToRowData(params: CreateSimulationParams) {
     fps: params.config.fps,
     num_rays: params.config.numRays,
     material: params.config.material,
-    area_x: params.dimensions.x,
-    area_y: params.dimensions.y,
-    area_z: params.dimensions.z,
+    area_x: params.worldDimensions.x, // Now storing world dimensions (meters)
+    area_y: params.worldDimensions.y,
+    area_z: params.worldDimensions.z,
   };
 }
 
@@ -211,7 +217,7 @@ class SimulationRepository {
     });
   }
 
-  // File Operations 
+  // File Operations
 
   /**
    * Upload a simulation file
@@ -224,17 +230,19 @@ class SimulationRepository {
     return await storage.createFile({
       bucketId: CONFIG.bucketId,
       fileId: ID.unique(),
-      file: file,});
+      file: file,
+    });
   }
 
   /**
-   * Get file view URL
+   * Get file download URL (better caching than getFileView)
    *
    * @param fileId - File ID
-   * @returns URL to view the file
+   * @returns URL to download/view the file
    */
   getFileUrl(fileId: string): string {
-    return storage.getFileView({
+    // Use getFileDownload for better browser caching
+    return storage.getFileDownload({
       bucketId: CONFIG.bucketId,
       fileId: fileId,
     });

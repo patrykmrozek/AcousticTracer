@@ -1,103 +1,36 @@
 import { useParams, useNavigate, useSearchParams } from "react-router";
-import {
-  useCreateSimulation,
-  useSimulationDetail,
-  useUploadSimulationFile,
-  runRaytracer,
-} from "@/api/simulations";
+import { useSimulationDetail } from "@/api/simulations";
 import SceneCanvas from "../components/scene-viewer";
 import SimDetails from "../components/sim-details";
 import ConfigPanel from "../components/config-panel";
-import * as THREE from "three";
 import { useSceneStore } from "../stores/scene-store";
-import { useMemo, useEffect } from "react";
-import { useUser } from "@/features/auth/context/user-store";
-import { simulationRepo } from "@/api/simulations";
-
+import useSceneSync from "../hooks/useSceneSync";
+import useModelUrl from "../hooks/useModelUrl";
+import useSimDetails from "../hooks/useSimDetails";
+import useSceneActions from "../hooks/useSceneActions";
 export default function Scene() {
   const { idOfFile } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { current } = useUser();
-  const uploadMutation = useUploadSimulationFile();
-  const createMutation = useCreateSimulation();
-
   const { data: simulation, isLoading, error } = useSimulationDetail(idOfFile);
+  const simName = searchParams.get("name");
 
-  // Use store for state
-  const setVoxelSize = useSceneStore((state) => state.setVoxelSize);
-  const setBounds = useSceneStore((state) => state.setBounds);
+  const bounds = useSceneStore((state) => state.bounds);
   const pendingFile = useSceneStore((state) => state.pendingFile);
 
-  // Sync loaded simulation config to store
-  useEffect(() => {
-    if (simulation?.config) {
-      setVoxelSize(simulation.config.voxelSize);
-    }
-  }, [simulation, setVoxelSize]);
+  // Sync loaded simulation config to store/ update voxel size
+  useSceneSync(idOfFile, simulation, pendingFile);
 
-  console.log("Pending file: ", pendingFile);
+  // Load ModelURl
+  const modelUrl = useModelUrl(idOfFile, simulation, pendingFile);
 
-  const simDetails = useMemo(() => {
-    if (idOfFile === "new") {
-      return {
-        name: searchParams.get("name") || "New Simulation",
-        status: "staging" as const,
-        inputFileId: null,
-      };
-    }
-    return simulation;
-  }, [idOfFile, searchParams, simulation]);
+  // Load simDetails
+  const simDetails = useSimDetails(idOfFile, simName, simulation);
 
-  console.log("IdOfFile: ", idOfFile);
-  const modelUrl = useMemo(() => {
-    if (idOfFile === "new" && pendingFile) {
-      setVoxelSize(0.5);
-      return URL.createObjectURL(pendingFile);
-    }
-    if (simulation?.inputFileId) {
-      return simulationRepo.getFileUrl(simulation.inputFileId);
-    }
-  }, [idOfFile, pendingFile, simulation]);
+  // Handle Running of Simulation
+  const { handleStartSimulation, isSubmitting, startError, clearStartError } =
+    useSceneActions(simDetails);
 
-  console.log("Model URL: ", modelUrl);
-
-  // Use store for bounds and config
-  const bounds = useSceneStore((state) => state.bounds);
-  const config = useSceneStore((state) => state.config);
-
-  const handleStartSimulation = async () => {
-    if (!bounds || !current?.$id) return;
-    try {
-      let fileId = simDetails?.inputFileId;
-
-      if (!fileId && pendingFile) {
-        const uploadedFile = await uploadMutation.mutateAsync(pendingFile);
-        fileId = uploadedFile.$id;
-      }
-      if (!fileId) throw new Error("No file ID available");
-
-      const size = new THREE.Vector3();
-      bounds.getSize(size);
-
-      await createMutation.mutateAsync({
-        userId: current.$id,
-        name: simDetails?.name || "Untitled",
-        fileName: "test",
-        fileId,
-        config,
-        dimensions: { x: size.x, y: size.y, z: size.z },
-      });
-      console.log(await runRaytracer(config));
-      navigate("/dashboard");
-    } catch (err: any) {
-      alert(`Failed to start simulation: ${err.message}`);
-      console.error("Sim start failed: ", err);
-    }
-  };
-
-  const isSubmitting = uploadMutation.isPending || createMutation.isPending;
-  console.log("Sim details", simDetails?.status);
   return (
     <div className="flex flex-col h-screen bg-bg-primary text-text-primary overflow-hidden">
       <header className="flex-none flex items-center p-4 gap-4 bg-bg-primary border-b border-white/5 relative z-20">
@@ -127,7 +60,7 @@ export default function Scene() {
               {isSubmitting ? "Starting..." : "Run Simulation"}
             </button>
           )}
-          <SimDetails simDetails={simDetails} />
+          {simDetails && <SimDetails simDetails={simDetails} />}
         </div>
       </header>
       <main className="flex-1 p-4 w-5/6 h-full min-h-0 relative">
@@ -148,7 +81,7 @@ export default function Scene() {
           )}
           {error && (
             <div className="text-danger bg-red-500/10 px-4 py-2 rounded font-medium">
-              {error.message}
+              {error?.message}
             </div>
           )}
           {!isLoading && !error && modelUrl && (
@@ -156,8 +89,18 @@ export default function Scene() {
               <div className="absolute top-4 left-4 w-50 z-10">
                 <ConfigPanel isEditable={simDetails?.status === "staging"} />
               </div>
+              {startError && (
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 flex items-center gap-3 bg-red-500/10 border border-red-500/30 text-danger px-4 py-2 rounded-lg text-sm font-medium">
+                  <span>{startError}</span>
+                  <button
+                    onClick={clearStartError}
+                    className="text-text-secondary hover:text-text-primary transition-colors text-xs underline bg-transparent border-none cursor-pointer"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              )}
               <SceneCanvas modelUrl={modelUrl} />
-              <div></div>
             </div>
           )}
         </div>

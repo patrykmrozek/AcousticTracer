@@ -1,31 +1,50 @@
-import { useRef, useMemo, useLayoutEffect } from "react";
+import { useRef, useMemo, useLayoutEffect, useEffect } from "react";
 import * as THREE from "three";
 import { useSceneStore } from "../stores/scene-store";
 export default function VoxelGrid() {
+  
   const meshRef = useRef<THREE.InstancedMesh>(null);
 
   // Subscribe to the data this component needs
   const bounds = useSceneStore((state) => state.bounds);
   const voxelSize = useSceneStore((state) => state.config.voxelSize);
   const visible = useSceneStore((state) => state.showGrid);
+  const setGridDimensions = useSceneStore((state) => state.setGridDimensions);
+  const setWorldDimensions = useSceneStore((state) => state.setWorldDimensions);
 
   const { count, gridDims } = useMemo(() => {
-    if (!bounds) return { count: 0, gridDims: { nx: 0, ny: 0, nz: 0 } };
+    if (!bounds) {
+      return { count: 0, gridDims: { nx: 0, ny: 0, nz: 0 } };
+    }
 
     const size = new THREE.Vector3();
     bounds.getSize(size);
-    // const nx = size.x / voxelSize;
-    // const ny = size.y / voxelSize;
-    // const nz = size.z / voxelSize;
 
     const nx = Math.ceil(size.x / voxelSize);
     const ny = Math.ceil(size.y / voxelSize);
     const nz = Math.ceil(size.z / voxelSize);
+    const dims = { nx, ny, nz };
+
     return {
       count: nx * ny * nz,
-      gridDims: { nx, ny, nz },
+      gridDims: dims,
     };
   }, [bounds, voxelSize]);
+
+  // Update store with computed dimensions
+  useLayoutEffect(() => {
+    if (!bounds) {
+      setGridDimensions(null);
+      setWorldDimensions(null);
+      return;
+    }
+
+    const size = new THREE.Vector3();
+    bounds.getSize(size);
+
+    setWorldDimensions({ x: size.x, y: size.y, z: size.z });
+    setGridDimensions(gridDims);
+  }, [bounds, gridDims, setGridDimensions, setWorldDimensions]);
 
   useLayoutEffect(() => {
     if (!meshRef.current || !bounds) return;

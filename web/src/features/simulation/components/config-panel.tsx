@@ -1,5 +1,4 @@
 import { useSceneStore } from "../stores/scene-store";
-import * as THREE from "three";
 
 export default function ConfigPanel({
   isEditable = true,
@@ -54,21 +53,22 @@ export default function ConfigPanel({
 }
 
 function GridStats() {
-  const bounds = useSceneStore((state) => state.bounds);
-  const voxelSize = useSceneStore((state) => state.config.voxelSize);
+  const gridDimensions = useSceneStore((state) => state.gridDimensions);
+  const worldDimensions = useSceneStore((state) => state.worldDimensions);
+  if (!gridDimensions || !worldDimensions ) return null;
 
-  if (!bounds) return null;
-
-  const size = new THREE.Vector3();
-  bounds.getSize(size);
-
-  const nx = Math.ceil(size.x / voxelSize);
-  const ny = Math.ceil(size.y / voxelSize);
-  const nz = Math.ceil(size.z / voxelSize);
+  const { nx, ny, nz } = gridDimensions;
+  const { x, y, z } = worldDimensions
   const total = nx * ny * nz;
 
   return (
     <div className="p-3 bg-black/20 rounded border border-white/5 text-xs font-mono text-text-secondary">
+      <div className="mb-1 text-text-primary font-semibold">
+        World Dimensions:
+      </div>
+      <div>
+        {x.toLocaleString()} x {y.toLocaleString()} x {z.toLocaleString()}
+      </div>
       <div className="mb-1 text-text-primary font-semibold">
         Grid Dimensions:
       </div>
