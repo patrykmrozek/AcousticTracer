@@ -31,7 +31,7 @@ int main()
 {
     printf("Voxel Ray Step\n");
 
-    const char *filepath = "../assets/glb/L_room_roof.gltf";
+    const char *filepath = "../assets/glb/box_room_roof.gltf";
 
     AT_Model *model = NULL;
     if (AT_model_create(&model, filepath) != AT_OK) {
@@ -39,20 +39,20 @@ int main()
         return 1;
     }
 
-    for (uint32_t i = 0; i < model->vertex_count; i++) {
-         model->vertices[i] = AT_vec3_scale(model->vertices[i], 10.0f);
-    }
+    // for (uint32_t i = 0; i < model->vertex_count; i++) {
+    //      model->vertices[i] = AT_vec3_scale(model->vertices[i], 10.0f);
+    // }
 
     int num_sources = 1;
     AT_Source s1 = {
-        .direction = {{0.2f, -0.2f, 0.2f}},
-        .intensity = 1000.0f,
-        .position = {{0.2f, 0, -1.0f}}
+        .direction = {1, 0, 0},
+        .intensity = 50.0f,
+        .position = {0}
     };
 
     AT_SceneConfig conf = {
         .environment = model,
-        .material = AT_MATERIAL_CONCRETE,
+        .material = AT_MATERIAL_PLASTIC,
         .num_sources = num_sources,
         .sources = &s1
     };
@@ -63,13 +63,13 @@ int main()
         return 1;
     }
 
-    scene->world_AABB.min = AT_vec3_scale(scene->world_AABB.min, 2);
-    scene->world_AABB.max = AT_vec3_scale(scene->world_AABB.max, 2);
+    // scene->world_AABB.min = AT_vec3_scale(scene->world_AABB.min, 2);
+    // scene->world_AABB.max = AT_vec3_scale(scene->world_AABB.max, 2);
 
     AT_Settings settings = {
         .fps = 60,
-        .num_rays = 10000,
-        .voxel_size = 0.3f
+        .num_rays = 10,
+        .voxel_size = 0.2f
     };
 
     AT_Simulation *sim = NULL;
@@ -213,7 +213,7 @@ int main()
 
                                 if (energy > 0.0f) {
                                     float normalized_energy = energy * sim->num_rays;
-                                    float alpha = fminf(normalized_energy * 5.0f, 1.0f);
+                                    float alpha = fminf(normalized_energy, 1.0f);
                                     //printf("VOXEL (%i): %f\n", i, v->items[curr_bin%bin_count]);
                                     DrawCubeV(
                                         pos,
@@ -224,13 +224,13 @@ int main()
                                     //printf("Voxel (%i): Num Bins: %zu Energy: %f\t\n", i, v->count, energy);
                                     continue;
 
-                                 } // else {
-                                //     DrawCubeV(
-                                //          pos,
-                                //          (Vector3){sim->voxel_size, sim->voxel_size, sim->voxel_size},
-                                //          Fade(BLUE, 1.0f/100)
-                                //     );
-                                // }
+                                 }  //else {
+                                    // DrawCubeV(
+                                    //      pos,
+                                    //      (Vector3){sim->voxel_size, sim->voxel_size, sim->voxel_size},
+                                    //      Fade(BLUE, 1.0f/100)
+                                    // );
+                                    //}
 
                             }
                         }
