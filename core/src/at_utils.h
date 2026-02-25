@@ -140,4 +140,9 @@ static inline AT_Vec3 AT_get_sign_vec3(const AT_Vec3 v)
    }};
 }
 
+static inline float AT_get_random_float()
+{
+    return (float)rand() / RAND_MAX;
+}
+
 #endif //AT_UTILS_H
