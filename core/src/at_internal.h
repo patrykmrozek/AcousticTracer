@@ -71,9 +71,9 @@ struct AT_Simulation {
 };
 
 static const AT_Material AT_MATERIAL_TABLE[AT_MATERIAL_COUNT] = {
-    [AT_MATERIAL_CONCRETE] = {.absorption = 0.02f},
-    [AT_MATERIAL_PLASTIC] = {.absorption = 0.03f},
-    [AT_MATERIAL_WOOD] = {.absorption = 0.10f},
+    [AT_MATERIAL_CONCRETE] = {.absorption = 0.02f, .scattering = 0.05f},
+    [AT_MATERIAL_PLASTIC] = {.absorption = 0.03f, .scattering = 0.02f},
+    [AT_MATERIAL_WOOD] = {.absorption = 0.10f, .scattering = 0.1f},
 };
 
 #endif // AT_INTERAL_H
