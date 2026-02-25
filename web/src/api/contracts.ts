@@ -16,9 +16,14 @@ export interface SimulationDocument extends Models.Document {
   file_name: string;
 
   // Dimensions
-  selected_x: number;
-  selected_y: number;
-  selected_z: number;
+  position_x: number;
+  position_y: number;
+  position_z: number;
+
+  // Direction
+  direction_x: number;
+  direction_y: number;
+  direction_z: number;
 }
 
 export interface SimulationListResponse {

@@ -5,7 +5,6 @@
 #include "acoustic/at_result.h"
 #include "cJSON.h"
 
-#include <asm-generic/socket.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -186,7 +185,7 @@ void AT_raytracer()
         j = cJSON_GetObjectItemCaseSensitive(cjson, "material");
         if (cJSON_IsString(j)) {
             const char *material_str = j->valuestring;
-            if (strcmp(j->valuestring, "Plastic") == 0) {
+            if (strcmp(material_str, "Plastic") == 0) {
                 material = AT_MATERIAL_PLASTIC;
             } else if (strcmp(material_str, "Wood") == 0) {
                 material = AT_MATERIAL_WOOD;
@@ -197,6 +196,43 @@ void AT_raytracer()
             }
         }
 
+        AT_Source source = {0};
+
+        // source
+        cJSON *source_position = cJSON_GetObjectItemCaseSensitive(cjson, "selectedSource");
+        source_position = cJSON_GetObjectItemCaseSensitive(source_position, "position");
+        j = cJSON_GetObjectItemCaseSensitive(source_position, "x");
+        if (cJSON_IsNumber(j)) {
+            source.position.x = j->valuedouble;
+        }
+        j = cJSON_GetObjectItemCaseSensitive(source_position, "y");
+        if (cJSON_IsNumber(j)) {
+            source.position.y = j->valuedouble;
+        }
+        j = cJSON_GetObjectItemCaseSensitive(source_position, "z");
+        if (cJSON_IsNumber(j)) {
+            source.position.z = j->valuedouble;
+        }
+
+        // direction
+        cJSON *source_direction = cJSON_GetObjectItemCaseSensitive(cjson, "selectedSource");
+        source_direction = cJSON_GetObjectItemCaseSensitive(source_direction, "direction");
+        j = cJSON_GetObjectItemCaseSensitive(source_direction, "x");
+        if (cJSON_IsNumber(j)) {
+            source.direction.x = j->valuedouble;
+        }
+        j = cJSON_GetObjectItemCaseSensitive(source_direction, "y");
+        if (cJSON_IsNumber(j)) {
+            source.direction.y = j->valuedouble;
+        }
+        j = cJSON_GetObjectItemCaseSensitive(source_direction, "z");
+        if (cJSON_IsNumber(j)) {
+            source.direction.z = j->valuedouble;
+        }
+
+        printf("SOURCE DIRECTION: %f, %f, %f\n", source.direction.x, source.direction.y, source.direction.z);
+        printf("SOURCE POSITION: %f, %f, %f\n", source.position.x, source.position.y, source.position.z);
+
         cJSON_Delete(cjson);
 
         // run raytracer
@@ -205,15 +241,8 @@ void AT_raytracer()
         AT_Result res = AT_model_create(&model, filepath);
         AT_handle_result(res, "Error creating model\n");
 
-        // TODO: Get source info from client
-        AT_Source s1 = {
-            .direction = {1, 0, 0},
-            .intensity = 50.0f,
-            .position = {0}
-        };
-
         AT_Source sources[1];
-        sources[0] = s1;
+        sources[0] = source;
 
         AT_SceneConfig conf = {
             .environment = model,
@@ -243,6 +272,8 @@ void AT_raytracer()
         res = AT_simulation_to_json(&sim_json, sim);
         AT_handle_result(res, "Error converting simulation to JSON\n");
         const char *json = cJSON_PrintUnformatted(sim_json);
+
+        printf("%s\n", json);
 
         char header[256];
         snprintf(header, sizeof(header),
