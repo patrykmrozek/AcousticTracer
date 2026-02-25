@@ -3,6 +3,7 @@
 #include "../../core/src/at_voxel.h"
 #include "acoustic/at.h"
 #include "acoustic/at_result.h"
+#include "cJSON.h"
 
 #include <asm-generic/socket.h>
 #include <sys/socket.h>
@@ -158,6 +159,7 @@ void AT_raytracer()
         float voxel_size = 0.0f;
         uint32_t num_rays = 0;
         uint32_t fps = 0;
+        AT_MaterialType material = {0};
 
         cJSON *cjson = cJSON_Parse(body_start);
         cJSON *j;
@@ -180,6 +182,21 @@ void AT_raytracer()
             fps = (uint32_t)j->valueint;
         }
 
+        // material
+        j = cJSON_GetObjectItemCaseSensitive(cjson, "material");
+        if (cJSON_IsString(j)) {
+            const char *material_str = j->valuestring;
+            if (strcmp(j->valuestring, "Plastic") == 0) {
+                material = AT_MATERIAL_PLASTIC;
+            } else if (strcmp(material_str, "Wood") == 0) {
+                material = AT_MATERIAL_WOOD;
+            } else if (strcmp(material_str, "Concrete") == 0) {
+                material = AT_MATERIAL_CONCRETE;
+            } else {
+                material = AT_MATERIAL_CONCRETE;
+            }
+        }
+
         cJSON_Delete(cjson);
 
         // run raytracer
@@ -200,7 +217,7 @@ void AT_raytracer()
 
         AT_SceneConfig conf = {
             .environment = model,
-            .material = AT_MATERIAL_PLASTIC,
+            .material = material,
             .num_sources = 1,
             .sources = sources
         };
