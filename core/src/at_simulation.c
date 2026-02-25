@@ -6,6 +6,7 @@
 #include "../src/at_voxel.h"
 #include "at_internal.h"
 #include "at_ray.h"
+#include "at_utils.h"
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -117,8 +118,9 @@ AT_Result AT_simulation_run(AT_Simulation *simulation)
                 i);
             bool intersects = false;
             uint32_t tri_idx = 0;
+            AT_Vec3 normal;
             for (uint32_t t = 0; t < triangle_count; t++) {
-                if (AT_ray_triangle_intersect(ray, &triangles[t], &closest)) {
+                if (AT_ray_triangle_intersect(ray, &triangles[t], &closest, &normal)) {
                     intersects = true;
                     tri_idx = t;
                 }
@@ -139,8 +141,17 @@ AT_Result AT_simulation_run(AT_Simulation *simulation)
 
             child->total_distance = ray->total_distance + AT_vec3_distance(ray->origin, ray->hit_point);
             child->energy = ray->energy * (1.0f - AT_MATERIAL_TABLE[simulation->scene->environment->triangle_materials[tri_idx]].absorption);
+
+            float rand = AT_get_random_float();
+            if (rand < AT_MATERIAL_TABLE[simulation->scene->environment->triangle_materials[tri_idx]].scattering) {
+                child->direction = AT_sample_cosine_hemisphere(normal);
+            }
+
             ray->child = child;
             ray = ray->child;
+
+
+
             num_children++;
         }
         if (ray->energy < MIN_ENERGY_THRESHOLD) ray->has_died = true;
