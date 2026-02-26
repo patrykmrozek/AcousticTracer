@@ -89,16 +89,12 @@ AT_Result AT_simulation_run(AT_Simulation *simulation)
         for (uint32_t r = 0; r < simulation->num_rays; r++) {
             uint32_t ray_idx = s * simulation->num_rays + r;
 
-            //gpt ahh code
-            AT_Vec3 varied_direction = simulation->scene->sources[s].direction;
-            varied_direction.x += ((float)rand() / RAND_MAX - 0.5f) * 0.2f;  // ±0.1
-            varied_direction.y += ((float)rand() / RAND_MAX - 0.5f) * 0.2f;  // ±0.1
-            varied_direction.z += ((float)rand() / RAND_MAX - 0.5f) * 0.2f;  // ±0.1
-            varied_direction = AT_vec3_normalize(varied_direction);
+            AT_Vec3 hemisphere_dir = AT_sample_cosine_hemisphere(simulation->scene->sources[s].direction);
+            printf("dir: {%.3f, %.3f, %.3f}\n", hemisphere_dir.x, hemisphere_dir.y, hemisphere_dir.z);
 
             simulation->rays[ray_idx] = AT_ray_init(
                 simulation->scene->sources[s].position,
-                varied_direction,
+                hemisphere_dir,
                 0.0f,
                 SOURCE_ENERGY / simulation->num_rays,
                 ray_idx //ray index

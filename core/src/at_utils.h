@@ -145,11 +145,12 @@ static inline float AT_get_random_float()
     return (float)rand() / RAND_MAX;
 }
 
-#define AT_PI 3.14159265358979323846I
+#define AT_PI 3.14159265358979323846
 
 //https://www.pbr-book.org/3ed-2018/Monte_Carlo_Integration/2D_Sampling_with_Multidimensional_Transformations
 static inline AT_Vec3 AT_sample_cosine_hemisphere(AT_Vec3 normal)
 {
+    printf("Normal: {%f, %f, %f}\n", normal.x, normal.y, normal.z);
     float u1 = AT_get_random_float();
     float u2 = AT_get_random_float();
     printf("u1: %.2f, u2: %.2f\n", u1, u2);
