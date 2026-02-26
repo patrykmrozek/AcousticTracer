@@ -1,5 +1,6 @@
 import { useRef, useMemo, useLayoutEffect } from "react";
 import * as THREE from "three";
+import { useThree } from "@react-three/fiber";
 import { useSceneStore } from "../stores/scene-store";
 import SourceMarker from "./source-marker";
 export default function VoxelGrid() {
@@ -13,6 +14,7 @@ export default function VoxelGrid() {
   const setGridDimensions = useSceneStore((state) => state.setGridDimensions);
   const setWorldDimensions = useSceneStore((state) => state.setWorldDimensions);
   const setSelectedSource = useSceneStore((state) => state.setSelectedSource);
+  const { camera } = useThree();
 
   const { count, gridDims } = useMemo(() => {
     if (!bounds) {
@@ -38,7 +40,7 @@ export default function VoxelGrid() {
     if (!bounds) {
       setGridDimensions(null);
       setWorldDimensions(null);
-      setSelectedSource({ x: 0, y: 0, z: 0 });
+      setSelectedSource({ x: 0, y: 0, z: 0 }, { x: 0, y: 0, z: 0 });
       return;
     }
 
@@ -90,7 +92,7 @@ export default function VoxelGrid() {
 
   // Compute voxel center from instance index
   const handlePick = (e: any) => {
-    // Stop from selecting multiple voxels 
+    // Stop from selecting multiple voxels
     e.stopPropagation();
 
     // The id of the voxel
@@ -111,6 +113,9 @@ export default function VoxelGrid() {
       const quat = new THREE.Quaternion();
       // scale of the voxel
       const scale = new THREE.Vector3();
+      // normal of the camera (direction)
+      const direction = new THREE.Vector3();
+      camera.getWorldDirection(direction);
 
       // Decomposing info into the variables to be used
       mat.decompose(posLocal, quat, scale);
@@ -120,13 +125,20 @@ export default function VoxelGrid() {
       const posWorld = posLocal.applyMatrix4(meshRef.current!.matrixWorld);
 
       // Clamping to bounds so cant go outside bounding box
-      const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
+      const clamp = (v: number, a: number, b: number) =>
+        Math.max(a, Math.min(b, v));
       const sx = clamp(posWorld.x, bounds.min.x, bounds.max.x);
       const sy = clamp(posWorld.y, bounds.min.y, bounds.max.y);
       const sz = clamp(posWorld.z, bounds.min.z, bounds.max.z);
 
-      setSelectedSource({ x: sx, y: sy, z: sz });
-      console.log("Actual centered selection: ",selectedSource)
+      setSelectedSource(
+        { x: sx, y: sy, z: sz },
+        { x: direction.x, y: direction.y, z: direction.z },
+      );
+      console.log(
+        "Updated store value:",
+        useSceneStore.getState().config.selectedSource,
+      );
       return;
     } catch (err) {
       // If getMatrixAt fails, do nothing — we only accept picks backed by instance matrices

@@ -25,9 +25,16 @@ export interface Simulation {
     numRays: number;
     material: string;
     selectedSource: {
-      x: number;
-      y: number;
-      z: number;
+      position: {
+        x: number;
+        y: number;
+        z: number;
+      };
+      direction: {
+        x: number;
+        y: number;
+        z: number;
+      };
     };
   };
 }
@@ -55,9 +62,16 @@ export interface CreateSimulationParams {
     numRays: number;
     material: string;
     selectedSource: {
-      x: number;
-      y: number;
-      z: number;
+      position: {
+        x: number;
+        y: number;
+        z: number;
+      };
+      direction: {
+        x: number;
+        y: number;
+        z: number;
+      };
     };
   };
 }
@@ -87,11 +101,18 @@ function documentToSimulation(doc: SimulationDocument): Simulation {
       fps: doc.fps,
       numRays: doc.num_rays,
       material: doc.material,
-      selectedSource:{
-        x: doc.selected_x,
-        y: doc.selected_y,
-        z: doc.selected_z
-      }
+      selectedSource: {
+        position: {
+          x: doc.position_x,
+          y: doc.position_y,
+          z: doc.position_z,
+        },
+        direction: {
+          x: doc.direction_x,
+          y: doc.direction_y,
+          z: doc.direction_z,
+        },
+      },
     },
   };
 }
@@ -108,9 +129,12 @@ function simulationToRowData(params: CreateSimulationParams) {
     fps: params.config.fps,
     num_rays: params.config.numRays,
     material: params.config.material,
-    selected_x: params.config.selectedSource.x,
-    selected_y: params.config.selectedSource.y,
-    selected_z: params.config.selectedSource.z,
+    position_x: params.config.selectedSource.position.x,
+    position_y: params.config.selectedSource.position.y,
+    position_z: params.config.selectedSource.position.z,
+    direction_x: params.config.selectedSource.direction.x,
+    direction_y: params.config.selectedSource.direction.y,
+    direction_z: params.config.selectedSource.direction.z,
   };
 }
 

@@ -12,7 +12,11 @@ export default function SourceMarker() {
   // Set position of source circle
   useEffect(() => {
     if (!meshRef.current || !pos) return;
-    meshRef.current.position.set(pos.x, pos.y, pos.z);
+    meshRef.current.position.set(
+      pos.position.x,
+      pos.position.y,
+      pos.position.z,
+    );
   }, [pos]);
 
   // To keep the circle always facing the camera

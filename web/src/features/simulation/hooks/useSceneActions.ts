@@ -28,8 +28,7 @@ export default function useSceneActions(
   const [startError, setStartError] = useState<string | null>(null);
 
   const handleStartSimulation = async () => {
-    const { bounds, config, pendingFile} =
-      useSceneStore.getState();
+    const { bounds, config, pendingFile } = useSceneStore.getState();
 
     if (!bounds || !current?.$id) return;
 
@@ -48,7 +47,7 @@ export default function useSceneActions(
         name: simDetails?.name || "Untitled",
         fileName: pendingFile?.name || "test",
         fileId,
-        config, 
+        config,
       });
     } catch (err: unknown) {
       showBoundary(err);
@@ -56,9 +55,10 @@ export default function useSceneActions(
     }
 
     try {
-      // const raytracerResponse = await runRaytracer(config);
-      // console.log(raytracerResponse);
-      // useSceneStore.getState().setRayResponse(raytracerResponse);
+      console.log(config);
+      const raytracerResponse = await runRaytracer(config);
+      console.log(raytracerResponse);
+      useSceneStore.getState().setRayResponse(raytracerResponse);
       navigate("/dashboard");
     } catch (err: unknown) {
       const message =

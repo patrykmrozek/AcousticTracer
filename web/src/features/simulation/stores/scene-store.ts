@@ -9,9 +9,16 @@ interface SceneState {
     fps: number;
     material: string;
     selectedSource: {
-      x: number;
-      y: number;
-      z: number;
+      position: {
+        x: number;
+        y: number;
+        z: number;
+      };
+      direction: {
+        x: number;
+        y: number;
+        z: number;
+      };
     };
   };
   bounds: THREE.Box3 | null;
@@ -33,20 +40,30 @@ interface SceneState {
   setWorldDimensions: (
     dims: { x: number; y: number; z: number } | null,
   ) => void;
-  setSelectedSource: (dims: { x: number; y: number; z: number }) => void;
+  setSelectedSource: (
+    dims: { x: number; y: number; z: number },
+    direction: { x: number; y: number; z: number },
+  ) => void;
 }
 
 export const useSceneStore = create<SceneState>()((set, get) => ({
   config: {
     fileName: "",
     voxelSize: 2,
-    numRays: 1,
+    numRays: 10,
     fps: 60,
     material: "Plastic",
     selectedSource: {
-      x: 0,
-      y: 0,
-      z: 0,
+      position: {
+        x: 0,
+        y: 0,
+        z: 0,
+      },
+      direction: {
+        x: 0,
+        y: 0,
+        z: 0,
+      },
     },
   },
   bounds: null,
@@ -62,9 +79,9 @@ export const useSceneStore = create<SceneState>()((set, get) => ({
     set((state) => ({
       config: { ...state.config, voxelSize: size },
     })),
-  setSelectedSource: (dims) =>
+  setSelectedSource: (position, direction) =>
     set((state) => ({
-      config: { ...state.config, selectedSource: dims },
+      config: { ...state.config, selectedSource: { position, direction } },
     })),
   setBounds: (box) => set({ bounds: box }),
   setShowGrid: (visible) => set({ showGrid: visible }),
