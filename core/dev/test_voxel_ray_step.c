@@ -31,7 +31,7 @@ int main()
 {
     printf("Voxel Ray Step\n");
 
-    const char *filepath = "../assets/glb/box_room_roof.gltf";
+    const char *filepath = "../assets/glb/L_room_roof.glb";
 
     AT_Model *model = NULL;
     if (AT_model_create(&model, filepath) != AT_OK) {
@@ -39,20 +39,20 @@ int main()
         return 1;
     }
 
-    // for (uint32_t i = 0; i < model->vertex_count; i++) {
-    //      model->vertices[i] = AT_vec3_scale(model->vertices[i], 10.0f);
-    // }
+    for (uint32_t i = 0; i < model->vertex_count; i++) {
+         model->vertices[i] = AT_vec3_scale(model->vertices[i], 15.0f);
+    }
 
     int num_sources = 1;
     AT_Source s1 = {
-        .direction = {1, 0, 0},
-        .intensity = 50.0f,
-        .position = {0}
+        .direction = {{0.2f, -0.05f, -0.1f}},
+        .intensity = 1000.0f,
+        .position = {{0.2f, 0, -1.0f}}
     };
 
     AT_SceneConfig conf = {
         .environment = model,
-        .material = AT_MATERIAL_PLASTIC,
+        .material = AT_MATERIAL_CONCRETE,
         .num_sources = num_sources,
         .sources = &s1
     };
@@ -68,8 +68,8 @@ int main()
 
     AT_Settings settings = {
         .fps = 60,
-        .num_rays = 10,
-        .voxel_size = 0.2f
+        .num_rays = 10000,
+        .voxel_size = 0.3f
     };
 
     AT_Simulation *sim = NULL;
@@ -118,6 +118,7 @@ int main()
                 ClearBackground(RAYWHITE);
                 BeginMode3D(camera);
                 {
+                    /*
                     AT_Ray *rays = sim->rays;
                     for (uint32_t s = 0; s < sim->scene->num_sources; s++) {
                         for (uint32_t i = 0; i < sim->num_rays; i++) {
@@ -161,6 +162,7 @@ int main()
 
                         }
                     }
+                    */
 
                     DrawBoundingBox((BoundingBox){
                         (Vector3){
@@ -224,13 +226,13 @@ int main()
                                     //printf("Voxel (%i): Num Bins: %zu Energy: %f\t\n", i, v->count, energy);
                                     continue;
 
-                                 }  //else {
-                                    // DrawCubeV(
-                                    //      pos,
-                                    //      (Vector3){sim->voxel_size, sim->voxel_size, sim->voxel_size},
-                                    //      Fade(BLUE, 1.0f/100)
-                                    // );
-                                    //}
+                                 } // else {
+                                //     DrawCubeV(
+                                //          pos,
+                                //          (Vector3){sim->voxel_size, sim->voxel_size, sim->voxel_size},
+                                //          Fade(BLUE, 1.0f/100)
+                                //     );
+                                // }
 
                             }
                         }

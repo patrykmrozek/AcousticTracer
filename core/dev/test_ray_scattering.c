@@ -31,7 +31,7 @@ int main()
 {
     printf("Voxel Ray Step\n");
 
-    const char *filepath = "../assets/glb/L_room_roof.gltf";
+    const char *filepath = "../assets/glb/box_room_roof.gltf";
 
     AT_Model *model = NULL;
     if (AT_model_create(&model, filepath) != AT_OK) {
@@ -52,7 +52,7 @@ int main()
 
     AT_SceneConfig conf = {
         .environment = model,
-        .material = AT_MATERIAL_CONCRETE,
+        .material = AT_MATERIAL_WOOD,
         .num_sources = num_sources,
         .sources = &s1
     };
@@ -68,7 +68,7 @@ int main()
 
     AT_Settings settings = {
         .fps = 60,
-        .num_rays = 10,
+        .num_rays = 100,
         .voxel_size = 0.3f
     };
 
