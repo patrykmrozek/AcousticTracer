@@ -41,15 +41,23 @@ function Model({
   // Reset bounds when URL changes so VoxelGrid unmounts cleanly
   useEffect(() => {
     onLoad(null);
-  }, [url]);
+  }, [url, onLoad]);
 
   useEffect(() => {
     if (scene) {
-      scene.traverse((node) => {
+      scene.traverse((child) => {
         // node.position.set(0,0,0);
         // node.rotation.set(0,0,0);
-        node.scale.set(1, 1, 1);
-        node.updateMatrix();
+        child.scale.set(1, 1, 1);
+        child.updateMatrix();
+
+        if (child instanceof THREE.Mesh) {
+          child.material = new THREE.MeshStandardMaterial({
+            color: "#888888",
+            roughness: 0.8,
+            metalness: 0.1,
+          });
+        }
       });
 
       scene.updateMatrixWorld(true);
@@ -74,11 +82,13 @@ function Model({
   return <primitive object={scene} />;
 }
 
-export default function SceneCanvas({ modelUrl, isStaging = false }: SceneCanvasProps) {
+export default function SceneCanvas({
+  modelUrl,
+  isStaging = false,
+}: SceneCanvasProps) {
   const setBounds = useSceneStore((state) => state.setBounds);
   const bounds = useSceneStore((state) => state.bounds);
   const showGrid = useSceneStore((state) => state.showGrid);
-
 
   // Preload the model for faster loading
   useEffect(() => {

@@ -1,6 +1,8 @@
 import { create } from "zustand";
 import * as THREE from "three";
 
+type RayResponse = Record<string, Record<string, number>[]>;
+
 interface SceneState {
   config: {
     fileName: string;
@@ -26,14 +28,16 @@ interface SceneState {
   pendingFile: File | null;
   gridDimensions: { nx: number; ny: number; nz: number } | null;
   worldDimensions: { x: number; y: number; z: number } | null;
-  rayResponse: unknown | null;
   sourceHasBeenPlaced: boolean;
 
   setVoxelSize: (size: number) => void;
   setNumRays: (rays: number) => void;
   setFps: (fps: number) => void;
-  setRayResponse: (response: unknown) => void;
   setBounds: (box: THREE.Box3 | null) => void;
+  rayResponse: RayResponse | null;
+  frameIndex: number;
+  setRayResponse: (response: RayResponse) => void;
+
   setShowGrid: (visible: boolean) => void;
   setPendingFile: (file: File | null) => void;
   setMaterial: (value: string) => void;
@@ -47,6 +51,7 @@ interface SceneState {
     dims: { x: number; y: number; z: number },
     direction: { x: number; y: number; z: number },
   ) => void;
+  setFrameIndex: (i: number) => void;
 }
 
 export const useSceneStore = create<SceneState>()((set) => ({
@@ -76,6 +81,7 @@ export const useSceneStore = create<SceneState>()((set) => ({
   worldDimensions: null,
   rayResponse: null,
   sourceHasBeenPlaced: false,
+  frameIndex: 0,
 
   // the actions functions to call when updating state
   setVoxelSize: (size) =>
@@ -147,5 +153,6 @@ export const useSceneStore = create<SceneState>()((set) => ({
 
   setGridDimensions: (dims) => set({ gridDimensions: dims }),
   setWorldDimensions: (dims) => set({ worldDimensions: dims }),
-  setRayResponse: (response) => set({ rayResponse: response }),
+  setRayResponse: (response: RayResponse) => set({ rayResponse: response }),
+  setFrameIndex: (i: number) => set({ frameIndex: i }),
 }));

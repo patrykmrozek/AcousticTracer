@@ -144,7 +144,6 @@ export default function ConfigPanel() {
           <option>Plastic</option>
           <option>Metal</option>
           <option>Wood</option>
-          <option>Glass</option>
         </select>
       </div>
 
@@ -267,15 +266,11 @@ function GridStats() {
 
   return (
     <div className="p-3 bg-black/20 rounded border border-white/5 text-xs font-mono text-text-secondary">
-      <div className="text-text-primary font-semibold">
-        World Dimensions:
-      </div>
+      <div className="text-text-primary font-semibold">World Dimensions:</div>
       <div>
         {x.toLocaleString()} x {y.toLocaleString()} x {z.toLocaleString()}
       </div>
-      <div className="text-text-primary font-semibold">
-        Grid Dimensions:
-      </div>
+      <div className="text-text-primary font-semibold">Grid Dimensions:</div>
       <div>
         {nx} x {ny} x {nz}
       </div>
