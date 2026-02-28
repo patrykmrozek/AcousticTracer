@@ -34,7 +34,6 @@ typedef enum {
 typedef struct {
     float absorption;
     float scattering;
-    // TODO: diffuse, scatter, etc
 } AT_Material;
 
 /** \brief Groups the information required for the sound source.
