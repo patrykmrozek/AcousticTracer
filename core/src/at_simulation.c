@@ -90,7 +90,7 @@ AT_Result AT_simulation_run(AT_Simulation *simulation)
             uint32_t ray_idx = s * simulation->num_rays + r;
 
             AT_Vec3 hemisphere_dir = AT_sample_cosine_hemisphere(simulation->scene->sources[s].direction);
-            printf("dir: {%.3f, %.3f, %.3f}\n", hemisphere_dir.x, hemisphere_dir.y, hemisphere_dir.z);
+            //printf("dir: {%.3f, %.3f, %.3f}\n", hemisphere_dir.x, hemisphere_dir.y, hemisphere_dir.z);
 
             simulation->rays[ray_idx] = AT_ray_init(
                 simulation->scene->sources[s].position,
@@ -132,7 +132,7 @@ AT_Result AT_simulation_run(AT_Simulation *simulation)
 
             //slightly offset child origin to avoid percision issues (when hitting corners and such)
             const float SURFACE_EPSILON = 0.001f;
-            AT_Vec3 offset = AT_vec3_scale(closest.direction, SURFACE_EPSILON);
+            AT_Vec3 offset = AT_vec3_scale(normal, SURFACE_EPSILON);
             child->origin = AT_vec3_add(ray->hit_point, offset);
 
             child->total_distance = ray->total_distance + AT_vec3_distance(ray->origin, ray->hit_point);
@@ -140,6 +140,7 @@ AT_Result AT_simulation_run(AT_Simulation *simulation)
 
             float rand = AT_get_random_float();
             if (rand < AT_MATERIAL_TABLE[simulation->scene->environment->triangle_materials[tri_idx]].scattering) {
+                //printf("SCATTER!\n");
                 child->direction = AT_sample_cosine_hemisphere(normal);
             }
 
