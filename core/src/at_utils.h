@@ -150,20 +150,20 @@ static inline float AT_get_random_float()
 //https://www.pbr-book.org/3ed-2018/Monte_Carlo_Integration/2D_Sampling_with_Multidimensional_Transformations
 static inline AT_Vec3 AT_sample_cosine_hemisphere(AT_Vec3 normal)
 {
-    printf("Normal: {%f, %f, %f}\n", normal.x, normal.y, normal.z);
+    // printf("Normal: {%f, %f, %f}\n", normal.x, normal.y, normal.z);
     float u1 = AT_get_random_float();
     float u2 = AT_get_random_float();
-    printf("u1: %.2f, u2: %.2f\n", u1, u2);
+    // printf("u1: %.2f, u2: %.2f\n", u1, u2);
 
     float theta = acos(sqrt(1.0f - u1));
     float phi = 2.0f * AT_PI * u2;
-    printf("theta: %.2f, phi: %.2f\n", theta, phi);
+    // printf("theta: %.2f, phi: %.2f\n", theta, phi);
 
     //dir around z
     float x = sin(theta) * cos(phi);
     float y = sin(theta) * sin(phi);
     float z = cos(theta);
-    printf("{%.2f, %.2f, %.2f}\n", x, y, z);
+    // printf("{%.2f, %.2f, %.2f}\n", x, y, z);
 
     //orthonormal basis
     AT_Vec3 up = fabsf(normal.z) < 0.999f ? (AT_Vec3){{0, 0, 1}} : (AT_Vec3){{1, 0, 0}};
