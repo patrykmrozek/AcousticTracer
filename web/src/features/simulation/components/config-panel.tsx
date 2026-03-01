@@ -39,6 +39,8 @@ export default function ConfigPanel() {
   const setShowGrid = useSceneStore((state) => state.setShowGrid);
   const showTexture = useSceneStore((state) => state.showTexture);
   const setShowTexture = useSceneStore((state) => state.setShowTexture);
+  const wireframe = useSceneStore((state) => state.wireframe);
+  const setWireframe = useSceneStore((state) => state.setWireframe);
 
   // extra controls available in scene-store
   const material = useSceneStore((state) => state.config.material);
@@ -138,6 +140,15 @@ export default function ConfigPanel() {
           type="checkbox"
           checked={showTexture}
           onChange={(e) => setShowTexture(e.target.checked)}
+          className="accent-button-primary scale-125"
+        />
+      </div>
+      <div className="flex items-center justify-between mb-4">
+        <span className="text-sm">Wireframe</span>
+        <input
+          type="checkbox"
+          checked={wireframe}
+          onChange={(e) => setWireframe(e.target.checked)}
           className="accent-button-primary scale-125"
         />
       </div>
