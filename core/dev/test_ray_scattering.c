@@ -40,19 +40,19 @@ int main()
     }
 
     // for (uint32_t i = 0; i < model->vertex_count; i++) {
-    //      model->vertices[i] = AT_vec3_scale(model->vertices[i], 15.0f);
+    //      model->vertices[i] = AT_vec3_scale(model->vertices[i], 10.0f);
     // }
 
     int num_sources = 1;
     AT_Source s1 = {
         .direction = {{0.2f, -0.05f, -0.1f}},
         .intensity = 1000.0f,
-        .position = {{0}}
+        .position = {{0.2f, 0, -1.0f}}
     };
 
     AT_SceneConfig conf = {
         .environment = model,
-        .material = AT_MATERIAL_CONCRETE,
+        .material = AT_MATERIAL_WOOD,
         .num_sources = num_sources,
         .sources = &s1
     };
@@ -68,8 +68,8 @@ int main()
 
     AT_Settings settings = {
         .fps = 60,
-        .num_rays = 500,
-        .voxel_size = 0.5f
+        .num_rays = 200,
+        .voxel_size = 0.3f
     };
 
     AT_Simulation *sim = NULL;
@@ -118,7 +118,6 @@ int main()
                 ClearBackground(RAYWHITE);
                 BeginMode3D(camera);
                 {
-                    /*
                     AT_Ray *rays = sim->rays;
                     for (uint32_t s = 0; s < sim->scene->num_sources; s++) {
                         for (uint32_t i = 0; i < sim->num_rays; i++) {
@@ -162,7 +161,6 @@ int main()
 
                         }
                     }
-                    */
 
                     DrawBoundingBox((BoundingBox){
                         (Vector3){
@@ -175,7 +173,7 @@ int main()
                             scene->world_AABB.max.y,
                             scene->world_AABB.max.z
                         }},
-                        RED);
+                        BLUE);
 
                     for (uint32_t i = 0; i < t_count; i++) {
                             Vector3 v1 = {ts[i].v1.x, ts[i].v1.y, ts[i].v1.z};
@@ -186,64 +184,12 @@ int main()
                             DrawLine3D(v3, v1, BLACK);
                         }
 
-                    if (IsKeyDown(KEY_L)) curr_bin++;
-                    if (IsKeyDown(KEY_K) && curr_bin > 0) curr_bin--;
-
-                    //draw voxels
-                    for (uint32_t z = 0; z < sim->grid_dimensions.z; z++) {
-                        for (uint32_t y = 0; y < sim->grid_dimensions.y; y++) {
-                            for (uint32_t x = 0; x < sim->grid_dimensions.x; x++) {
-                                uint32_t i =
-                                    z * sim->grid_dimensions.y * sim->grid_dimensions.x +
-                                    y * sim->grid_dimensions.x +
-                                    x;
-
-                                AT_Voxel *v = &sim->voxel_grid[i];
-
-                                //printf("CURR BIN(%i): %i\n", curr_bin, curr_bin%bin_count);
-                                //float energy = AT_voxel_get_energy_curr(v, curr_bin%bin_count);
-                                float energy = AT_voxel_get_energy_curr(v, curr_bin%bin_count);
-                                //float energy = AT_voxel_get_energy(v, 2);
-                                //printf("ENERGY: %f\n", energy);
-                                //float energy = AT_voxel_get_energy(v, 2);
-
-                                Vector3 pos = {
-                                    sim->origin.x + (x + 0.5f) * sim->voxel_size,
-                                    sim->origin.y + (y + 0.5f) * sim->voxel_size,
-                                    sim->origin.z + (z + 0.5f) * sim->voxel_size,
-                                };
-
-                                if (energy > 0.0f) {
-                                    float normalized_energy = energy * sim->num_rays;
-                                    float alpha = fminf(normalized_energy, 1.0f);
-                                    //printf("VOXEL (%i): %f\n", i, v->items[curr_bin%bin_count]);
-                                    DrawCubeV(
-                                        pos,
-                                        (Vector3){sim->voxel_size, sim->voxel_size, sim->voxel_size},
-                                        Fade(RED, alpha)
-                                    );
-                                    //AT_voxel_print(v);
-                                    //printf("Voxel (%i): Num Bins: %zu Energy: %f\t\n", i, v->count, energy);
-                                    continue;
-
-                                 } // else {
-                                //     DrawCubeV(
-                                //          pos,
-                                //          (Vector3){sim->voxel_size, sim->voxel_size, sim->voxel_size},
-                                //          Fade(BLUE, 1.0f/100)
-                                //     );
-                                // }
-
-                            }
-                        }
-                    }
-                    DrawGrid(sim->voxel_size, 1.0f);
-                }
                 EndMode3D();
                 DrawFPS(10, 10);
             }
             EndDrawing();
         }
+    }
 
     CloseWindow();
     free(ts);

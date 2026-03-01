@@ -58,7 +58,8 @@ static inline void AT_ray_destroy(AT_Ray *ray)
 
 bool AT_ray_triangle_intersect(AT_Ray *ray,
                                const AT_Triangle *triangle,
-                               AT_Ray *out_ray);
+                               AT_Ray *out_ray,
+                               AT_Vec3 *out_normal);
 
 
 void AT_ray_destroy_children(AT_Ray *ray);

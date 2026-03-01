@@ -6,6 +6,7 @@
 #include "../src/at_voxel.h"
 #include "at_internal.h"
 #include "at_ray.h"
+#include "at_utils.h"
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -31,6 +32,9 @@ AT_Result AT_simulation_create(AT_Simulation **out_simulation, const AT_Scene *s
 
     // World dimensions
     AT_Vec3 dimensions = AT_vec3_sub(scene->world_AABB.max, scene->world_AABB.min);
+    // printf("DIMENSIONS: {%f, %f, %f}\n", dimensions.x, dimensions.y, dimensions.z);
+    // printf("AABB min: {%f, %f, %f}\n", scene->world_AABB.min.x, scene->world_AABB.min.y, scene->world_AABB.min.z);
+    // printf("AABB max: {%f, %f, %f}\n", scene->world_AABB.max.x, scene->world_AABB.max.y, scene->world_AABB.max.z);
 
     // Grid dimensions (num voxels in each dimension)
     float grid_x = ceilf(dimensions.x / settings->voxel_size);
@@ -90,16 +94,12 @@ AT_Result AT_simulation_run(AT_Simulation *simulation)
         for (uint32_t r = 0; r < simulation->num_rays; r++) {
             uint32_t ray_idx = s * simulation->num_rays + r;
 
-            //gpt ahh code
-            AT_Vec3 varied_direction = simulation->scene->sources[s].direction;
-            varied_direction.x += ((float)rand() / RAND_MAX - 0.5f) * 0.2f;  // ±0.1
-            varied_direction.y += ((float)rand() / RAND_MAX - 0.5f) * 0.2f;  // ±0.1
-            varied_direction.z += ((float)rand() / RAND_MAX - 0.5f) * 0.2f;  // ±0.1
-            varied_direction = AT_vec3_normalize(varied_direction);
+            AT_Vec3 hemisphere_dir = AT_sample_cosine_hemisphere(simulation->scene->sources[s].direction);
+            //printf("dir: {%.3f, %.3f, %.3f}\n", hemisphere_dir.x, hemisphere_dir.y, hemisphere_dir.z);
 
             simulation->rays[ray_idx] = AT_ray_init(
                 simulation->scene->sources[s].position,
-                varied_direction,
+                hemisphere_dir,
                 0.0f,
                 SOURCE_ENERGY / simulation->num_rays,
                 ray_idx //ray index
@@ -119,8 +119,9 @@ AT_Result AT_simulation_run(AT_Simulation *simulation)
                 i);
             bool intersects = false;
             uint32_t tri_idx = 0;
+            AT_Vec3 normal;
             for (uint32_t t = 0; t < triangle_count; t++) {
-                if (AT_ray_triangle_intersect(ray, &triangles[t], &closest)) {
+                if (AT_ray_triangle_intersect(ray, &triangles[t], &closest, &normal)) {
                     intersects = true;
                     tri_idx = t;
                 }
@@ -136,13 +137,23 @@ AT_Result AT_simulation_run(AT_Simulation *simulation)
 
             //slightly offset child origin to avoid percision issues (when hitting corners and such)
             const float SURFACE_EPSILON = 0.001f;
-            AT_Vec3 offset = AT_vec3_scale(closest.direction, SURFACE_EPSILON);
+            AT_Vec3 offset = AT_vec3_scale(normal, SURFACE_EPSILON);
             child->origin = AT_vec3_add(ray->hit_point, offset);
 
             child->total_distance = ray->total_distance + AT_vec3_distance(ray->origin, ray->hit_point);
             child->energy = ray->energy * (1.0f - AT_MATERIAL_TABLE[simulation->scene->environment->triangle_materials[tri_idx]].absorption);
+
+            float rand = AT_get_random_float();
+            if (rand < AT_MATERIAL_TABLE[simulation->scene->environment->triangle_materials[tri_idx]].scattering) {
+                //printf("SCATTER!\n");
+                child->direction = AT_sample_cosine_hemisphere(normal);
+            }
+
             ray->child = child;
             ray = ray->child;
+
+
+
             num_children++;
         }
         if (ray->energy < MIN_ENERGY_THRESHOLD) ray->has_died = true;
