@@ -31,7 +31,7 @@ int main()
 {
     printf("Voxel Ray Step\n");
 
-    const char *filepath = "../assets/glb/L_room_roof.glb";
+    const char *filepath = "../assets/glb/cathedral.glb";
 
     AT_Model *model = NULL;
     if (AT_model_create(&model, filepath) != AT_OK) {
@@ -39,15 +39,15 @@ int main()
         return 1;
     }
 
-    for (uint32_t i = 0; i < model->vertex_count; i++) {
-         model->vertices[i] = AT_vec3_scale(model->vertices[i], 15.0f);
-    }
+    // for (uint32_t i = 0; i < model->vertex_count; i++) {
+    //      model->vertices[i] = AT_vec3_scale(model->vertices[i], 15.0f);
+    // }
 
     int num_sources = 1;
     AT_Source s1 = {
         .direction = {{0.2f, -0.05f, -0.1f}},
         .intensity = 1000.0f,
-        .position = {{0.2f, 0, -1.0f}}
+        .position = {{0}}
     };
 
     AT_SceneConfig conf = {
@@ -68,8 +68,8 @@ int main()
 
     AT_Settings settings = {
         .fps = 60,
-        .num_rays = 10000,
-        .voxel_size = 0.3f
+        .num_rays = 500,
+        .voxel_size = 0.5f
     };
 
     AT_Simulation *sim = NULL;

@@ -32,6 +32,9 @@ AT_Result AT_simulation_create(AT_Simulation **out_simulation, const AT_Scene *s
 
     // World dimensions
     AT_Vec3 dimensions = AT_vec3_sub(scene->world_AABB.max, scene->world_AABB.min);
+    // printf("DIMENSIONS: {%f, %f, %f}\n", dimensions.x, dimensions.y, dimensions.z);
+    // printf("AABB min: {%f, %f, %f}\n", scene->world_AABB.min.x, scene->world_AABB.min.y, scene->world_AABB.min.z);
+    // printf("AABB max: {%f, %f, %f}\n", scene->world_AABB.max.x, scene->world_AABB.max.y, scene->world_AABB.max.z);
 
     // Grid dimensions (num voxels in each dimension)
     float grid_x = ceilf(dimensions.x / settings->voxel_size);
