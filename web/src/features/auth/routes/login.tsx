@@ -10,7 +10,7 @@ export default function Login() {
   const [name, setName] = useState("");
   const [error, setError] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
     setError("");
     try {
@@ -20,8 +20,8 @@ export default function Login() {
         await login(email, password);
         navigate("/dashboard");
       }
-    } catch (err: any) {
-      setError(err.message || "An error occurred during authentication.");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : String(err));
     }
   };
 
