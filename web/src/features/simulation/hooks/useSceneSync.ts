@@ -3,21 +3,19 @@ import type { Simulation } from "../api/simulation-repository";
 import { useSceneStore } from "../stores/scene-store";
 
 export default function useSceneSync(
-  idOfFile: string | undefined,
+  _idOfFile: string | undefined,
   simulation: Simulation | undefined,
-  pendingFile: File | null,
+  _pendingFile: File | null,
 ): void {
+  void _idOfFile;
+  void _pendingFile;
 
   const setVoxelSize = useSceneStore((state) => state.setVoxelSize);
 
+  // When loading a saved simulation, restore its voxel size
   useEffect(() => {
     if (simulation?.config) {
       setVoxelSize(simulation.config.voxelSize);
     }
   }, [simulation, setVoxelSize]);
-  useEffect(() => {
-    if (idOfFile === "new" && pendingFile) {
-      setVoxelSize(2);
-    }
-  }, [idOfFile, pendingFile, setVoxelSize]);
 }

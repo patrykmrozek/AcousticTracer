@@ -1,20 +1,26 @@
-import { useRef, useMemo, useLayoutEffect } from "react";
+import { useRef, useMemo, useLayoutEffect, useState, useEffect } from "react";
 import * as THREE from "three";
-import { useThree } from "@react-three/fiber";
 import { useSceneStore } from "../stores/scene-store";
-import SourceMarker from "./source-marker";
+
+const MAX_VOXELS = 500_000;
+const DEBOUNCE_MS = 150;
+
 export default function VoxelGrid() {
   const meshRef = useRef<THREE.InstancedMesh>(null);
 
   // Subscribe to the data this component needs
   const bounds = useSceneStore((state) => state.bounds);
-  const voxelSize = useSceneStore((state) => state.config.voxelSize);
+  const storeVoxelSize = useSceneStore((state) => state.config.voxelSize);
   const visible = useSceneStore((state) => state.showGrid);
-  const selectedSource = useSceneStore((state) => state.config.selectedSource);
   const setGridDimensions = useSceneStore((state) => state.setGridDimensions);
   const setWorldDimensions = useSceneStore((state) => state.setWorldDimensions);
-  const setSelectedSource = useSceneStore((state) => state.setSelectedSource);
-  const { camera } = useThree();
+
+  // Debounce voxelSize so the grid only rebuilds after the user stops dragging
+  const [voxelSize, setVoxelSize] = useState(storeVoxelSize);
+  useEffect(() => {
+    const id = setTimeout(() => setVoxelSize(storeVoxelSize), DEBOUNCE_MS);
+    return () => clearTimeout(id);
+  }, [storeVoxelSize]);
 
   const { count, gridDims } = useMemo(() => {
     if (!bounds) {
@@ -27,34 +33,39 @@ export default function VoxelGrid() {
     const nx = Math.ceil(size.x / voxelSize);
     const ny = Math.ceil(size.y / voxelSize);
     const nz = Math.ceil(size.z / voxelSize);
+    const total = nx * ny * nz;
     const dims = { nx, ny, nz };
 
+    // Safety cap: skip rendering if too many voxels
+    if (total > MAX_VOXELS) {
+      return { count: 0, gridDims: dims };
+    }
+
     return {
-      count: nx * ny * nz,
+      count: total,
       gridDims: dims,
     };
   }, [bounds, voxelSize]);
 
-  // Update store with computed dimensions
+  // Update world dimensions only when bounds change (NOT when voxelSize changes)
   useLayoutEffect(() => {
     if (!bounds) {
-      setGridDimensions(null);
       setWorldDimensions(null);
-      setSelectedSource({ x: 0, y: 0, z: 0 }, { x: 0, y: 0, z: 0 });
       return;
     }
-
     const size = new THREE.Vector3();
     bounds.getSize(size);
     setWorldDimensions({ x: size.x, y: size.y, z: size.z });
+  }, [bounds, setWorldDimensions]);
+
+  // Update grid dimensions when gridDims change
+  useLayoutEffect(() => {
+    if (!bounds) {
+      setGridDimensions(null);
+      return;
+    }
     setGridDimensions(gridDims);
-  }, [
-    bounds,
-    gridDims,
-    setGridDimensions,
-    setWorldDimensions,
-    setSelectedSource,
-  ]);
+  }, [bounds, gridDims, setGridDimensions]);
 
   useLayoutEffect(() => {
     if (!meshRef.current || !bounds) return;
@@ -90,73 +101,14 @@ export default function VoxelGrid() {
     meshRef.current.instanceMatrix.needsUpdate = true;
   }, [bounds, voxelSize, gridDims, count]);
 
-  // Compute voxel center from instance index
-  const handlePick = (e: any) => {
-    // Stop from selecting multiple voxels
-    e.stopPropagation();
-
-    // The id of the voxel
-    const instanceId = e.instanceId as number | null;
-    // The point I click with mouse
-    const point = e.point as THREE.Vector3 | undefined;
-    console.log("voxel-grid pick:", { instanceId, point });
-    if (instanceId == null || !bounds) return;
-
-    try {
-      // Creating a 4x4 matrix for the voxel i selected
-      const mat = new THREE.Matrix4();
-      // Reading in the information about the voxel based on instanceId into mat
-      meshRef.current!.getMatrixAt(instanceId, mat);
-      // the voxel position i selected relative to the instance mesh
-      const posLocal = new THREE.Vector3();
-      // the rotation angle of the voxel i selected
-      const quat = new THREE.Quaternion();
-      // scale of the voxel
-      const scale = new THREE.Vector3();
-      // normal of the camera (direction)
-      const direction = new THREE.Vector3();
-      camera.getWorldDirection(direction);
-
-      // Decomposing info into the variables to be used
-      mat.decompose(posLocal, quat, scale);
-
-      // Convert to world position (the actual coords)
-      meshRef.current!.updateMatrixWorld();
-      const posWorld = posLocal.applyMatrix4(meshRef.current!.matrixWorld);
-
-      // Clamping to bounds so cant go outside bounding box
-      const clamp = (v: number, a: number, b: number) =>
-        Math.max(a, Math.min(b, v));
-      const sx = clamp(posWorld.x, bounds.min.x, bounds.max.x);
-      const sy = clamp(posWorld.y, bounds.min.y, bounds.max.y);
-      const sz = clamp(posWorld.z, bounds.min.z, bounds.max.z);
-
-      setSelectedSource(
-        { x: sx, y: sy, z: sz },
-        { x: direction.x, y: direction.y, z: direction.z },
-      );
-      console.log(
-        "Updated store value:",
-        useSceneStore.getState().config.selectedSource,
-      );
-      return;
-    } catch (err) {
-      // If getMatrixAt fails, do nothing — we only accept picks backed by instance matrices
-      console.warn("voxel-grid: getMatrixAt failed — ignoring pick", err);
-      return;
-    }
-  };
-
   if (!bounds) return null;
 
   return (
     <>
       <instancedMesh
-        key={count}
         ref={meshRef}
         args={[undefined, undefined, count]}
         visible={visible}
-        onPointerDown={(e) => handlePick(e)}
       >
         <boxGeometry args={[voxelSize, voxelSize, voxelSize]} />
         <meshStandardMaterial
@@ -166,10 +118,6 @@ export default function VoxelGrid() {
           depthWrite={false}
         />
       </instancedMesh>
-
-      <SourceMarker />
     </>
   );
 }
-
-// end of file

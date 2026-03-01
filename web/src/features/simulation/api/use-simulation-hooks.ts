@@ -1,11 +1,11 @@
 // TanStack Query Hooks for Simulations with doc strings to help me remember use cases ( and for alex )
 
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { simulationRepo } from "./simulation-repository";
 import type {
   CreateSimulationParams,
   UpdateSimulationParams,
+  SimulationList,
 } from "./simulation-repository";
 import { simulationKeys } from "@/lib/query-keys";
 
@@ -116,12 +116,42 @@ export function useDeleteSimulation() {
 
   return useMutation({
     mutationFn: ({ id, fileId }: { id: string; fileId?: string }) => {
-      if (fileId) {
-        return simulationRepo.deleteWithFile(id, fileId);
-      }
+      if (fileId) return simulationRepo.deleteWithFile(id, fileId);
       return simulationRepo.delete(id);
     },
-    onSuccess: () => {
+
+    // Remove the row from cache immediately
+    onMutate: async ({ id }) => {
+      await queryClient.cancelQueries({ queryKey: simulationKeys.lists() });
+
+      // Snapshot current cache for rollback
+      const previousData = queryClient.getQueryData(simulationKeys.lists());
+
+      // Remove the simulation from the cached list
+      queryClient.setQueryData(
+        simulationKeys.lists(),
+        (old: SimulationList | undefined) => {
+          if (!old) return old;
+          return {
+            ...old,
+            simulations: old.simulations.filter((sim) => sim.$id !== id),
+            total: old.total - 1,
+          };
+        },
+      );
+
+      return { previousData };
+    },
+
+    // If delete fails, roll back to the snapshot
+    onError: (_err, _variables, context) => {
+      if (context?.previousData) {
+        queryClient.setQueryData(simulationKeys.lists(), context.previousData);
+      }
+    },
+
+    // After success or failure, refetch to ensure consistency
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: simulationKeys.lists() });
     },
   });

@@ -273,7 +273,7 @@ void AT_raytracer()
         AT_handle_result(res, "Error converting simulation to JSON\n");
         const char *json = cJSON_PrintUnformatted(sim_json);
 
-        printf("%s\n", json);
+        // printf("%s\n", json);
 
         char header[256];
         snprintf(header, sizeof(header),

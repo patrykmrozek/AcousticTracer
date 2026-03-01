@@ -31,13 +31,12 @@ export function UserProvider({ children }: { children: ReactNode }) {
   );
   const [isLoading, setIsLoading] = useState(true);
 
-  async function login(email: any, password: any) {
-    const result = await account.createEmailPasswordSession({
+  async function login(email: string, password: string) {
+    await account.createEmailPasswordSession({
       email: email,
       password: password,
     });
 
-    console.log(result);
     const loggedIn = await account.get();
     setUser(loggedIn);
   }
@@ -47,18 +46,13 @@ export function UserProvider({ children }: { children: ReactNode }) {
     setUser(null);
   }
 
-  async function register(email: any, password: any, name: any) {
-    try {
-      const user = await account.create({
-        userId: ID.unique(),
-        email: email,
-        password: password,
-        name: name,
-      });
-      console.log(user);
-    } catch (e) {
-      console.error(e);
-    }
+  async function register(email: string, password: string, name: string) {
+    await account.create({
+      userId: ID.unique(),
+      email: email,
+      password: password,
+      name: name,
+    });
     await login(email, password);
   }
 

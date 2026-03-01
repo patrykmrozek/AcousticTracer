@@ -16,12 +16,8 @@ export default function Dashboard() {
   );
   const deleteMutation = useDeleteSimulation();
   const simulations = data?.simulations || [];
-  const handleDelete = async (id: string, fileId: string) => {
-    try {
-      await deleteMutation.mutateAsync({ id, fileId });
-    } catch (err) {
-      console.error("Delete failed: ", err);
-    }
+  const handleDelete = (id: string, fileId: string) => {
+    deleteMutation.mutate({ id, fileId });
   };
 
   return (
@@ -97,6 +93,11 @@ export default function Dashboard() {
         </header>
 
         <main className="flex-1 overflow-y-auto px-8 pb-8">
+          {deleteMutation.isError && (
+            <div className="text-danger text-sm p-2">
+              Delete failed: {deleteMutation.error?.message}
+            </div>
+          )}
           <div className="w-full">
             <table className="w-full border-separate border-spacing-y-2 text-sm text-left">
               <thead className="text-text-primary font-bold uppercase text-[11px] tracking-widest sticky top-0 bg-bg-primary z-10">

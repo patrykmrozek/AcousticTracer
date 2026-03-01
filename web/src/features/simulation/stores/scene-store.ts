@@ -27,10 +27,13 @@ interface SceneState {
   gridDimensions: { nx: number; ny: number; nz: number } | null;
   worldDimensions: { x: number; y: number; z: number } | null;
   rayResponse: unknown | null;
+  sourceHasBeenPlaced: boolean;
 
   setVoxelSize: (size: number) => void;
+  setNumRays: (rays: number) => void;
+  setFps: (fps: number) => void;
   setRayResponse: (response: unknown) => void;
-  setBounds: (box: THREE.Box3) => void;
+  setBounds: (box: THREE.Box3 | null) => void;
   setShowGrid: (visible: boolean) => void;
   setPendingFile: (file: File | null) => void;
   setMaterial: (value: string) => void;
@@ -46,7 +49,7 @@ interface SceneState {
   ) => void;
 }
 
-export const useSceneStore = create<SceneState>()((set, get) => ({
+export const useSceneStore = create<SceneState>()((set) => ({
   config: {
     fileName: "",
     voxelSize: 2,
@@ -67,32 +70,73 @@ export const useSceneStore = create<SceneState>()((set, get) => ({
     },
   },
   bounds: null,
-  rawBounds: null,
   showGrid: true,
   pendingFile: null,
   gridDimensions: null,
   worldDimensions: null,
   rayResponse: null,
+  sourceHasBeenPlaced: false,
 
   // the actions functions to call when updating state
   setVoxelSize: (size) =>
     set((state) => ({
       config: { ...state.config, voxelSize: size },
     })),
+  setNumRays: (rays) =>
+    set((state) => ({
+      config: { ...state.config, numRays: rays },
+    })),
+  setFps: (fps) =>
+    set((state) => ({
+      config: { ...state.config, fps: fps },
+    })),
   setSelectedSource: (position, direction) =>
     set((state) => ({
       config: { ...state.config, selectedSource: { position, direction } },
+      sourceHasBeenPlaced: true,
     })),
-  setBounds: (box) => set({ bounds: box }),
+  setBounds: (box) => {
+    if (box) {
+      const center = new THREE.Vector3();
+      box.getCenter(center);
+      set((state) => ({
+        bounds: box,
+        sourceHasBeenPlaced: true,
+        config: {
+          ...state.config,
+          selectedSource: {
+            position: { x: center.x, y: center.y, z: center.z },
+            direction: { x: 0, y: 0, z: -1 },
+          },
+        },
+      }));
+    } else {
+      set({ bounds: null, sourceHasBeenPlaced: false });
+    }
+  },
   setShowGrid: (visible) => set({ showGrid: visible }),
   setPendingFile: (file) =>
-    set((state) => ({
+    set({
       pendingFile: file,
+      // Reset all transient / model-specific state
+      sourceHasBeenPlaced: false,
+      bounds: null,
+      gridDimensions: null,
+      worldDimensions: null,
+      rayResponse: null,
+      showGrid: true,
       config: {
-        ...state.config,
-        fileName: file ? file.name : state.config.fileName,
+        fileName: file ? file.name : "",
+        voxelSize: 2,
+        numRays: 10,
+        fps: 60,
+        material: "Plastic",
+        selectedSource: {
+          position: { x: 0, y: 0, z: 0 },
+          direction: { x: 0, y: 0, z: 0 },
+        },
       },
-    })),
+    }),
   setMaterial: (value) =>
     set((state) => ({
       config: {

@@ -11,10 +11,12 @@ import * as THREE from "three";
 import { useSceneStore } from "../stores/scene-store";
 import VoxelGrid from "./voxel-grid";
 import BoundBoxHelper from "./bbox-helper";
+import SourcePlacer from "./source-place";
+
 interface SceneCanvasProps {
   modelUrl: string | null;
+  isStaging?: boolean;
 }
-
 function Loader() {
   const { progress } = useProgress();
   return (
@@ -31,10 +33,15 @@ function Model({
   onLoad,
 }: {
   url: string;
-  onLoad: (box: THREE.Box3) => void;
+  onLoad: (box: THREE.Box3 | null) => void;
 }) {
   // useGLTF automatically caches by URL
   const { scene } = useGLTF(url);
+
+  // Reset bounds when URL changes so VoxelGrid unmounts cleanly
+  useEffect(() => {
+    onLoad(null);
+  }, [url]);
 
   useEffect(() => {
     if (scene) {
@@ -67,10 +74,11 @@ function Model({
   return <primitive object={scene} />;
 }
 
-export default function SceneCanvas({ modelUrl }: SceneCanvasProps) {
+export default function SceneCanvas({ modelUrl, isStaging = false }: SceneCanvasProps) {
   const setBounds = useSceneStore((state) => state.setBounds);
   const bounds = useSceneStore((state) => state.bounds);
   const showGrid = useSceneStore((state) => state.showGrid);
+
 
   // Preload the model for faster loading
   useEffect(() => {
@@ -91,8 +99,9 @@ export default function SceneCanvas({ modelUrl }: SceneCanvasProps) {
           {bounds && showGrid && <VoxelGrid />}
           <BoundBoxHelper />
         </Bounds>
+        {bounds && <SourcePlacer isStaging={isStaging} />}
       </Suspense>
-      <OrbitControls />
+      <OrbitControls makeDefault />
     </Canvas>
   );
 }

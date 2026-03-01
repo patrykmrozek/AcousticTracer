@@ -10,20 +10,21 @@ export default function useModelUrl(
 {
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
   useEffect(() => {
-    if (idOfFile !== "new" || !pendingFile) {
+    if (!pendingFile) {
       setBlobUrl(null);
       return;
     }
     const url = URL.createObjectURL(pendingFile);
     setBlobUrl(url);
     return () => URL.revokeObjectURL(url);
-  }, [idOfFile, pendingFile]);
+  }, [pendingFile]);
 
   const modelUrl = useMemo(() => {
-    if (idOfFile === "new") return blobUrl ?? undefined;
+    if (pendingFile && blobUrl) return blobUrl;
+    if (idOfFile === "new") return undefined;
     if (simulation?.inputFileId) {
       return simulationRepo.getFileUrl(simulation.inputFileId);
     }
-  }, [idOfFile, blobUrl, simulation?.inputFileId]);
+  }, [idOfFile, blobUrl, pendingFile, simulation?.inputFileId]);
   return modelUrl
 }
