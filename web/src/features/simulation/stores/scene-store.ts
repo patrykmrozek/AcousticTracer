@@ -27,7 +27,6 @@ interface SceneState {
   gridDimensions: { nx: number; ny: number; nz: number } | null;
   worldDimensions: { x: number; y: number; z: number } | null;
   rayResponse: unknown | null;
-  sourceHasBeenPlaced: boolean;
 
   setVoxelSize: (size: number) => void;
   setNumRays: (rays: number) => void;
@@ -75,7 +74,6 @@ export const useSceneStore = create<SceneState>()((set) => ({
   gridDimensions: null,
   worldDimensions: null,
   rayResponse: null,
-  sourceHasBeenPlaced: false,
 
   // the actions functions to call when updating state
   setVoxelSize: (size) =>
@@ -93,15 +91,16 @@ export const useSceneStore = create<SceneState>()((set) => ({
   setSelectedSource: (position, direction) =>
     set((state) => ({
       config: { ...state.config, selectedSource: { position, direction } },
-      sourceHasBeenPlaced: true,
     })),
   setBounds: (box) => {
     if (box) {
       const center = new THREE.Vector3();
       box.getCenter(center);
+      const size = new THREE.Vector3();
+      box.getSize(size);
       set((state) => ({
         bounds: box,
-        sourceHasBeenPlaced: true,
+        worldDimensions: { x: size.x, y: size.y, z: size.z },
         config: {
           ...state.config,
           selectedSource: {
@@ -111,7 +110,7 @@ export const useSceneStore = create<SceneState>()((set) => ({
         },
       }));
     } else {
-      set({ bounds: null, sourceHasBeenPlaced: false });
+      set({ bounds: null, worldDimensions: null });
     }
   },
   setShowGrid: (visible) => set({ showGrid: visible }),
@@ -119,7 +118,6 @@ export const useSceneStore = create<SceneState>()((set) => ({
     set({
       pendingFile: file,
       // Reset all transient / model-specific state
-      sourceHasBeenPlaced: false,
       bounds: null,
       gridDimensions: null,
       worldDimensions: null,

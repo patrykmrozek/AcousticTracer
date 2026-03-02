@@ -1,15 +1,35 @@
 import { useParams, useNavigate, useSearchParams } from "react-router";
 import { useSimulationDetail } from "@/api/simulations";
-import { ErrorBoundary } from "react-error-boundary";
+import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import SceneCanvas from "../components/scene-viewer";
 import SimDetails from "../components/sim-details";
 import ConfigPanel from "../components/config-panel";
 import UploadErrorFallback from "../components/upload-error-fallback";
+import { FeatureErrorFallback } from "@/components/feature-error-boundary";
 import { useSceneStore } from "../stores/scene-store";
 import useSceneSync from "../hooks/useSceneSync";
 import useModelUrl from "../hooks/useModelUrl";
 import useSimDetails from "../hooks/useSimDetails";
 import useSceneActions from "../hooks/useSceneActions";
+
+function sceneFallbackRender(props: FallbackProps) {
+  const msg =
+    (props.error instanceof Error ? props.error.message : String(props.error))
+      .toLowerCase();
+  const isModelError =
+    msg.includes("could not load") ||
+    msg.includes("unexpected token") ||
+    msg.includes("failed to parse") ||
+    msg.includes("invalid glb") ||
+    msg.includes("gltf") ||
+    msg.includes("glb") ||
+    msg.includes("arraybuffer") ||
+    msg.includes("model");
+
+  if (isModelError) return <UploadErrorFallback {...props} />;
+  return <FeatureErrorFallback {...props} />;
+}
+
 export default function Scene() {
   const { idOfFile } = useParams();
   const [searchParams] = useSearchParams();
@@ -89,7 +109,7 @@ export default function Scene() {
                 </div>
               )}
               {!isLoading && !error && modelUrl && (
-                <ErrorBoundary FallbackComponent={UploadErrorFallback}>
+                <ErrorBoundary FallbackComponent={sceneFallbackRender}>
                   <div className="w-full h-full relative">
                     {startError && (
                       <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 flex items-center gap-3 bg-red-500/10 border border-red-500/30 text-danger px-4 py-2 rounded-lg text-sm font-medium shadow-lg">
@@ -112,7 +132,7 @@ export default function Scene() {
             </div>
           </div>
           {simDetails?.status === "staging" && (
-            <aside className="w-60 h-full">
+            <aside className="w-60 min-h-0 h-full flex flex-col">
               <ConfigPanel />
             </aside>
           )}

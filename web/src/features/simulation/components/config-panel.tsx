@@ -78,12 +78,12 @@ export default function ConfigPanel() {
   const MAX_VOXELS = 500_000;
   const isOverLimit = estimatedVoxels > MAX_VOXELS;
 
-  // When a new model loads (worldDimensions change), reset voxel size to midpoint
+  // When a new model loads (bounds change), reset voxel size to midpoint
   useEffect(() => {
-    if (!worldDimensions) return;
+    if (!bounds) return;
     const median = +((voxelRange.min + voxelRange.max) / 2).toFixed(2);
     setVoxelSize(median);
-  }, [worldDimensions]);
+  }, [bounds]);
 
   // Clamp a value to bounds on a given axis
   const clampToBounds = (value: number, axis: "x" | "y" | "z"): number => {
@@ -92,8 +92,8 @@ export default function ConfigPanel() {
   };
 
   return (
-    <div className="bg-bg-card p-4 rounded-lg border border-border-primary w-full h-full overflow-y-auto">
-      <h3 className="text-text-primary font-bold mb-4">Config Panel</h3>
+    <div className="bg-bg-card p-4 rounded-lg border border-border-primary w-full min-h-0 flex-1">
+      <h3 className="text-text-primary font-bold">Config Panel</h3>
       {/* Voxel Size Slider */}
       <div className="mb-4">
         <label className="text-text-secondary text-xs block mb-1">
@@ -116,12 +116,12 @@ export default function ConfigPanel() {
           className={`text-[10px] mt-1 ${isOverLimit ? "text-danger font-semibold" : "text-text-secondary"}`}
         >
           {estimatedVoxels.toLocaleString()} voxels
-          {isOverLimit && " ⚠ may be slow"}
+          {isOverLimit && "May be slow"}
         </div>
       </div>
 
       {/* Grid Toggle */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-2">
         <span className="text-sm">Show Voxel Grid</span>
         <input
           type="checkbox"
@@ -155,7 +155,7 @@ export default function ConfigPanel() {
         </label>
         <input
           type="file"
-          accept=".glb,.gltf"
+          accept=".glb"
           onChange={(e) => {
             const file =
               e.target.files && e.target.files[0] ? e.target.files[0] : null;
@@ -213,8 +213,35 @@ export default function ConfigPanel() {
         </div>
       </div>
 
-      {/* Number of Rays */}
+      {/* Source Direction (read-only) */}
       <div className="mb-4">
+        <div className="text-text-secondary text-xs block mb-1">
+          Source Direction
+        </div>
+        <div className="grid grid-cols-3 gap-2">
+          <input
+            type="text"
+            readOnly
+            value={selectedSource.direction.x.toFixed(2)}
+            className="w-full p-2 rounded bg-bg-primary text-text-primary text-center cursor-default"
+          />
+          <input
+            type="text"
+            readOnly
+            value={selectedSource.direction.y.toFixed(2)}
+            className="w-full p-2 rounded bg-bg-primary text-text-primary text-center cursor-default"
+          />
+          <input
+            type="text"
+            readOnly
+            value={selectedSource.direction.z.toFixed(2)}
+            className="w-full p-2 rounded bg-bg-primary text-text-primary text-center cursor-default"
+          />
+        </div>
+      </div>
+
+      {/* Number of Rays */}
+      <div className="mb-2">
         <label className="text-text-secondary text-xs block mb-1">
           Number of Rays
         </label>
@@ -245,10 +272,6 @@ export default function ConfigPanel() {
           onChange={(e) => setFps(parseInt(e.target.value))}
           className="w-full"
         />
-        <div className="flex justify-between text-[10px] text-text-secondary mt-0.5">
-          <span>1</span>
-          <span>120</span>
-        </div>
       </div>
 
       {/* Grid Stats Info */}
@@ -267,15 +290,11 @@ function GridStats() {
 
   return (
     <div className="p-3 bg-black/20 rounded border border-white/5 text-xs font-mono text-text-secondary">
-      <div className="text-text-primary font-semibold">
-        World Dimensions:
-      </div>
+      <div className="text-text-primary font-semibold">World Dimensions:</div>
       <div>
         {x.toLocaleString()} x {y.toLocaleString()} x {z.toLocaleString()}
       </div>
-      <div className="text-text-primary font-semibold">
-        Grid Dimensions:
-      </div>
+      <div className="text-text-primary font-semibold">Grid Dimensions:</div>
       <div>
         {nx} x {ny} x {nz}
       </div>

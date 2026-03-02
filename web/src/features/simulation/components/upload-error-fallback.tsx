@@ -61,7 +61,7 @@ export default function UploadErrorFallback({
             <input
               ref={fileRef}
               type="file"
-              accept=".glb,.gltf"
+              accept=".glb"
               id="reupload-model"
               onChange={(e) =>
                 setSelectedFile(e.target.files?.[0] ?? null)

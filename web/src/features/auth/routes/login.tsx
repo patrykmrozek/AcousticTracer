@@ -16,6 +16,7 @@ export default function Login() {
     try {
       if (isRegistering) {
         await register(email, password, name);
+        navigate("/dashboard")
       } else {
         await login(email, password);
         navigate("/dashboard");

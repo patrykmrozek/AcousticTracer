@@ -5,6 +5,12 @@ import {
   Bounds,
   Html,
   useProgress,
+  Environment,
+  GizmoHelper,
+  GizmoViewport,
+  Grid,
+  ContactShadows,
+  AdaptiveDpr,
 } from "@react-three/drei";
 import { Suspense, useEffect } from "react";
 import * as THREE from "three";
@@ -74,11 +80,13 @@ function Model({
   return <primitive object={scene} />;
 }
 
-export default function SceneCanvas({ modelUrl, isStaging = false }: SceneCanvasProps) {
+export default function SceneCanvas({
+  modelUrl,
+  isStaging = false,
+}: SceneCanvasProps) {
   const setBounds = useSceneStore((state) => state.setBounds);
   const bounds = useSceneStore((state) => state.bounds);
   const showGrid = useSceneStore((state) => state.showGrid);
-
 
   // Preload the model for faster loading
   useEffect(() => {
@@ -90,17 +98,27 @@ export default function SceneCanvas({ modelUrl, isStaging = false }: SceneCanvas
   if (!modelUrl) return null;
 
   return (
-    <Canvas camera={{ position: [5, 5, 5], fov: 75 }}>
-      <ambientLight intensity={0.7} />
-      <directionalLight position={[10, 10, 5]} intensity={1} />
+    <Canvas shadows camera={{ position: [5, 5, 5], fov: 75 }}>
+      {/* Lighting */}
+      <Environment preset="warehouse" />
+      {/* Adaptive resolution */}
+      <AdaptiveDpr pixelated />
+
       <Suspense fallback={<Loader />}>
-        <Bounds fit clip observe margin={2}>
+        <Bounds fit clip margin={2}>
           <Model url={modelUrl} onLoad={setBounds} />
-          {bounds && showGrid && <VoxelGrid />}
-          <BoundBoxHelper />
         </Bounds>
+        {bounds && showGrid && <VoxelGrid />}
+        <BoundBoxHelper />
         {bounds && <SourcePlacer isStaging={isStaging} />}
       </Suspense>
+      {/* Orientation gizmo */}
+      <GizmoHelper alignment="bottom-right" margin={[80, 80]}>
+        <GizmoViewport
+          axisColors={["red", "green", "blue"]}
+          labelColor="black"
+        />
+      </GizmoHelper>
       <OrbitControls makeDefault />
     </Canvas>
   );
