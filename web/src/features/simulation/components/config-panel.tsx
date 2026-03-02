@@ -41,6 +41,7 @@ export default function ConfigPanel() {
   const setShowTexture = useSceneStore((state) => state.setShowTexture);
   const wireframe = useSceneStore((state) => state.wireframe);
   const setWireframe = useSceneStore((state) => state.setWireframe);
+  const rayResponse = useSceneStore((state) => state.rayResponse);
 
   // extra controls available in scene-store
   const material = useSceneStore((state) => state.config.material);
@@ -99,30 +100,34 @@ export default function ConfigPanel() {
     <div className="bg-bg-card p-4 rounded-lg border border-border-primary w-full h-full overflow-y-auto">
       <h3 className="text-text-primary font-bold mb-4">Config Panel</h3>
       {/* Voxel Size Slider */}
-      <div className="mb-4">
-        <label className="text-text-secondary text-xs block mb-1">
-          Voxel Size: {voxelSize.toFixed(2)}m
-        </label>
-        <input
-          type="range"
-          min={voxelRange.min}
-          max={voxelRange.max}
-          step={voxelRange.step}
-          value={voxelSize}
-          onChange={(e) => setVoxelSize(parseFloat(e.target.value))}
-          className="w-full"
-        />
-        <div className="flex justify-between text-[10px] text-text-secondary mt-0.5">
-          <span>{voxelRange.min}m</span>
-          <span>{voxelRange.max}m</span>
-        </div>
-        <div
-          className={`text-[10px] mt-1 ${isOverLimit ? "text-danger font-semibold" : "text-text-secondary"}`}
-        >
-          {estimatedVoxels.toLocaleString()} voxels
-          {isOverLimit && " ⚠ may be slow"}
-        </div>
-      </div>
+      {!rayResponse && (
+        <>
+          <div className="mb-4">
+            <label className="text-text-secondary text-xs block mb-1">
+              Voxel Size: {voxelSize.toFixed(2)}m
+            </label>
+            <input
+              type="range"
+              min={voxelRange.min}
+              max={voxelRange.max}
+              step={voxelRange.step}
+              value={voxelSize}
+              onChange={(e) => setVoxelSize(parseFloat(e.target.value))}
+              className="w-full"
+            />
+            <div className="flex justify-between text-[10px] text-text-secondary mt-0.5">
+              <span>{voxelRange.min}m</span>
+              <span>{voxelRange.max}m</span>
+            </div>
+            <div
+              className={`text-[10px] mt-1 ${isOverLimit ? "text-danger font-semibold" : "text-text-secondary"}`}
+            >
+              {estimatedVoxels.toLocaleString()} voxels
+              {isOverLimit && " ⚠ may be slow"}
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Grid Toggle */}
       <div className="flex items-center justify-between mb-4">
@@ -153,124 +158,130 @@ export default function ConfigPanel() {
         />
       </div>
 
-      {/* Material Select */}
-      <div className="mb-4">
-        <label className="text-text-secondary text-xs block mb-1">
-          Material
-        </label>
-        <select
-          value={material}
-          onChange={(e) => setMaterial(e.target.value)}
-          className="w-full p-2 rounded bg-bg-primary text-text-primary"
-        >
-          <option>Plastic</option>
-          <option>Metal</option>
-          <option>Wood</option>
-        </select>
-      </div>
+      {!rayResponse && (
+        <>
+          {/* Material Select */}
+          <div className="mb-4">
+            <label className="text-text-secondary text-xs block mb-1">
+              Material
+            </label>
+            <select
+              value={material}
+              onChange={(e) => setMaterial(e.target.value)}
+              className="w-full p-2 rounded bg-bg-primary text-text-primary"
+            >
+              <option>Plastic</option>
+              <option>Metal</option>
+              <option>Wood</option>
+            </select>
+          </div>
 
-      {/* File upload for pending file */}
-      <div className="mb-4">
-        <label className="text-text-secondary text-xs block mb-1">
-          Replace Model
-        </label>
-        <input
-          type="file"
-          accept=".glb,.gltf"
-          onChange={(e) => {
-            const file =
-              e.target.files && e.target.files[0] ? e.target.files[0] : null;
-            setPendingFile(file);
-          }}
-          className="w-full"
-        />
-      </div>
+          {/* File upload for pending file */}
+          <div className="mb-4">
+            <label className="text-text-secondary text-xs block mb-1">
+              Replace Model
+            </label>
+            <input
+              type="file"
+              accept=".glb,.gltf"
+              onChange={(e) => {
+                const file =
+                  e.target.files && e.target.files[0]
+                    ? e.target.files[0]
+                    : null;
+                setPendingFile(file);
+              }}
+              className="w-full"
+            />
+          </div>
 
-      {/* Selected Source controls */}
-      <div className="mb-4">
-        <div className="text-text-secondary text-xs block mb-1">
-          Source Position
-        </div>
-        <div className="grid grid-cols-3 gap-2">
-          <SourceInput
-            value={selectedSource.position.x}
-            onChange={(v) =>
-              setSelectedSource(
-                {
-                  x: clampToBounds(v, "x"),
-                  y: selectedSource.position.y,
-                  z: selectedSource.position.z,
-                },
-                selectedSource.direction,
-              )
-            }
-          />
-          <SourceInput
-            value={selectedSource.position.y}
-            onChange={(v) =>
-              setSelectedSource(
-                {
-                  x: selectedSource.position.x,
-                  y: clampToBounds(v, "y"),
-                  z: selectedSource.position.z,
-                },
-                selectedSource.direction,
-              )
-            }
-          />
-          <SourceInput
-            value={selectedSource.position.z}
-            onChange={(v) =>
-              setSelectedSource(
-                {
-                  x: selectedSource.position.x,
-                  y: selectedSource.position.y,
-                  z: clampToBounds(v, "z"),
-                },
-                selectedSource.direction,
-              )
-            }
-          />
-        </div>
-      </div>
+          {/* Selected Source controls */}
+          <div className="mb-4">
+            <div className="text-text-secondary text-xs block mb-1">
+              Source Position
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              <SourceInput
+                value={selectedSource.position.x}
+                onChange={(v) =>
+                  setSelectedSource(
+                    {
+                      x: clampToBounds(v, "x"),
+                      y: selectedSource.position.y,
+                      z: selectedSource.position.z,
+                    },
+                    selectedSource.direction,
+                  )
+                }
+              />
+              <SourceInput
+                value={selectedSource.position.y}
+                onChange={(v) =>
+                  setSelectedSource(
+                    {
+                      x: selectedSource.position.x,
+                      y: clampToBounds(v, "y"),
+                      z: selectedSource.position.z,
+                    },
+                    selectedSource.direction,
+                  )
+                }
+              />
+              <SourceInput
+                value={selectedSource.position.z}
+                onChange={(v) =>
+                  setSelectedSource(
+                    {
+                      x: selectedSource.position.x,
+                      y: selectedSource.position.y,
+                      z: clampToBounds(v, "z"),
+                    },
+                    selectedSource.direction,
+                  )
+                }
+              />
+            </div>
+          </div>
 
-      {/* Number of Rays */}
-      <div className="mb-4">
-        <label className="text-text-secondary text-xs block mb-1">
-          Number of Rays
-        </label>
-        <input
-          type="number"
-          min="1"
-          max="100000"
-          step="10"
-          value={numRays}
-          onChange={(e) =>
-            setNumRays(Math.max(1, parseInt(e.target.value) || 1))
-          }
-          className="w-full p-2 rounded bg-bg-primary text-text-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-        />
-      </div>
+          {/* Number of Rays */}
+          <div className="mb-4">
+            <label className="text-text-secondary text-xs block mb-1">
+              Number of Rays
+            </label>
+            <input
+              type="number"
+              min="1"
+              max="100000"
+              step="10"
+              value={numRays}
+              onChange={(e) =>
+                setNumRays(Math.max(1, parseInt(e.target.value) || 1))
+              }
+              className="w-full p-2 rounded bg-bg-primary text-text-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            />
+          </div>
 
-      {/* FPS */}
-      <div className="mb-4">
-        <label className="text-text-secondary text-xs block mb-1">
-          FPS: {fps}
-        </label>
-        <input
-          type="range"
-          min="1"
-          max="120"
-          step="1"
-          value={fps}
-          onChange={(e) => setFps(parseInt(e.target.value))}
-          className="w-full"
-        />
-        <div className="flex justify-between text-[10px] text-text-secondary mt-0.5">
-          <span>1</span>
-          <span>120</span>
-        </div>
-      </div>
+          {/* FPS */}
+          <div className="mb-4">
+            <label className="text-text-secondary text-xs block mb-1">
+              FPS: {fps}
+            </label>
+            <input
+              type="range"
+              min="1"
+              max="120"
+              step="1"
+              value={fps}
+              onChange={(e) => setFps(parseInt(e.target.value))}
+              className="w-full"
+            />
+            <div className="flex justify-between text-[10px] text-text-secondary mt-0.5">
+              <span>1</span>
+              <span>120</span>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Grid Stats Info */}
       <GridStats />
