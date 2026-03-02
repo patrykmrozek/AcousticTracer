@@ -136,11 +136,9 @@ export default function Scene() {
               )}
             </div>
           </div>
-          {simDetails?.status === "staging" && (
-            <aside className="w-60 h-full">
-              <ConfigPanel />
-            </aside>
-          )}
+          <aside className="w-60 h-full">
+            <ConfigPanel />
+          </aside>
         </div>
       </main>
     </div>
