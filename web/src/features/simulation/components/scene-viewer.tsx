@@ -14,7 +14,6 @@ import { Suspense, useEffect, useRef } from "react";
 import * as THREE from "three";
 import { useSceneStore } from "../stores/scene-store";
 import VoxelGrid from "./voxel-grid";
-import BoundBoxHelper from "./bbox-helper";
 import SourcePlacer from "./source-place";
 
 interface SceneCanvasProps {

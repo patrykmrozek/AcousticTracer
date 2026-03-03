@@ -1,8 +1,6 @@
 import { create } from "zustand";
 import * as THREE from "three";
 
-type RayResponse = Record<string, Record<string, number>[]>;
-
 interface SceneState {
   config: {
     fileName: string;
@@ -34,10 +32,10 @@ interface SceneState {
   setNumRays: (rays: number) => void;
   setFps: (fps: number) => void;
   setBounds: (box: THREE.Box3 | null) => void;
-  rayResponse: RayResponse | null;
+  resultFileId: string | null;
   frameIndex: number;
   wireframe: boolean;
-  setRayResponse: (response: RayResponse) => void;
+  setResultFileId: (id: string | null) => void;
 
   setShowGrid: (visible: boolean) => void;
   setShowTexture: (visible: boolean) => void;
@@ -83,7 +81,7 @@ export const useSceneStore = create<SceneState>()((set) => ({
   pendingFile: null,
   gridDimensions: null,
   worldDimensions: null,
-  rayResponse: null,
+  resultFileId: null,
   frameIndex: 0,
   wireframe: false,
 
@@ -135,7 +133,7 @@ export const useSceneStore = create<SceneState>()((set) => ({
         bounds: null,
         gridDimensions: null,
         worldDimensions: null,
-        rayResponse: null,
+        resultFileId: null,
         showGrid: true,
         showTexture: true,
         wireframe: false,
@@ -167,7 +165,7 @@ export const useSceneStore = create<SceneState>()((set) => ({
 
   setGridDimensions: (dims) => set({ gridDimensions: dims }),
   setWorldDimensions: (dims) => set({ worldDimensions: dims }),
-  setRayResponse: (response: RayResponse) => set({ rayResponse: response }),
+  setResultFileId: (id: string | null) => set({ resultFileId: id }),
   setFrameIndex: (i: number) => set({ frameIndex: i }),
   setWireframe: (visible: boolean) => set({ wireframe: visible }),
 }));

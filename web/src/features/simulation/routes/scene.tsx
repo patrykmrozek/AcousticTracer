@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router";
 import { useSimulationDetail } from "@/api/simulations";
 import { useRayResponse } from "../api/use-simulation-hooks";
@@ -13,11 +12,10 @@ import useSceneSync from "../hooks/useSceneSync";
 import useModelUrl from "../hooks/useModelUrl";
 import useSimDetails from "../hooks/useSimDetails";
 import useSceneActions from "../hooks/useSceneActions";
+import { getErrorMessage } from "@/utils/get-error-message";
 
 function sceneFallbackRender(props: FallbackProps) {
-  const msg = (
-    props.error instanceof Error ? props.error.message : String(props.error)
-  ).toLowerCase();
+  const msg = getErrorMessage(props.error).toLowerCase();
   const isModelError =
     msg.includes("could not load") ||
     msg.includes("unexpected token") ||
@@ -39,29 +37,20 @@ export default function Scene() {
   const { data: simulation, isLoading, error } = useSimulationDetail(idOfFile);
   const simName = searchParams.get("name");
 
-  const rayTracerData = useSceneStore((state) => state.rayResponse);
-  const setRayResponse = useSceneStore((state) => state.setRayResponse);
+  const resultFileId = useSceneStore((state) => state.resultFileId);
   const frameIndex = useSceneStore((state) => state.frameIndex);
   const setFrameIndex = useSceneStore((state) => state.setFrameIndex);
+
+  // Ray data lives entirely in TanStack Query — keyed by resultFileId.
+  // Cached with staleTime: Infinity so revisits are instant.
+  const { data: rayTracerData } = useRayResponse(resultFileId ?? undefined);
 
   const frameCount = rayTracerData ? Object.keys(rayTracerData).length : 0;
 
   const bounds = useSceneStore((state) => state.bounds);
   const pendingFile = useSceneStore((state) => state.pendingFile);
 
-  // Fetch ray response via TanStack Query (cached in-memory for revisits)
-  const resultFileId =
-    simulation?.status === "completed" ? simulation.resultFileId : undefined;
-  const { data: cachedRayResponse } = useRayResponse(resultFileId);
-
-  // Sync TQ data → Zustand store so VoxelGrid + slider can read it
-  useEffect(() => {
-    if (cachedRayResponse && cachedRayResponse !== rayTracerData) {
-      setRayResponse(cachedRayResponse);
-    }
-  }, [cachedRayResponse, rayTracerData, setRayResponse]);
-
-  // Sync loaded simulation config to store/ update voxel size
+  // Sync loaded simulation config + resultFileId into Zustand
   useSceneSync(idOfFile, simulation, pendingFile);
 
   // Load ModelURl

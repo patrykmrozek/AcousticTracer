@@ -3,12 +3,14 @@ import type { Simulation } from "../api/simulation-repository";
 import { useSceneStore } from "../stores/scene-store";
 
 /**
- * Syncs a loaded simulation's config into the Zustand scene store and
- * resets ephemeral state (ray response, frame index) when the route
- * changes.
+ * Syncs a loaded simulation's config into the Zustand scene store
+ * and resets ephemeral UI state when the route changes.
  *
- * Ray-response fetching has been moved to `useRayResponse` (TanStack
- * Query) so the data is cached in-memory and revisits are instant.
+ * Ray-response data lives entirely in TanStack Query (via
+ * `useRayResponse`).  This hook only manages `resultFileId` — the
+ * link between a simulation and its cached result JSON — so that
+ * components deeper in the tree (e.g. VoxelGrid) can look it up
+ * without prop-drilling.
  */
 export default function useSceneSync(
   idOfFile: string | undefined,
@@ -17,16 +19,31 @@ export default function useSceneSync(
 ): void {
   const bounds = useSceneStore((state) => state.bounds);
 
-  // When the simulation ID changes, reset scene state so stale data from
-  // a previously viewed simulation doesn't persist.
+  // When the simulation ID changes, reset ephemeral state so stale
+  // data from a previously viewed simulation doesn't persist.
   useEffect(() => {
     if (idOfFile && idOfFile !== "new") {
       useSceneStore.getState().setPendingFile(null);
     }
 
-    // Clear the previous ray response and frame index.
-    useSceneStore.setState({ rayResponse: null, frameIndex: 0 });
+    // Clear the previous resultFileId and frame index.
+    useSceneStore.setState({ resultFileId: null, frameIndex: 0 });
   }, [idOfFile]);
+
+  // Set resultFileId as soon as the simulation record is available.
+  // This does NOT depend on bounds — the link to the result file is
+  // known before the 3-D model finishes loading.
+  useEffect(() => {
+    if (!simulation) return;
+    if (idOfFile === "new") return;
+
+    const rid =
+      simulation.status === "completed" && simulation.resultFileId
+        ? simulation.resultFileId
+        : null;
+
+    useSceneStore.setState({ resultFileId: rid });
+  }, [idOfFile, simulation]);
 
   // Sync the saved config into the store once the model's bounds are known.
   useEffect(() => {
