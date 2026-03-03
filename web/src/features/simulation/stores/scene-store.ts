@@ -92,7 +92,7 @@ export const useSceneStore = create<SceneState>()((set) => ({
   // the actions functions to call when updating state
   setVoxelSize: (size) =>
     set((state) => ({
-      config: { ...state.config, voxelSize: size },
+      config: { ...state.config, voxelSize: Math.round(size * 100) / 100 },
     })),
   setNumRays: (rays) =>
     set((state) => ({
@@ -138,6 +138,8 @@ export const useSceneStore = create<SceneState>()((set) => ({
       worldDimensions: null,
       rayResponse: null,
       showGrid: true,
+      showTexture: true,
+      wireframe: false,
       config: {
         fileName: file ? file.name : "",
         voxelSize: 2,
