@@ -41,7 +41,6 @@ export default function ConfigPanel() {
   const setShowTexture = useSceneStore((state) => state.setShowTexture);
   const wireframe = useSceneStore((state) => state.wireframe);
   const setWireframe = useSceneStore((state) => state.setWireframe);
-  const rayResponse = useSceneStore((state) => state.rayResponse);
 
   // extra controls available in scene-store
   const material = useSceneStore((state) => state.config.material);
@@ -97,7 +96,7 @@ export default function ConfigPanel() {
   };
 
   return (
-    <div className="bg-bg-card p-4 rounded-lg border border-border-primary w-full min-h-0 flex-1">
+    <div className="bg-bg-card p-4 rounded-lg border border-border-primary w-full min-h-0 flex-1 overflow-auto">
       <h3 className="text-text-primary font-bold">Config Panel</h3>
       {/* Voxel Size Slider */}
       <div className="mb-4">
@@ -135,8 +134,10 @@ export default function ConfigPanel() {
           className="accent-button-primary scale-125"
         />
       </div>
-      <div className="flex items-center justify-between mb-4">
-        <span className="text-sm">Show Model Textures</span>
+
+      {/* Texture Toggle */}
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-sm">Show Texture</span>
         <input
           type="checkbox"
           checked={showTexture}
@@ -144,8 +145,40 @@ export default function ConfigPanel() {
           className="accent-button-primary scale-125"
         />
       </div>
+
+      {/* Wireframe Toggle */}
       <div className="flex items-center justify-between mb-4">
         <span className="text-sm">Wireframe</span>
+        <input
+          type="checkbox"
+          checked={wireframe}
+          onChange={(e) => setWireframe(e.target.checked)}
+          className="accent-button-primary scale-125"
+        />
+      </div>
+
+      {/* Material Select */}
+      <div className="mb-4">
+        <label className="text-text-secondary text-xs block mb-1">
+          Material
+        </label>
+        <select
+          value={material}
+          onChange={(e) => setMaterial(e.target.value)}
+          className="w-full p-2 rounded bg-bg-primary text-text-primary"
+        >
+          <option>Plastic</option>
+          <option>Metal</option>
+          <option>Wood</option>
+          <option>Glass</option>
+        </select>
+      </div>
+
+      {/* File upload for pending file */}
+      <div className="mb-4">
+        <label className="text-text-secondary text-xs block mb-1">
+          Replace Model
+        </label>
         <input
           type="file"
           accept=".glb"
@@ -158,23 +191,53 @@ export default function ConfigPanel() {
         />
       </div>
 
-      {!rayResponse && (
-        <>
-          {/* Material Select */}
-          <div className="mb-4">
-            <label className="text-text-secondary text-xs block mb-1">
-              Material
-            </label>
-            <select
-              value={material}
-              onChange={(e) => setMaterial(e.target.value)}
-              className="w-full p-2 rounded bg-bg-primary text-text-primary"
-            >
-              <option>Plastic</option>
-              <option>Metal</option>
-              <option>Wood</option>
-            </select>
-          </div>
+      {/* Selected Source controls */}
+      <div className="mb-4">
+        <div className="text-text-secondary text-xs block mb-1">
+          Source Position
+        </div>
+        <div className="grid grid-cols-3 gap-2">
+          <SourceInput
+            value={selectedSource.position.x}
+            onChange={(v) =>
+              setSelectedSource(
+                {
+                  x: clampToBounds(v, "x"),
+                  y: selectedSource.position.y,
+                  z: selectedSource.position.z,
+                },
+                selectedSource.direction,
+              )
+            }
+          />
+          <SourceInput
+            value={selectedSource.position.y}
+            onChange={(v) =>
+              setSelectedSource(
+                {
+                  x: selectedSource.position.x,
+                  y: clampToBounds(v, "y"),
+                  z: selectedSource.position.z,
+                },
+                selectedSource.direction,
+              )
+            }
+          />
+          <SourceInput
+            value={selectedSource.position.z}
+            onChange={(v) =>
+              setSelectedSource(
+                {
+                  x: selectedSource.position.x,
+                  y: selectedSource.position.y,
+                  z: clampToBounds(v, "z"),
+                },
+                selectedSource.direction,
+              )
+            }
+          />
+        </div>
+      </div>
 
       {/* Source Direction (read-only) */}
       <div className="mb-4">

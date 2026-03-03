@@ -138,6 +138,8 @@ export const useSceneStore = create<SceneState>()((set) => ({
       worldDimensions: null,
       rayResponse: null,
       showGrid: true,
+      showTexture: true,
+      wireframe: false,
       config: {
         fileName: file ? file.name : "",
         voxelSize: 2,

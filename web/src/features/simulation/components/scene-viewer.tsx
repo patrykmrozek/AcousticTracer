@@ -8,8 +8,6 @@ import {
   Environment,
   GizmoHelper,
   GizmoViewport,
-  Grid,
-  ContactShadows,
   AdaptiveDpr,
 } from "@react-three/drei";
 import { Suspense, useEffect, useRef } from "react";
@@ -80,6 +78,15 @@ function Model({
                   color.set("#474747");
                   break;
                 case "Plastic":
+                  color.set("#246982");
+                  break;
+                case "Metal":
+                  color.set("#8a8a8a");
+                  break;
+                case "Glass":
+                  color.set("#88c0d0");
+                  break;
+                default:
                   color.set("#246982");
                   break;
               }
