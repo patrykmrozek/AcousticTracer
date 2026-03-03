@@ -136,41 +136,39 @@ export default function ConfigPanel({ mode = "staging" }: ConfigPanelProps) {
 
   return (
     <div className="bg-bg-card p-4 rounded-lg border border-border-primary w-full min-h-0 flex-1 overflow-auto">
-      <h3 className="text-text-primary font-bold">Config Panel</h3>
+      <h3 className="text-text-primary font-bold mb-2">Config Panel</h3>
 
-      {/* Voxel Size Slider — staging only */}
-      {mode === "staging" && discreteSteps.length > 0 && (
-        <div className="mb-4">
-          <label className="text-text-secondary text-xs block mb-1">
-            Voxel Size: {voxelSize.toFixed(3)}m
-          </label>
-          <input
-            type="range"
-            min={0}
-            max={discreteSteps.length - 1}
-            step={1}
-            value={sliderIndex}
-            onChange={(e) => setVoxelSize(discreteSteps[parseInt(e.target.value)])}
-            className="w-full"
-          />
-          <div className="flex justify-between text-[10px] text-text-secondary mt-0.5">
-            <span>{discreteSteps[0]}m</span>
-            <span>{discreteSteps[discreteSteps.length - 1]}m</span>
-          </div>
-          <div
-            className={`text-[10px] mt-1 ${isOverLimit ? "text-danger font-semibold" : "text-text-secondary"}`}
-          >
-            {estimatedVoxels.toLocaleString()} voxels
-            {isOverLimit && " May be slow"}
-          </div>
-        </div>
-      )}
+      {/* Voxel Size — always visible */}
       <div className="mb-4">
         <label className="text-text-secondary text-xs block mb-1">
-          Voxel Size: {voxelSize.toFixed(2)}m
+          Voxel Size: {voxelSize}m
         </label>
+        {mode === "staging" && discreteSteps.length > 0 && (
+          <>
+            <input
+              type="range"
+              min={0}
+              max={discreteSteps.length - 1}
+              step={1}
+              value={sliderIndex}
+              onChange={(e) =>
+                setVoxelSize(discreteSteps[parseInt(e.target.value)])
+              }
+              className="w-full"
+            />
+            <div className="flex justify-between text-[10px] text-text-secondary mt-0.5">
+              <span>{discreteSteps[0]}m</span>
+              <span>{discreteSteps[discreteSteps.length - 1]}m</span>
+            </div>
+            <div
+              className={`text-[10px] mt-1 ${isOverLimit ? "text-danger font-semibold" : "text-text-secondary"}`}
+            >
+              {estimatedVoxels.toLocaleString()} voxels
+              {isOverLimit && " May be slow"}
+            </div>
+          </>
+        )}
       </div>
-
       {/* Grid Toggle */}
       <div className="flex items-center justify-between mb-2">
         <span className="text-sm">Show Voxel Grid</span>

@@ -175,7 +175,7 @@ export default function Dashboard() {
                         </span>
                       </td>
                       <td className="px-6 py-5 align-middle text-text-secondary leading-snug">
-                        {sim.config.voxelSize.toFixed(3)}m
+                        {sim.config.voxelSize}m
                       </td>
                       <td className="px-6 py-5 align-middle text-text-secondary leading-snug">
                         {sim.config.fps}
