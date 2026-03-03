@@ -6,28 +6,35 @@ import { useSceneStore } from "../stores/scene-store";
 export default function useSceneSync(
   idOfFile: string | undefined,
   simulation: Simulation | undefined,
-  _pendingFile: File | null,
 ): void {
-  void _pendingFile;
 
-  const setVoxelSize = useSceneStore((state) => state.setVoxelSize);
-  const setPendingFile = useSceneStore((state) => state.setPendingFile);
+  const bounds = useSceneStore((state) => state.bounds);
   const setRayResponse = useSceneStore((state) => state.setRayResponse);
   const rayResponse = useSceneStore((state) => state.rayResponse);
 
-  // Clear pendingFile when navigating to an existing (saved) simulation
+  // When navigating to an existing simulation, clear the pendingFile
+  // so the model URL resolves from the saved Appwrite file instead.
   useEffect(() => {
     if (idOfFile && idOfFile !== "new") {
-      setPendingFile(null);
+      useSceneStore.getState().setPendingFile(null);
     }
-  }, [idOfFile, setPendingFile]);
+  }, [idOfFile]);
 
-  // When loading a saved simulation, restore its voxel size
   useEffect(() => {
-    if (simulation?.config) {
-      setVoxelSize(simulation.config.voxelSize);
-    }
-  }, [simulation, setVoxelSize]);
+    if (!bounds || !simulation?.config) return;
+    if (idOfFile === "new") return;
+
+    useSceneStore.setState({
+      config: {
+        fileName: simulation.fileName,
+        voxelSize: simulation.config.voxelSize,
+        numRays: simulation.config.numRays,
+        fps: simulation.config.fps,
+        material: simulation.config.material,
+        selectedSource: simulation.config.selectedSource,
+      },
+    });
+  }, [bounds, idOfFile, simulation]);
 
   // When loading a completed simulation, fetch its stored ray response
   useEffect(() => {

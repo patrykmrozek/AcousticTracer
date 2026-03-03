@@ -29,7 +29,6 @@ interface SceneState {
   pendingFile: File | null;
   gridDimensions: { nx: number; ny: number; nz: number } | null;
   worldDimensions: { x: number; y: number; z: number } | null;
-  sourceHasBeenPlaced: boolean;
 
   setVoxelSize: (size: number) => void;
   setNumRays: (rays: number) => void;
@@ -85,7 +84,6 @@ export const useSceneStore = create<SceneState>()((set) => ({
   gridDimensions: null,
   worldDimensions: null,
   rayResponse: null,
-  sourceHasBeenPlaced: false,
   frameIndex: 0,
   wireframe: false,
 
@@ -129,29 +127,36 @@ export const useSceneStore = create<SceneState>()((set) => ({
   },
   setShowGrid: (visible) => set({ showGrid: visible }),
   setShowTexture: (visible) => set({ showTexture: visible }),
-  setPendingFile: (file) =>
-    set({
-      pendingFile: file,
-      // Reset all transient / model-specific state
-      bounds: null,
-      gridDimensions: null,
-      worldDimensions: null,
-      rayResponse: null,
-      showGrid: true,
-      showTexture: true,
-      wireframe: false,
-      config: {
-        fileName: file ? file.name : "",
-        voxelSize: 2,
-        numRays: 10,
-        fps: 60,
-        material: "Plastic",
-        selectedSource: {
-          position: { x: 0, y: 0, z: 0 },
-          direction: { x: 0, y: 0, z: 0 },
+  setPendingFile: (file) => {
+    if (file) {
+      // New file selected — full reset so the scene starts fresh
+      set({
+        pendingFile: file,
+        bounds: null,
+        gridDimensions: null,
+        worldDimensions: null,
+        rayResponse: null,
+        showGrid: true,
+        showTexture: true,
+        wireframe: false,
+        frameIndex: 0,
+        config: {
+          fileName: file.name,
+          voxelSize: 2,
+          numRays: 10,
+          fps: 60,
+          material: "Plastic",
+          selectedSource: {
+            position: { x: 0, y: 0, z: 0 },
+            direction: { x: 0, y: 0, z: 0 },
+          },
         },
-      },
-    }),
+      });
+    } else {
+      // Clearing pendingFile only (e.g. when loading a saved simulation)
+      set({ pendingFile: null });
+    }
+  },
   setMaterial: (value) =>
     set((state) => ({
       config: {
