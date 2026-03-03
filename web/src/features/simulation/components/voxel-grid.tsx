@@ -1,10 +1,9 @@
-import { useRef, useMemo, useLayoutEffect, useState, useEffect } from "react";
+import { useRef, useMemo, useLayoutEffect } from "react";
 import * as THREE from "three";
 import { useSceneStore } from "../stores/scene-store";
 import { useThree } from "@react-three/fiber";
 
 const MAX_VOXELS = 500_000;
-const DEBOUNCE_MS = 150;
 
 export default function VoxelGrid() {
   const meshRef = useRef<THREE.InstancedMesh>(null);
@@ -51,17 +50,6 @@ export default function VoxelGrid() {
       gridDims: dims,
     };
   }, [bounds, voxelSize]);
-
-  // Update world dimensions only when bounds change (NOT when voxelSize changes)
-  useLayoutEffect(() => {
-    if (!bounds) {
-      setWorldDimensions(null);
-      return;
-    }
-    const size = new THREE.Vector3();
-    bounds.getSize(size);
-    setWorldDimensions({ x: size.x, y: size.y, z: size.z });
-  }, [bounds, setWorldDimensions]);
 
   // Update grid dimensions when gridDims change
   useLayoutEffect(() => {

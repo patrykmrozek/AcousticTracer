@@ -16,7 +16,11 @@ export default function UploadForm({ onClose }: UploadFormProps) {
   const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!file) {
-      setFormError("Please select only .glb file to upload")
+      setFormError("Please select a .glb file to upload")
+      return;
+    }
+    if (!file.name.toLowerCase().endsWith(".glb")) {
+      setFormError("Only .glb files are supported.");
       return;
     }
 
@@ -29,7 +33,7 @@ export default function UploadForm({ onClose }: UploadFormProps) {
       // 3. Navigate to scene view with just the name
       // File will be retrieved from store
       navigate(`/scene/new?name=${encodeURIComponent(name)}`);
-    } catch (err : unknown) {
+    } catch (err: unknown) {
       setFormError(err instanceof Error ? err.message : String(err));
     }
   };
@@ -38,11 +42,6 @@ export default function UploadForm({ onClose }: UploadFormProps) {
     <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm z-1000 p-4 bg-black/75">
       <div className="bg-bg-card rounded-xl p-6 shadow-md w-112.5 border border-border-primary">
         <div className="flex justify-between items-center mb-6 pb-4 border-b border-border-primary">
-          {formError && (
-            <div className="text-danger text-sm p-2 bg-red-500/10 rounded">
-              {formError}
-            </div>
-          )}
           <h3 className="m-0 text-lg font-semibold text-text-primary">
             New Project
           </h3>
@@ -56,7 +55,6 @@ export default function UploadForm({ onClose }: UploadFormProps) {
             </button>
           )}
         </div>
-
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           {/* Name Field */}
           <div>
@@ -103,10 +101,12 @@ export default function UploadForm({ onClose }: UploadFormProps) {
               </label>
             </div>
           </div>
-
-          <button
-            className="w-full mt-4 px-4 py-3 rounded-lg bg-button-primary text-white font-semibold text-sm cursor-pointer border-none hover:bg-button-hover focus-visible:outline-2 focus-visible:outline-button-primary focus-visible:outline-offset-2 disabled:opacity-60 disabled:cursor-not-allowed flex justify-center items-center"
-          >
+          {formError && (
+            <div className="text-danger m-1 text-sm p-2 bg-red-500/10 rounded">
+              {formError}
+            </div>
+          )}
+          <button className="w-full px-4 py-3 rounded-lg bg-button-primary text-white font-semibold text-sm cursor-pointer border-none hover:bg-button-hover focus-visible:outline-2 focus-visible:outline-button-primary focus-visible:outline-offset-2 disabled:opacity-60 disabled:cursor-not-allowed flex justify-center items-center">
             Continue to Editor
           </button>
         </form>

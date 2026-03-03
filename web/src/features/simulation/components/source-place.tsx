@@ -1,19 +1,26 @@
 // src/features/simulation/components/source-placer.tsx
 
-import { useState, useRef, useEffect } from "react";
-import { TransformControls } from "@react-three/drei";
+import { useState, useRef, useEffect, useMemo, type RefObject } from "react";
+import { useFrame } from "@react-three/fiber";
+import { Line, TransformControls } from "@react-three/drei";
 import type { TransformControls as TransformControlsImpl } from "three-stdlib";
 import { useSceneStore } from "../stores/scene-store";
 import * as THREE from "three";
 
 type Axis = "all" | "x" | "y" | "z";
 
-export default function SourcePlacer({ isStaging = false }: { isStaging?: boolean }) {
+export default function SourcePlacer({
+  isStaging = false,
+}: {
+  isStaging?: boolean;
+}) {
   const bounds = useSceneStore((s) => s.bounds);
-  const voxelSize = useSceneStore((s) => s.config.voxelSize);
   const sourceX = useSceneStore((s) => s.config.selectedSource.position.x);
   const sourceY = useSceneStore((s) => s.config.selectedSource.position.y);
   const sourceZ = useSceneStore((s) => s.config.selectedSource.position.z);
+  const dirX = useSceneStore((s) => s.config.selectedSource.direction.x);
+  const dirY = useSceneStore((s) => s.config.selectedSource.direction.y);
+  const dirZ = useSceneStore((s) => s.config.selectedSource.direction.z);
   const setSelectedSource = useSceneStore((s) => s.setSelectedSource);
 
   const controlsRef = useRef<TransformControlsImpl>(null);
@@ -21,7 +28,7 @@ export default function SourcePlacer({ isStaging = false }: { isStaging?: boolea
   const [activeAxis, setActiveAxis] = useState<Axis>("all");
   const [controlsEnabled, setControlsEnabled] = useState(true);
 
-  // Sync store to TransformControls wrapper group (not the mesh) when NOT dragging
+  // Sync store to TransformControls (not the mesh) when NOT dragging
   useEffect(() => {
     const controls = controlsRef.current;
     if (!controls || draggingRef.current) return;
@@ -30,7 +37,24 @@ export default function SourcePlacer({ isStaging = false }: { isStaging?: boolea
     obj.position.set(sourceX, sourceY, sourceZ);
   }, [sourceX, sourceY, sourceZ]);
 
-  // Listen for drag end — read position from the wrapper group and commit to store
+  // Clamp helper — keeps a position inside the bounding box
+  const clamp = (pos: THREE.Vector3, box: THREE.Box3) => {
+    pos.x = Math.max(box.min.x, Math.min(box.max.x, pos.x));
+    pos.y = Math.max(box.min.y, Math.min(box.max.y, pos.y));
+    pos.z = Math.max(box.min.z, Math.min(box.max.z, pos.z));
+  };
+
+  // While dragging, clamp the object position to bounds every frame
+  useFrame(() => {
+    if (!draggingRef.current || !bounds) return;
+    const controls = controlsRef.current;
+    if (!controls) return;
+    const obj = (controls as any).object as THREE.Object3D | undefined;
+    if (!obj) return;
+    clamp(obj.position, bounds);
+  });
+
+  // Listen for drag end — clamp + commit position to store
   useEffect(() => {
     const controls = controlsRef.current;
     if (!controls) return;
@@ -41,6 +65,8 @@ export default function SourcePlacer({ isStaging = false }: { isStaging?: boolea
       if (!event.value) {
         const obj = (controls as any).object as THREE.Object3D | undefined;
         if (!obj) return;
+        const currentBounds = useSceneStore.getState().bounds;
+        if (currentBounds) clamp(obj.position, currentBounds);
         const { x, y, z } = obj.position;
         const dir = useSceneStore.getState().config.selectedSource.direction;
         setSelectedSource({ x, y, z }, dir);
@@ -82,41 +108,284 @@ export default function SourcePlacer({ isStaging = false }: { isStaging?: boolea
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
+  // Scale factor based on model size, clamped to stay visible but not huge
+  const scale = useMemo(() => {
+    if (!bounds) return 1;
+    const size = new THREE.Vector3();
+    bounds.getSize(size);
+    return Math.max(size.x, size.y, size.z) * 0.03;
+  }, [bounds]);
+
+  const lineLength = scale * 3;
+
+  // Normalized direction vector (fallback to -Z)
+  const dirVec = useMemo(() => {
+    const v = new THREE.Vector3(dirX, dirY, dirZ);
+    return v.lengthSq() < 1e-4 ? new THREE.Vector3(0, 0, -1) : v.normalize();
+  }, [dirX, dirY, dirZ]);
+
+  const coneQuat = useMemo(() => {
+    const q = new THREE.Quaternion();
+    q.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dirVec);
+    return q;
+  }, [dirVec]);
+
   if (!bounds) return null;
 
-  const markerSize = Math.max(0.05, voxelSize * 0.2);
+  const markerSize = scale;
+  const coneRadius = scale * 0.6;
+  const coneHeight = coneRadius * 2.5;
 
   const marker = (
     <mesh renderOrder={999}>
       <sphereGeometry args={[markerSize, 16, 16]} />
-      <meshBasicMaterial
-        color={0xFF0000}
-        transparent
-        opacity={0.95}
-        depthTest={false}
-      />
+      <meshBasicMaterial color={0xff0000} transparent depthTest={false} />
     </mesh>
   );
 
-  // Read-only: just show the sphere at the stored position
   if (!isStaging) {
     return (
       <group position={[sourceX, sourceY, sourceZ]}>
         {marker}
+        <Line
+          points={[
+            [0, 0, 0],
+            [
+              dirVec.x * lineLength,
+              dirVec.y * lineLength,
+              dirVec.z * lineLength,
+            ],
+          ]}
+          color={0xffaa00}
+          lineWidth={2}
+          renderOrder={998}
+        />
+        <mesh
+          position={[
+            dirVec.x * lineLength,
+            dirVec.y * lineLength,
+            dirVec.z * lineLength,
+          ]}
+          quaternion={coneQuat}
+          renderOrder={999}
+        >
+          <coneGeometry args={[coneRadius, coneHeight, 8]} />
+          <meshBasicMaterial
+            color={0xffaa00}
+            transparent
+            opacity={0.9}
+            depthTest={false}
+          />
+        </mesh>
       </group>
     );
   }
 
   return (
-    <TransformControls
-      ref={controlsRef}
-      mode="translate"
-      enabled={controlsEnabled}
-      showX={controlsEnabled && (activeAxis === "all" || activeAxis === "x")}
-      showY={controlsEnabled && (activeAxis === "all" || activeAxis === "y")}
-      showZ={controlsEnabled && (activeAxis === "all" || activeAxis === "z")}
-    >
-      {marker}
-    </TransformControls>
+    <>
+      <TransformControls
+        ref={controlsRef}
+        mode="translate"
+        enabled={controlsEnabled}
+        showX={controlsEnabled && (activeAxis === "all" || activeAxis === "x")}
+        showY={controlsEnabled && (activeAxis === "all" || activeAxis === "y")}
+        showZ={controlsEnabled && (activeAxis === "all" || activeAxis === "z")}
+      >
+        {marker}
+      </TransformControls>
+      <DirectionArrow
+        sourceControlsRef={controlsRef}
+        lineLength={lineLength}
+        coneRadius={coneRadius}
+        coneHeight={coneHeight}
+        controlsEnabled={controlsEnabled}
+      />
+    </>
+  );
+}
+
+function DirectionArrow({
+  sourceControlsRef,
+  lineLength,
+  coneRadius,
+  coneHeight,
+  controlsEnabled,
+}: {
+  sourceControlsRef: RefObject<TransformControlsImpl | null>;
+  lineLength: number;
+  coneRadius: number;
+  coneHeight: number;
+  controlsEnabled: boolean;
+}) {
+  const setSelectedSource = useSceneStore((s) => s.setSelectedSource);
+
+  const controlsRef = useRef<TransformControlsImpl>(null);
+  const coneRef = useRef<THREE.Mesh>(null);
+  const draggingRef = useRef(false);
+
+  // Line object — created once, vertex positions updated per-frame
+  const line = useMemo(() => {
+    const geom = new THREE.BufferGeometry();
+    geom.setAttribute(
+      "position",
+      new THREE.Float32BufferAttribute(new Float32Array(6), 3),
+    );
+    const mat = new THREE.LineBasicMaterial({
+      color: 0xffaa00,
+      depthTest: false,
+    });
+    const l = new THREE.Line(geom, mat);
+    l.renderOrder = 998;
+    l.frustumCulled = false;
+    return l;
+  }, []);
+
+  // Dispose geometry + material on unmount
+  useEffect(() => {
+    return () => {
+      line.geometry.dispose();
+      (line.material as THREE.Material).dispose();
+    };
+  }, [line]);
+
+  const dir = useMemo(() => new THREE.Vector3(), []);
+  const yUp = useMemo(() => new THREE.Vector3(0, 1, 0), []);
+  const quat = useMemo(() => new THREE.Quaternion(), []);
+
+  // Per-frame: follow source, update line endpoints, orient cone
+  useFrame(() => {
+    // Live source position (reads from parent TransformControls during drag)
+    const srcCtrl = sourceControlsRef.current;
+    const srcObj = srcCtrl
+      ? ((srcCtrl as any).object as THREE.Object3D | undefined)
+      : undefined;
+
+    let sx: number, sy: number, sz: number;
+    if (srcObj) {
+      sx = srcObj.position.x;
+      sy = srcObj.position.y;
+      sz = srcObj.position.z;
+    } else {
+      const p = useSceneStore.getState().config.selectedSource.position;
+      sx = p.x;
+      sy = p.y;
+      sz = p.z;
+    }
+
+    const ctrl = controlsRef.current;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const handleObj = ctrl
+      ? ((ctrl as any).object as THREE.Object3D | undefined)
+      : undefined;
+
+    // When NOT dragging the direction handle, lock it to source + dir * length
+    if (!draggingRef.current && handleObj) {
+      const d = useSceneStore.getState().config.selectedSource.direction;
+      dir.set(d.x, d.y, d.z);
+      if (dir.lengthSq() < 1e-4) dir.set(0, 0, -1);
+      dir.normalize();
+      handleObj.position.set(
+        sx + dir.x * lineLength,
+        sy + dir.y * lineLength,
+        sz + dir.z * lineLength,
+      );
+    }
+
+    // Update line endpoints
+    const posAttr = line.geometry.getAttribute(
+      "position",
+    ) as THREE.BufferAttribute;
+    const buf = posAttr.array as Float32Array;
+    buf[0] = sx;
+    buf[1] = sy;
+    buf[2] = sz;
+    if (handleObj) {
+      buf[3] = handleObj.position.x;
+      buf[4] = handleObj.position.y;
+      buf[5] = handleObj.position.z;
+    }
+    posAttr.needsUpdate = true;
+
+    // Orient cone so its tip points away from the source
+    if (coneRef.current && handleObj) {
+      dir.set(
+        handleObj.position.x - sx,
+        handleObj.position.y - sy,
+        handleObj.position.z - sz,
+      );
+      if (dir.lengthSq() > 1e-4) {
+        dir.normalize();
+        quat.setFromUnitVectors(yUp, dir);
+        coneRef.current.quaternion.copy(quat);
+      }
+    }
+  });
+
+  // On drag end: normalize direction, snap handle, commit to store
+  useEffect(() => {
+    const ctrl = controlsRef.current;
+    if (!ctrl) return;
+
+    const onDragChanged = (event: { value: boolean }) => {
+      draggingRef.current = event.value;
+
+      if (!event.value) {
+        const obj = (ctrl as any).object as THREE.Object3D | undefined;
+        if (!obj) return;
+
+        const { position: src } =
+          useSceneStore.getState().config.selectedSource;
+        const newDir = new THREE.Vector3(
+          obj.position.x - src.x,
+          obj.position.y - src.y,
+          obj.position.z - src.z,
+        );
+        if (newDir.lengthSq() < 1e-4) newDir.set(0, 0, -1);
+        newDir.normalize();
+
+        // Snap handle back to fixed distance from source
+        obj.position.set(
+          src.x + newDir.x * lineLength,
+          src.y + newDir.y * lineLength,
+          src.z + newDir.z * lineLength,
+        );
+
+        setSelectedSource(src, {
+          x: newDir.x,
+          y: newDir.y,
+          z: newDir.z,
+        });
+      }
+    };
+
+    (ctrl as any).addEventListener("dragging-changed", onDragChanged);
+    return () => {
+      (ctrl as any).removeEventListener("dragging-changed", onDragChanged);
+    };
+  }, [setSelectedSource, lineLength]);
+
+  return (
+    <>
+      <primitive object={line} />
+      <TransformControls
+        ref={controlsRef}
+        mode="translate"
+        size={0.4}
+        enabled={controlsEnabled}
+        showX={controlsEnabled}
+        showY={controlsEnabled}
+        showZ={controlsEnabled}
+      >
+        <mesh ref={coneRef} renderOrder={999}>
+          <coneGeometry args={[coneRadius, coneHeight, 8]} />
+          <meshBasicMaterial
+            color={0xffaa00}
+            transparent
+            opacity={0.9}
+            depthTest={false}
+          />
+        </mesh>
+      </TransformControls>
+    </>
   );
 }
