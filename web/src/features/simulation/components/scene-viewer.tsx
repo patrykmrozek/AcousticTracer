@@ -152,17 +152,15 @@ export default function SceneCanvas({
 
   return (
     <Canvas shadows camera={{ position: [5, 5, 5], fov: 75 }}>
-      {/* Lighting */}
-      <Environment preset="warehouse" />
       {/* Adaptive resolution */}
       <AdaptiveDpr pixelated />
 
       <Suspense fallback={<Loader />}>
+        <Environment preset="warehouse" />
         <Bounds fit clip margin={2}>
           <Model url={modelUrl} onLoad={setBounds} />
         </Bounds>
         {bounds && showGrid && !awaitingResults && <VoxelGrid />}
-        {/* <BoundBoxHelper /> */}
         {bounds && <SourcePlacer isStaging={isStaging} />}
       </Suspense>
       {/* Orientation gizmo */}

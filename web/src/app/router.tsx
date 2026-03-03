@@ -4,7 +4,7 @@ import {
   Outlet,
   Navigate,
 } from "react-router";
-import { lazy } from "react";
+import { lazy, Suspense } from "react";
 import { useUser } from "@/features/auth/context/user-store";
 import { FeatureErrorFallback } from "@/components/feature-error-boundary";
 import { ErrorBoundary } from "react-error-boundary";
@@ -20,7 +20,21 @@ const ProtectedRoute = () => {
   if (isLoading) return null;
 
   if (!current) return <Navigate to="/auth/login" replace />;
-  return <Outlet />;
+
+  // This Suspense boundary catches lazy-route chunk loads so the
+  // outer AppProvider Suspense doesn't unmount the whole tree
+  // (which would destroy any active WebGL Canvas and lose context).
+  return (
+    <Suspense
+      fallback={
+        <div className="flex h-screen items-center justify-center text-text-primary">
+          Loading...
+        </div>
+      }
+    >
+      <Outlet />
+    </Suspense>
+  );
 };
 
 const router = createBrowserRouter([
