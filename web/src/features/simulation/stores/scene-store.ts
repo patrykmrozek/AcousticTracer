@@ -1,8 +1,6 @@
 import { create } from "zustand";
 import * as THREE from "three";
 
-type RayResponse = Record<string, Record<string, number>[]>;
-
 interface SceneState {
   config: {
     fileName: string;
@@ -29,16 +27,15 @@ interface SceneState {
   pendingFile: File | null;
   gridDimensions: { nx: number; ny: number; nz: number } | null;
   worldDimensions: { x: number; y: number; z: number } | null;
-  sourceHasBeenPlaced: boolean;
 
   setVoxelSize: (size: number) => void;
   setNumRays: (rays: number) => void;
   setFps: (fps: number) => void;
   setBounds: (box: THREE.Box3 | null) => void;
-  rayResponse: RayResponse | null;
+  resultFileId: string | null;
   frameIndex: number;
   wireframe: boolean;
-  setRayResponse: (response: RayResponse) => void;
+  setResultFileId: (id: string | null) => void;
 
   setShowGrid: (visible: boolean) => void;
   setShowTexture: (visible: boolean) => void;
@@ -84,8 +81,7 @@ export const useSceneStore = create<SceneState>()((set) => ({
   pendingFile: null,
   gridDimensions: null,
   worldDimensions: null,
-  rayResponse: null,
-  sourceHasBeenPlaced: false,
+  resultFileId: null,
   frameIndex: 0,
   wireframe: false,
 
@@ -129,29 +125,36 @@ export const useSceneStore = create<SceneState>()((set) => ({
   },
   setShowGrid: (visible) => set({ showGrid: visible }),
   setShowTexture: (visible) => set({ showTexture: visible }),
-  setPendingFile: (file) =>
-    set({
-      pendingFile: file,
-      // Reset all transient / model-specific state
-      bounds: null,
-      gridDimensions: null,
-      worldDimensions: null,
-      rayResponse: null,
-      showGrid: true,
-      showTexture: true,
-      wireframe: false,
-      config: {
-        fileName: file ? file.name : "",
-        voxelSize: 2,
-        numRays: 10,
-        fps: 60,
-        material: "Plastic",
-        selectedSource: {
-          position: { x: 0, y: 0, z: 0 },
-          direction: { x: 0, y: 0, z: 0 },
+  setPendingFile: (file) => {
+    if (file) {
+      // New file selected — full reset so the scene starts fresh
+      set({
+        pendingFile: file,
+        bounds: null,
+        gridDimensions: null,
+        worldDimensions: null,
+        resultFileId: null,
+        showGrid: true,
+        showTexture: true,
+        wireframe: false,
+        frameIndex: 0,
+        config: {
+          fileName: file.name,
+          voxelSize: 2,
+          numRays: 10,
+          fps: 60,
+          material: "Plastic",
+          selectedSource: {
+            position: { x: 0, y: 0, z: 0 },
+            direction: { x: 0, y: 0, z: 0 },
+          },
         },
-      },
-    }),
+      });
+    } else {
+      // Clearing pendingFile only (e.g. when loading a saved simulation)
+      set({ pendingFile: null });
+    }
+  },
   setMaterial: (value) =>
     set((state) => ({
       config: {
@@ -162,7 +165,7 @@ export const useSceneStore = create<SceneState>()((set) => ({
 
   setGridDimensions: (dims) => set({ gridDimensions: dims }),
   setWorldDimensions: (dims) => set({ worldDimensions: dims }),
-  setRayResponse: (response: RayResponse) => set({ rayResponse: response }),
+  setResultFileId: (id: string | null) => set({ resultFileId: id }),
   setFrameIndex: (i: number) => set({ frameIndex: i }),
   setWireframe: (visible: boolean) => set({ wireframe: visible }),
 }));

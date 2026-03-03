@@ -1,6 +1,7 @@
 import { useRef, useMemo, useLayoutEffect } from "react";
 import * as THREE from "three";
 import { useSceneStore } from "../stores/scene-store";
+import { useRayResponse } from "../api/use-simulation-hooks";
 
 const MAX_VOXELS = 500_000;
 
@@ -11,8 +12,13 @@ export default function VoxelGrid() {
   const voxelSize = useSceneStore((s) => s.config.voxelSize);
   const visible = useSceneStore((s) => s.showGrid);
   const setGridDims = useSceneStore((s) => s.setGridDimensions);
-  const rayResponse = useSceneStore((s) => s.rayResponse);
+  const resultFileId = useSceneStore((s) => s.resultFileId);
   const frameIndex = useSceneStore((s) => s.frameIndex);
+
+  // Ray response data fetched/cached entirely by TanStack Query.
+  // The query key includes resultFileId, so switching simulations
+  // automatically fetches (or returns from cache) the right data.
+  const { data: rayResponse } = useRayResponse(resultFileId ?? undefined);
 
   // -----------------------------------------------------------------
   // Grid dimensions (always based on effective voxelSize + bounds)

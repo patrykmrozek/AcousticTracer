@@ -11,13 +11,25 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [deleteTarget, setDeleteTarget] = useState<{
+    id: string;
+    fileId: string;
+    resultFileId?: string;
+    name: string;
+  } | null>(null);
   const { data, isLoading, error, refetch } = useSimulationsList(
     current?.$id || "",
   );
   const deleteMutation = useDeleteSimulation();
   const simulations = data?.simulations || [];
-  const handleDelete = (id: string, fileId: string, resultFileId?: string) => {
-    deleteMutation.mutate({ id, fileId, resultFileId });
+  const confirmDelete = () => {
+    if (!deleteTarget) return;
+    deleteMutation.mutate({
+      id: deleteTarget.id,
+      fileId: deleteTarget.fileId,
+      resultFileId: deleteTarget.resultFileId,
+    });
+    setDeleteTarget(null);
   };
 
   return (
@@ -163,7 +175,7 @@ export default function Dashboard() {
                       </td>
                       <td className="px-6 py-5 align-middle text-text-secondary leading-snug">
                         <span
-                          className={`inline-block px-2 py-1 rounded font-bold text-[11px] uppercase tracking-wide ${
+                          className={`inline-flex items-center gap-1 px-2 py-1 rounded font-bold text-[11px] uppercase tracking-wide ${
                             sim.status === "completed"
                               ? "text-success"
                               : sim.status === "failed"
@@ -171,6 +183,9 @@ export default function Dashboard() {
                                 : "text-accent"
                           }`}
                         >
+                          {sim.status === "completed" && "✓ "}
+                          {sim.status === "failed" && "✗ "}
+                          {(sim.status === "pending")}
                           {sim.status}
                         </span>
                       </td>
@@ -189,7 +204,12 @@ export default function Dashboard() {
                           aria-label="Delete"
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleDelete(sim.$id, sim.inputFileId, sim.resultFileId);
+                            setDeleteTarget({
+                              id: sim.$id,
+                              fileId: sim.inputFileId,
+                              resultFileId: sim.resultFileId,
+                              name: sim.name,
+                            });
                           }}
                         >
                           &times;
@@ -207,6 +227,36 @@ export default function Dashboard() {
                 setIsUploadOpen(false);
               }}
             />
+          )}
+          {deleteTarget && (
+            <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm z-50 bg-black/60">
+              <div className="bg-bg-card rounded-xl p-6 shadow-lg border border-border-primary w-96">
+                <h3 className="text-lg font-semibold text-text-primary mb-2">
+                  Delete Simulation
+                </h3>
+                <p className="text-sm text-text-secondary mb-6">
+                  Are you sure you want to delete{" "}
+                  <span className="font-medium text-text-primary">
+                    {deleteTarget.name}
+                  </span>
+                  ? This action cannot be undone.
+                </p>
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={() => setDeleteTarget(null)}
+                    className="px-4 py-2 rounded-lg text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-white/10 transition-colors cursor-pointer bg-transparent border border-border-primary"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={confirmDelete}
+                    className="px-4 py-2 rounded-lg text-sm font-semibold bg-red-600 text-white hover:bg-red-500 transition-colors cursor-pointer border-none"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </div>
           )}
         </main>
       </div>

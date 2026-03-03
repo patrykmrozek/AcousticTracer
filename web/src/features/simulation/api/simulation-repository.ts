@@ -13,7 +13,7 @@ export interface Simulation {
   $createdAt: string;
   $updatedAt: string;
   name: string;
-  status: "pending" | "processing" | "completed" | "failed" | "staging";
+  status: "pending"| "completed" | "failed" | "staging";
   userId: string;
   inputFileId: string;
   resultFileId?: string;

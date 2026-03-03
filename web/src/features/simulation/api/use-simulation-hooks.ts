@@ -183,3 +183,29 @@ export function useUploadSimulationFile() {
     mutationFn: (file: File) => simulationRepo.uploadFile(file),
   });
 }
+
+/**
+ * Hook: Fetch and cache a simulation's ray response JSON
+ *
+ * Uses TanStack Query for in-memory caching so revisiting the same
+ * simulation serves instantly from cache instead of re-fetching.
+ *
+ * Usage:
+ * ```tsx
+ * const { data } = useRayResponse(simulation?.resultFileId);
+ * ```
+ */
+export function useRayResponse(resultFileId: string | undefined) {
+  return useQuery({
+    queryKey: simulationKeys.rayResponse(resultFileId || ""),
+    queryFn: async () => {
+      const url = simulationRepo.getFileUrl(resultFileId!);
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed to fetch ray response");
+      return res.json() as Promise<Record<string, Record<string, number>[]>>;
+    },
+    enabled: !!resultFileId,
+    staleTime: Infinity, // Ray results never change once computed
+    gcTime: 10 * 60 * 1000, // Keep in cache 10 min after last use
+  });
+}

@@ -14,12 +14,14 @@ import { Suspense, useEffect, useRef } from "react";
 import * as THREE from "three";
 import { useSceneStore } from "../stores/scene-store";
 import VoxelGrid from "./voxel-grid";
-import BoundBoxHelper from "./bbox-helper";
 import SourcePlacer from "./source-place";
 
 interface SceneCanvasProps {
   modelUrl: string | null;
   isStaging?: boolean;
+  /** True while a completed simulation's ray-response JSON is still loading.
+   *  Prevents mounting the heavy full-white VoxelGrid during the fetch gap. */
+  awaitingResults?: boolean;
 }
 function Loader() {
   const { progress } = useProgress();
@@ -133,6 +135,7 @@ function Model({
 export default function SceneCanvas({
   modelUrl,
   isStaging = false,
+  awaitingResults = false,
 }: SceneCanvasProps) {
   const setBounds = useSceneStore((state) => state.setBounds);
   const bounds = useSceneStore((state) => state.bounds);
@@ -149,17 +152,15 @@ export default function SceneCanvas({
 
   return (
     <Canvas shadows camera={{ position: [5, 5, 5], fov: 75 }}>
-      {/* Lighting */}
-      <Environment preset="warehouse" />
       {/* Adaptive resolution */}
       <AdaptiveDpr pixelated />
 
       <Suspense fallback={<Loader />}>
+        <Environment preset="warehouse" />
         <Bounds fit clip margin={2}>
           <Model url={modelUrl} onLoad={setBounds} />
         </Bounds>
-        {bounds && showGrid && <VoxelGrid />}
-        <BoundBoxHelper />
+        {bounds && showGrid && !awaitingResults && <VoxelGrid />}
         {bounds && <SourcePlacer isStaging={isStaging} />}
       </Suspense>
       {/* Orientation gizmo */}

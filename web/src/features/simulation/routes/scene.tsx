@@ -1,5 +1,6 @@
 import { useParams, useNavigate, useSearchParams } from "react-router";
 import { useSimulationDetail } from "@/api/simulations";
+import { useRayResponse } from "../api/use-simulation-hooks";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import SceneCanvas from "../components/scene-viewer";
 import SimDetails from "../components/sim-details";
@@ -11,11 +12,10 @@ import useSceneSync from "../hooks/useSceneSync";
 import useModelUrl from "../hooks/useModelUrl";
 import useSimDetails from "../hooks/useSimDetails";
 import useSceneActions from "../hooks/useSceneActions";
+import { getErrorMessage } from "@/utils/get-error-message";
 
 function sceneFallbackRender(props: FallbackProps) {
-  const msg = (
-    props.error instanceof Error ? props.error.message : String(props.error)
-  ).toLowerCase();
+  const msg = getErrorMessage(props.error).toLowerCase();
   const isModelError =
     msg.includes("could not load") ||
     msg.includes("unexpected token") ||
@@ -37,16 +37,20 @@ export default function Scene() {
   const { data: simulation, isLoading, error } = useSimulationDetail(idOfFile);
   const simName = searchParams.get("name");
 
-  const rayTracerData = useSceneStore((state) => state.rayResponse);
+  const resultFileId = useSceneStore((state) => state.resultFileId);
   const frameIndex = useSceneStore((state) => state.frameIndex);
   const setFrameIndex = useSceneStore((state) => state.setFrameIndex);
+
+  // Ray data lives entirely in TanStack Query — keyed by resultFileId.
+  // Cached with staleTime: Infinity so revisits are instant.
+  const { data: rayTracerData } = useRayResponse(resultFileId ?? undefined);
 
   const frameCount = rayTracerData ? Object.keys(rayTracerData).length : 0;
 
   const bounds = useSceneStore((state) => state.bounds);
   const pendingFile = useSceneStore((state) => state.pendingFile);
 
-  // Sync loaded simulation config to store/ update voxel size
+  // Sync loaded simulation config + resultFileId into Zustand
   useSceneSync(idOfFile, simulation, pendingFile);
 
   // Load ModelURl
@@ -131,6 +135,9 @@ export default function Scene() {
                     <SceneCanvas
                       modelUrl={modelUrl}
                       isStaging={simDetails?.status === "staging"}
+                      awaitingResults={
+                        simDetails?.status === "completed" && !rayTracerData
+                      }
                     />
                   </div>
                 </ErrorBoundary>

@@ -2,7 +2,7 @@ import type { Models } from "appwrite";
 
 export interface SimulationDocument extends Models.Document {
   name: string;
-  status: "pending" | "processing" | "completed" | "failed" | "staging";
+  status: "pending" | "completed" | "failed" | "staging";
   input_file_id: string;
   user_id: string;
   result_file_id?: string;

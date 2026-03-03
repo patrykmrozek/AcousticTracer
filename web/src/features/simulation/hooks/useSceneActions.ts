@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import {
   useCreateSimulation,
-  useUpdateSimulation,
   useUploadSimulationFile,
   runRaytracer,
   simulationRepo,
@@ -11,6 +10,8 @@ import { useSceneStore } from "../stores/scene-store";
 import { useUser } from "@/features/auth/context/user-store";
 import type { SimDetails } from "../api/simulation-repository";
 import { useErrorBoundary } from "react-error-boundary";
+import { queryClient } from "@/app/provider";
+import { simulationKeys } from "@/lib/query-keys";
 
 export interface SceneActionsResult {
   handleStartSimulation: () => Promise<void>;
@@ -26,7 +27,6 @@ export default function useSceneActions(
   const { current } = useUser();
   const uploadMutation = useUploadSimulationFile();
   const createMutation = useCreateSimulation();
-  const updateMutation = useUpdateSimulation();
   const { showBoundary } = useErrorBoundary();
   const [startError, setStartError] = useState<string | null>(null);
 
@@ -60,50 +60,54 @@ export default function useSceneActions(
     }
 
     try {
-      console.log(config);
+      // Navigate immediately — raytracer work continues in background
       navigate("/dashboard");
-      const raytracerResponse = await runRaytracer(config);
-      useSceneStore.getState().setRayResponse(raytracerResponse);
-      console.log(raytracerResponse)
 
-      // Persist ray response as a JSON file in Appwrite Storage
-      let resultFileId: string | undefined;
-      if (simulationId) {
-        try {
-          const blob = new Blob([JSON.stringify(raytracerResponse)], {
-            type: "application/json",
-          });
-          const resultFile = new File(
-            [blob],
-            `result-${simulationId}.json`,
-            { type: "application/json" },
+      runRaytracer(config)
+        .then(async (raytracerResponse) => {
+          let resultFileId: string | undefined;
+          try {
+            const blob = new Blob([JSON.stringify(raytracerResponse)], {
+              type: "application/json",
+            });
+            const resultFile = new File([blob], `result-${simulationId}.json`, {
+              type: "application/json",
+            });
+            const uploaded = await simulationRepo.uploadFile(resultFile);
+            resultFileId = uploaded.$id;
+          } catch {
+            console.warn(
+              "Failed to upload result file, status will still update",
+            );
+          }
+
+          if (simulationId) {
+            await simulationRepo.update(simulationId, {
+              status: "completed",
+              resultFileId,
+            });
+            queryClient.invalidateQueries({ queryKey: simulationKeys.lists() });
+          }
+        })
+        .catch(async (err: unknown) => {
+          if (simulationId) {
+            try {
+              await simulationRepo.update(simulationId, {
+                status: "failed",
+              });
+              queryClient.invalidateQueries({
+                queryKey: simulationKeys.lists(),
+              });
+            } catch {
+              // Swallow status-update errors to surface the original failure
+            }
+          }
+          console.error(
+            "Raytracer failed:",
+            err instanceof Error ? err.message : err,
           );
-          const uploaded = await simulationRepo.uploadFile(resultFile);
-          resultFileId = uploaded.$id;
-        } catch {
-          console.warn("Failed to upload result file, status will still update");
-        }
-      }
-
-      // Update simulation status to completed after successful ray response
-      if (simulationId) {
-        await updateMutation.mutateAsync({
-          id: simulationId,
-          updates: { status: "completed", resultFileId },
         });
-      }
     } catch (err: unknown) {
-      // Update simulation status to failed on error
-      if (simulationId) {
-        try {
-          await updateMutation.mutateAsync({
-            id: simulationId,
-            updates: { status: "failed" },
-          });
-        } catch {
-          // Swallow status-update errors to surface the original failure
-        }
-      }
       const message =
         err instanceof Error ? err.message : "Raytracer failed. Please retry.";
       setStartError(message);

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useUser } from "../context/user-store";
 import { useNavigate } from "react-router";
+import { getErrorMessage } from "@/utils/get-error-message";
 export default function Login() {
   const navigate = useNavigate();
   const { login, register } = useUser();
@@ -22,7 +23,7 @@ export default function Login() {
         navigate("/dashboard");
       }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError(getErrorMessage(err));
     }
   };
 
