@@ -37,6 +37,7 @@ interface SceneState {
   setBounds: (box: THREE.Box3 | null) => void;
   rayResponse: RayResponse | null;
   frameIndex: number;
+  wireframe: boolean;
   setRayResponse: (response: RayResponse) => void;
 
   setShowGrid: (visible: boolean) => void;
@@ -54,6 +55,7 @@ interface SceneState {
     direction: { x: number; y: number; z: number },
   ) => void;
   setFrameIndex: (i: number) => void;
+  setWireframe: (visible: boolean) => void;
 }
 
 export const useSceneStore = create<SceneState>()((set) => ({
@@ -85,6 +87,7 @@ export const useSceneStore = create<SceneState>()((set) => ({
   rayResponse: null,
   sourceHasBeenPlaced: false,
   frameIndex: 0,
+  wireframe: false,
 
   // the actions functions to call when updating state
   setVoxelSize: (size) =>
@@ -159,4 +162,5 @@ export const useSceneStore = create<SceneState>()((set) => ({
   setWorldDimensions: (dims) => set({ worldDimensions: dims }),
   setRayResponse: (response: RayResponse) => set({ rayResponse: response }),
   setFrameIndex: (i: number) => set({ frameIndex: i }),
+  setWireframe: (visible: boolean) => set({ wireframe: visible }),
 }));

@@ -50,6 +50,8 @@ function Model({
   }, [url, onLoad]);
 
   const showTexture = useSceneStore((state) => state.showTexture);
+  const wireframe = useSceneStore((state) => state.wireframe);
+  const material = useSceneStore((state) => state.config.material);
   // store the original texture, so the user can toggle
   const originalTexture = useRef(new Map());
 
@@ -69,10 +71,23 @@ function Model({
           if (!showTexture) {
             // If the user doesn't want to show the model texture
             if (child instanceof THREE.Mesh) {
+              const color = new THREE.Color();
+              switch (material) {
+                case "Wood":
+                  color.set("#5c260e");
+                  break;
+                case "Concrete":
+                  color.set("#474747");
+                  break;
+                case "Plastic":
+                  color.set("#246982");
+                  break;
+              }
               child.material = new THREE.MeshStandardMaterial({
-                color: "#888888",
+                color: color,
                 roughness: 0.8,
                 metalness: 0.1,
+                wireframe: wireframe,
               });
             }
           } else {
@@ -100,7 +115,7 @@ function Model({
       const box = new THREE.Box3().setFromObject(scene);
       onLoad(box);
     }
-  }, [scene, onLoad, showTexture]);
+  }, [scene, onLoad, showTexture, material, wireframe]);
 
   return <primitive object={scene} />;
 }
