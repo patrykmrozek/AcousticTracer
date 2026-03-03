@@ -26,6 +26,7 @@ AT_AABB AT_AABB_from_triangle(const AT_Triangle *tri)
         AT_max(AT_max(tri->v1.z, tri->v2.z), tri->v3.z),
     }};
     out_aabb.midpoint = AT_AABB_calc_midpoint(&out_aabb);
+    out_aabb.SA = AT_AABB_get_SA(out_aabb);
 
     return out_aabb;
 }
@@ -37,22 +38,28 @@ void AT_AABB_grow(AT_AABB *out_aabb, AT_Vec3 pt)
     if (AT_min(out_aabb->min.x, pt.x) == pt.x) {
         out_aabb->min.x = pt.x;
         out_aabb->midpoint.x = (pt.x + out_aabb->max.x) * half;
-    } else if (AT_max(out_aabb->max.x, pt.x) == pt.x) {
+    }
+    if (AT_max(out_aabb->max.x, pt.x) == pt.x) {
         out_aabb->max.x = pt.x;
         out_aabb->midpoint.x = (out_aabb->min.x + pt.x) * half;
     }
     if (AT_min(out_aabb->min.y, pt.y) == pt.y) {
         out_aabb->min.y = pt.y;
         out_aabb->midpoint.y = (pt.y + out_aabb->max.y) * half;
-    } else if (AT_max(out_aabb->max.y, pt.y) == pt.y) {
+    }
+    if (AT_max(out_aabb->max.y, pt.y) == pt.y) {
         out_aabb->max.y = pt.y;
         out_aabb->midpoint.y = (out_aabb->min.y + pt.y) * half;
     }
     if (AT_min(out_aabb->min.z, pt.z) == pt.z) {
         out_aabb->min.z = pt.z;
         out_aabb->midpoint.z = (pt.z + out_aabb->max.z) * half;
-    } else if (AT_max(out_aabb->max.z, pt.z) == pt.z) {
+    }
+    if (AT_max(out_aabb->max.z, pt.z) == pt.z) {
         out_aabb->max.z = pt.z;
         out_aabb->midpoint.z = (out_aabb->min.z + pt.z) * half;
     }
+
+    // TODO: Look into optimising this like with midpoint
+    out_aabb->SA = AT_AABB_get_SA(*out_aabb);
 }

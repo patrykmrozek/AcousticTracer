@@ -140,6 +140,10 @@ static inline AT_Vec3 AT_get_sign_vec3(const AT_Vec3 v)
    }};
 }
 
+// Get a triangle from index and axis
+#define AT_get_triangle(group, array_idx, idx) group->triangle_arrs->triangles_db[group->triangle_arrs->arrs[array_idx][group->start + idx]]
+#define AT_get_triangle_by_arr(start, array_idx, idx) triangle_arrs->triangles_db[triangle_arrs->arrs[array_idx][start + idx]]
+
 static inline float AT_get_random_float()
 {
     return (float)rand() / RAND_MAX;
