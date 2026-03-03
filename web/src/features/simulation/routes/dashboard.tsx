@@ -16,8 +16,8 @@ export default function Dashboard() {
   );
   const deleteMutation = useDeleteSimulation();
   const simulations = data?.simulations || [];
-  const handleDelete = (id: string, fileId: string) => {
-    deleteMutation.mutate({ id, fileId });
+  const handleDelete = (id: string, fileId: string, resultFileId?: string) => {
+    deleteMutation.mutate({ id, fileId, resultFileId });
   };
 
   return (
@@ -175,7 +175,7 @@ export default function Dashboard() {
                         </span>
                       </td>
                       <td className="px-6 py-5 align-middle text-text-secondary leading-snug">
-                        {sim.config.voxelSize} m
+                        {sim.config.voxelSize.toFixed(3)}m
                       </td>
                       <td className="px-6 py-5 align-middle text-text-secondary leading-snug">
                         {sim.config.fps}
@@ -189,7 +189,7 @@ export default function Dashboard() {
                           aria-label="Delete"
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleDelete(sim.$id, sim.inputFileId);
+                            handleDelete(sim.$id, sim.inputFileId, sim.resultFileId);
                           }}
                         >
                           &times;

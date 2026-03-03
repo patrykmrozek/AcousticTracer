@@ -13,9 +13,9 @@ import useSimDetails from "../hooks/useSimDetails";
 import useSceneActions from "../hooks/useSceneActions";
 
 function sceneFallbackRender(props: FallbackProps) {
-  const msg =
-    (props.error instanceof Error ? props.error.message : String(props.error))
-      .toLowerCase();
+  const msg = (
+    props.error instanceof Error ? props.error.message : String(props.error)
+  ).toLowerCase();
   const isModelError =
     msg.includes("could not load") ||
     msg.includes("unexpected token") ||
@@ -156,9 +156,14 @@ export default function Scene() {
               )}
             </div>
           </div>
-          {simDetails?.status === "staging" && (
+          {(simDetails?.status === "staging" ||
+            simDetails?.status === "completed") && (
             <aside className="w-60 min-h-0 h-full flex flex-col">
-              <ConfigPanel />
+              <ConfigPanel
+                mode={
+                  simDetails.status === "completed" ? "completed" : "staging"
+                }
+              />
             </aside>
           )}
         </div>

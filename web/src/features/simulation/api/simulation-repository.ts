@@ -307,6 +307,25 @@ class SimulationRepository {
       console.warn(`Failed to delete file ${fileId}:`, error);
     }
   }
+
+  /**
+   * Delete simulation and all associated files (input + result)
+   *
+   * @param id - Simulation ID
+   * @param fileIds - Array of file IDs to delete
+   * @throws Error if simulation deletion fails
+   */
+  async deleteWithFiles(id: string, fileIds: string[]): Promise<void> {
+    await this.delete(id);
+
+    await Promise.allSettled(
+      fileIds.map((fid) =>
+        this.deleteFile(fid).catch((error) =>
+          console.warn(`Failed to delete file ${fid}:`, error),
+        ),
+      ),
+    );
+  }
 }
 
 export const simulationRepo = new SimulationRepository();

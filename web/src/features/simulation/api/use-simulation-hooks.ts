@@ -115,8 +115,20 @@ export function useDeleteSimulation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, fileId }: { id: string; fileId?: string }) => {
-      if (fileId) return simulationRepo.deleteWithFile(id, fileId);
+    mutationFn: ({
+      id,
+      fileId,
+      resultFileId,
+    }: {
+      id: string;
+      fileId?: string;
+      resultFileId?: string;
+    }) => {
+      const fileIds = [fileId, resultFileId].filter(
+        (fid): fid is string => !!fid,
+      );
+      if (fileIds.length > 0)
+        return simulationRepo.deleteWithFiles(id, fileIds);
       return simulationRepo.delete(id);
     },
 
