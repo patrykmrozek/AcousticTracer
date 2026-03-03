@@ -20,6 +20,9 @@ import SourcePlacer from "./source-place";
 interface SceneCanvasProps {
   modelUrl: string | null;
   isStaging?: boolean;
+  /** True while a completed simulation's ray-response JSON is still loading.
+   *  Prevents mounting the heavy full-white VoxelGrid during the fetch gap. */
+  awaitingResults?: boolean;
 }
 function Loader() {
   const { progress } = useProgress();
@@ -133,6 +136,7 @@ function Model({
 export default function SceneCanvas({
   modelUrl,
   isStaging = false,
+  awaitingResults = false,
 }: SceneCanvasProps) {
   const setBounds = useSceneStore((state) => state.setBounds);
   const bounds = useSceneStore((state) => state.bounds);
@@ -158,8 +162,8 @@ export default function SceneCanvas({
         <Bounds fit clip margin={2}>
           <Model url={modelUrl} onLoad={setBounds} />
         </Bounds>
-        {bounds && showGrid && <VoxelGrid />}
-        <BoundBoxHelper />
+        {bounds && showGrid && !awaitingResults && <VoxelGrid />}
+        {/* <BoundBoxHelper /> */}
         {bounds && <SourcePlacer isStaging={isStaging} />}
       </Suspense>
       {/* Orientation gizmo */}

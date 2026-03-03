@@ -1,5 +1,7 @@
+import { useEffect } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router";
 import { useSimulationDetail } from "@/api/simulations";
+import { useRayResponse } from "../api/use-simulation-hooks";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import SceneCanvas from "../components/scene-viewer";
 import SimDetails from "../components/sim-details";
@@ -38,6 +40,7 @@ export default function Scene() {
   const simName = searchParams.get("name");
 
   const rayTracerData = useSceneStore((state) => state.rayResponse);
+  const setRayResponse = useSceneStore((state) => state.setRayResponse);
   const frameIndex = useSceneStore((state) => state.frameIndex);
   const setFrameIndex = useSceneStore((state) => state.setFrameIndex);
 
@@ -45,6 +48,18 @@ export default function Scene() {
 
   const bounds = useSceneStore((state) => state.bounds);
   const pendingFile = useSceneStore((state) => state.pendingFile);
+
+  // Fetch ray response via TanStack Query (cached in-memory for revisits)
+  const resultFileId =
+    simulation?.status === "completed" ? simulation.resultFileId : undefined;
+  const { data: cachedRayResponse } = useRayResponse(resultFileId);
+
+  // Sync TQ data → Zustand store so VoxelGrid + slider can read it
+  useEffect(() => {
+    if (cachedRayResponse && cachedRayResponse !== rayTracerData) {
+      setRayResponse(cachedRayResponse);
+    }
+  }, [cachedRayResponse, rayTracerData, setRayResponse]);
 
   // Sync loaded simulation config to store/ update voxel size
   useSceneSync(idOfFile, simulation, pendingFile);
@@ -131,6 +146,9 @@ export default function Scene() {
                     <SceneCanvas
                       modelUrl={modelUrl}
                       isStaging={simDetails?.status === "staging"}
+                      awaitingResults={
+                        simDetails?.status === "completed" && !rayTracerData
+                      }
                     />
                   </div>
                 </ErrorBoundary>
