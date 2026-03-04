@@ -13,7 +13,7 @@ export interface Simulation {
   $createdAt: string;
   $updatedAt: string;
   name: string;
-  status: "pending"| "completed" | "failed" | "staging";
+  status: "pending" | "completed" | "failed" | "staging";
   userId: string;
   inputFileId: string;
   resultFileId?: string;
@@ -36,6 +36,7 @@ export interface Simulation {
         z: number;
       };
     };
+    num_voxels: number;
   };
 }
 export interface StagingSimDetails {
@@ -74,6 +75,7 @@ export interface CreateSimulationParams {
       };
     };
   };
+  num_voxels?: number;
 }
 
 export interface UpdateSimulationParams {
@@ -113,6 +115,7 @@ function documentToSimulation(doc: SimulationDocument): Simulation {
           z: doc.direction_z,
         },
       },
+      num_voxels: doc.num_voxels,
     },
   };
 }
@@ -135,6 +138,7 @@ function simulationToRowData(params: CreateSimulationParams) {
     direction_x: params.config.selectedSource.direction.x,
     direction_y: params.config.selectedSource.direction.y,
     direction_z: params.config.selectedSource.direction.z,
+    num_voxels: params.num_voxels,
   };
 }
 
