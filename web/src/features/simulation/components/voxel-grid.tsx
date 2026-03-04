@@ -17,6 +17,7 @@ export default function VoxelGrid() {
   const setGridDims = useSceneStore((s) => s.setGridDimensions);
   const resultFileId = useSceneStore((s) => s.resultFileId);
   const frameIndex = useSceneStore((s) => s.frameIndex);
+  const numRays = useSceneStore((s) => s.config.numRays);
 
   // Ray response data fetched/cached entirely by TanStack Query.
   // Now returns RayFrame[] (typed arrays) instead of JSON objects.
@@ -159,8 +160,14 @@ export default function VoxelGrid() {
       const { energies } = currentFrame;
       const color = new THREE.Color();
       for (let i = 0; i < energies.length; i++) {
-        const hue = THREE.MathUtils.mapLinear(energies[i], 0, 1, 0.66, 1);
-        color.setRGB(hue, 0, 0);
+        const hue = THREE.MathUtils.mapLinear(
+          energies[i] * numRays,
+          0,
+          1,
+          0.66,
+          1,
+        );
+        color.setHSL(hue, 1, 0.5);
         mesh.setColorAt(i, color);
       }
     } else {
