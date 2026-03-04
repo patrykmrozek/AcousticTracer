@@ -13,7 +13,6 @@ export default function ConfigPanel({ mode = "staging" }: ConfigPanelProps) {
   const showTexture = useSceneStore((state) => state.showTexture);
   const setShowTexture = useSceneStore((state) => state.setShowTexture);
   const wireframe = useSceneStore((state) => state.wireframe);
-  const num_voxels = useSceneStore((state) => state.num_voxels);
   const setWireframe = useSceneStore((state) => state.setWireframe);
 
   // extra controls available in scene-store
@@ -101,9 +100,7 @@ export default function ConfigPanel({ mode = "staging" }: ConfigPanelProps) {
   useEffect(() => setRaysInput(String(numRays)), [numRays]);
   const commitRays = useCallback(() => {
     const parsed = parseInt(raysInput);
-    const clamped = Number.isNaN(parsed)
-      ? 1
-      : Math.max(1, Math.min(100000, parsed));
+    const clamped = Number.isNaN(parsed) ? 1 : Math.max(1, Math.min(100000, parsed));
     setNumRays(clamped);
     setRaysInput(String(clamped));
   }, [raysInput, setNumRays]);

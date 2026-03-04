@@ -35,7 +35,6 @@ export const AppProvider = ({ children }: AppProviderProps) => {
       >
         <QueryClientProvider client={queryClient}>
           <UserProvider>{children}</UserProvider>
-          <ReactQueryDevtools initialIsOpen={false} />
         </QueryClientProvider>
         <ToastContainer />
       </Suspense>
