@@ -162,7 +162,6 @@ export default function SceneCanvas({
         </Bounds>
         {bounds && showGrid && !awaitingResults && <VoxelGrid />}
         {bounds && <SourcePlacer isStaging={isStaging} />}
-
       </Suspense>
       {/* Orientation gizmo */}
       <GizmoHelper alignment="bottom-right" margin={[80, 80]}>
