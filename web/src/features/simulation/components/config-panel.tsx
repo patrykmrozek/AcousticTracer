@@ -27,7 +27,7 @@ export default function ConfigPanel({ mode = "staging" }: ConfigPanelProps) {
   const setNumRays = useSceneStore((state) => state.setNumRays);
   const fps = useSceneStore((state) => state.config.fps);
   const setFps = useSceneStore((state) => state.setFps);
-  const setNumVoxels = useSceneStore((state) => state.setNumVoxels);
+  const setVoxelCount = useSceneStore((state) => state.setVoxelCount);
 
   // Dynamic voxel size range based on world dimensions
   const voxelRange = useMemo(() => {
@@ -78,8 +78,8 @@ export default function ConfigPanel({ mode = "staging" }: ConfigPanelProps) {
     return closest;
   }, [discreteSteps, voxelSize]);
 
-  // Estimated voxel count at current slider value
-  const estimatedVoxels = useMemo(() => {
+  // Voxel count at current slider value
+  const numVoxels = useMemo(() => {
     if (!worldDimensions) return 0;
     const nx = Math.ceil(worldDimensions.x / voxelSize);
     const ny = Math.ceil(worldDimensions.y / voxelSize);
@@ -87,8 +87,13 @@ export default function ConfigPanel({ mode = "staging" }: ConfigPanelProps) {
     return nx * ny * nz;
   }, [worldDimensions, voxelSize]);
 
+  // Keep scene store in sync
+  useEffect(() => {
+    setVoxelCount(numVoxels || null);
+  }, [numVoxels, setVoxelCount]);
+
   const MAX_VOXELS = 500_000;
-  const isOverLimit = estimatedVoxels > MAX_VOXELS;
+  const isOverLimit = numVoxels > MAX_VOXELS;
 
   // When a new model loads (bounds change), reset voxel size to midpoint
   // Skip for saved simulations — their voxel size is restored from Appwrite
@@ -107,34 +112,35 @@ export default function ConfigPanel({ mode = "staging" }: ConfigPanelProps) {
         </h3>
 
         {/* ── Voxel Size ── */}
-        <Section label={`Voxel Size: ${voxelSize}m`}>
-          {mode === "staging" && discreteSteps.length > 0 && (
-            <>
-              <input
-                type="range"
-                min={0}
-                max={discreteSteps.length - 1}
-                step={1}
-                value={sliderIndex}
-                onChange={(e) => {
-                  setVoxelSize(discreteSteps[parseInt(e.target.value)]);
-                  setNumVoxels(estimatedVoxels);
-                }}
-                className="w-full accent-button-primary"
-              />
-              <div className="flex justify-between text-[10px] text-text-secondary mt-0.5">
-                <span>{discreteSteps[0]}m</span>
-                <span>{discreteSteps[discreteSteps.length - 1]}m</span>
-              </div>
-              <div
-                className={`text-[10px] mt-1 ${isOverLimit ? "text-danger font-semibold" : "text-text-secondary"}`}
-              >
-                {estimatedVoxels.toLocaleString()} voxels
-                {isOverLimit && " — May be slow"}
-              </div>
-            </>
-          )}
-        </Section>
+        {mode === "staging" && (
+          <Section label={`Voxel Size: ${voxelSize}m`}>
+            {discreteSteps.length > 0 && (
+              <>
+                <input
+                  type="range"
+                  min={0}
+                  max={discreteSteps.length - 1}
+                  step={1}
+                  value={sliderIndex}
+                  onChange={(e) =>
+                    setVoxelSize(discreteSteps[parseInt(e.target.value)])
+                  }
+                  className="w-full accent-button-primary"
+                />
+                <div className="flex justify-between text-[10px] text-text-secondary mt-0.5">
+                  <span>{discreteSteps[0]}m</span>
+                  <span>{discreteSteps[discreteSteps.length - 1]}m</span>
+                </div>
+                <div
+                  className={`text-[10px] mt-1 ${isOverLimit ? "text-danger font-semibold" : "text-text-secondary"}`}
+                >
+                  {numVoxels.toLocaleString()} voxels
+                  {isOverLimit && " — May be slow"}
+                </div>
+              </>
+            )}
+          </Section>
+        )}
 
         {/* ── Display toggles ── */}
         <div className="space-y-1.5">
@@ -146,12 +152,18 @@ export default function ConfigPanel({ mode = "staging" }: ConfigPanelProps) {
           <Toggle
             label="Texture"
             checked={showTexture}
-            onChange={setShowTexture}
+            onChange={(e) => {
+              setShowTexture(e);
+              setWireframe(false);
+            }}
           />
           <Toggle
             label="Wireframe"
             checked={wireframe}
-            onChange={setWireframe}
+            onChange={(e) => {
+              setWireframe(e);
+              setShowTexture(false);
+            }}
           />
         </div>
 

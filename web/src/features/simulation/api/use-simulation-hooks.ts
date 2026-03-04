@@ -8,6 +8,7 @@ import type {
   SimulationList,
 } from "./simulation-repository";
 import { simulationKeys } from "@/lib/query-keys";
+import { parseResultBuffer } from "./parse-result-binary";
 
 /**
  * Hook: List all simulations for the current user
@@ -202,7 +203,8 @@ export function useRayResponse(resultFileId: string | undefined) {
       const url = simulationRepo.getFileUrl(resultFileId!);
       const res = await fetch(url);
       if (!res.ok) throw new Error("Failed to fetch ray response");
-      return res.json() as Promise<Record<string, Record<string, number>[]>>;
+      const buffer = await res.arrayBuffer();
+      return parseResultBuffer(buffer);
     },
     enabled: !!resultFileId,
     staleTime: Infinity, // Ray results never change once computed

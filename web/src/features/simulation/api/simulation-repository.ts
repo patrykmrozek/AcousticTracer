@@ -18,6 +18,7 @@ export interface Simulation {
   inputFileId: string;
   resultFileId?: string;
   computeTimeMs?: number;
+  numVoxels?: number;
   fileName: string;
   config: {
     voxelSize: number;
@@ -57,6 +58,7 @@ export interface CreateSimulationParams {
   name: string;
   fileId: string;
   fileName: string;
+  numVoxels: number;
   config: {
     voxelSize: number;
     fps: number;
@@ -82,6 +84,7 @@ export interface UpdateSimulationParams {
   status?: Simulation["status"];
   resultFileId?: string;
   computeTimeMs?: number;
+  numVoxels?: number;
 }
 
 // Auto-convert snake_case to camelCase
@@ -97,6 +100,7 @@ function documentToSimulation(doc: SimulationDocument): Simulation {
     inputFileId: doc.input_file_id,
     resultFileId: doc.result_file_id,
     computeTimeMs: doc.compute_time_ms,
+    numVoxels: doc.num_voxels,
     fileName: doc.file_name,
     config: {
       voxelSize: doc.voxel_size,
@@ -138,7 +142,7 @@ function simulationToRowData(params: CreateSimulationParams) {
     direction_x: params.config.selectedSource.direction.x,
     direction_y: params.config.selectedSource.direction.y,
     direction_z: params.config.selectedSource.direction.z,
-    num_voxels: params.num_voxels,
+    num_voxels: params.numVoxels,
   };
 }
 
@@ -222,6 +226,7 @@ class SimulationRepository {
       data.result_file_id = updates.resultFileId;
     if (updates.computeTimeMs !== undefined)
       data.compute_time_ms = updates.computeTimeMs;
+    if (updates.numVoxels !== undefined) data.num_voxels = updates.numVoxels;
 
     const doc = await tablesDB.updateRow({
       databaseId: CONFIG.databaseId,

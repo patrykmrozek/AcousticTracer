@@ -28,6 +28,7 @@ interface SceneState {
   pendingFile: File | null;
   gridDimensions: { nx: number; ny: number; nz: number } | null;
   worldDimensions: { x: number; y: number; z: number } | null;
+  voxelCount: number | null;
 
   setVoxelSize: (size: number) => void;
   setNumRays: (rays: number) => void;
@@ -49,6 +50,7 @@ interface SceneState {
   setWorldDimensions: (
     dims: { x: number; y: number; z: number } | null,
   ) => void;
+  setVoxelCount: (count: number | null) => void;
   setSelectedSource: (
     dims: { x: number; y: number; z: number },
     direction: { x: number; y: number; z: number },
@@ -83,6 +85,7 @@ export const useSceneStore = create<SceneState>()((set) => ({
   pendingFile: null,
   gridDimensions: null,
   worldDimensions: null,
+  voxelCount: null,
   resultFileId: null,
   frameIndex: 0,
   wireframe: false,
@@ -136,6 +139,7 @@ export const useSceneStore = create<SceneState>()((set) => ({
         bounds: null,
         gridDimensions: null,
         worldDimensions: null,
+        voxelCount: null,
         resultFileId: null,
         showGrid: true,
         showTexture: true,
@@ -169,6 +173,7 @@ export const useSceneStore = create<SceneState>()((set) => ({
   setNumVoxels: (n: number) => set({ num_voxels: n }),
   setGridDimensions: (dims) => set({ gridDimensions: dims }),
   setWorldDimensions: (dims) => set({ worldDimensions: dims }),
+  setVoxelCount: (count) => set({ voxelCount: count }),
   setResultFileId: (id: string | null) => set({ resultFileId: id }),
   setFrameIndex: (i: number) => set({ frameIndex: i }),
   setWireframe: (visible: boolean) => set({ wireframe: visible }),

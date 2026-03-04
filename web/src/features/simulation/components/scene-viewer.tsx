@@ -61,8 +61,8 @@ function Model({
     if (!scene) return;
 
     scene.traverse((child) => {
-      child.scale.set(1, 1, 1);
-      child.updateMatrix();
+      // child.scale.set(1, 1, 1);
+      // child.updateMatrix();
 
       if (child instanceof THREE.Mesh) {
         if (!originalTexture.current.has(child.uuid)) {
@@ -157,19 +157,19 @@ export default function SceneCanvas({
 
       <Suspense fallback={<Loader />}>
         <Environment preset="warehouse" />
-        <Bounds fit clip margin={2}>
+        <Bounds fit clip observe margin={2}>
           <Model url={modelUrl} onLoad={setBounds} />
         </Bounds>
         {bounds && showGrid && !awaitingResults && <VoxelGrid />}
         {bounds && <SourcePlacer isStaging={isStaging} />}
       </Suspense>
       {/* Orientation gizmo */}
-      <GizmoHelper alignment="bottom-right" margin={[80, 80]}>
+      {/* <GizmoHelper alignment="bottom-right" margin={[80, 80]}>
         <GizmoViewport
           axisColors={["red", "green", "blue"]}
           labelColor="black"
         />
-      </GizmoHelper>
+      </GizmoHelper> */}
       <OrbitControls makeDefault />
     </Canvas>
   );
