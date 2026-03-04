@@ -12,6 +12,7 @@ import type { SimDetails } from "../api/simulation-repository";
 import { useErrorBoundary } from "react-error-boundary";
 import { queryClient } from "@/app/provider";
 import { simulationKeys } from "@/lib/query-keys";
+import { parseResultBuffer } from "../api/parse-result-binary";
 
 export interface SceneActionsResult {
   handleStartSimulation: () => Promise<void>;
@@ -80,6 +81,16 @@ export default function useSceneActions(
           } catch {
             console.warn(
               "Failed to upload result file, status will still update",
+            );
+          }
+
+          // Pre-populate the ray response cache so the playback slider
+          // is available instantly when the user opens the scene.
+          if (resultFileId) {
+            const parsed = parseResultBuffer(raytracerResponse);
+            queryClient.setQueryData(
+              simulationKeys.rayResponse(resultFileId),
+              parsed,
             );
           }
 

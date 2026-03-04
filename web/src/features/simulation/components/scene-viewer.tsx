@@ -157,7 +157,7 @@ export default function SceneCanvas({
 
       <Suspense fallback={<Loader />}>
         <Environment preset="warehouse" />
-        <Bounds fit clip observe margin={2}>
+        <Bounds fit clip margin={2}>
           <Model url={modelUrl} onLoad={setBounds} />
         </Bounds>
         {bounds && showGrid && !awaitingResults && <VoxelGrid />}

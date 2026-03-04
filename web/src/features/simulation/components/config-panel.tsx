@@ -28,6 +28,18 @@ export default function ConfigPanel({ mode = "staging" }: ConfigPanelProps) {
   const setFps = useSceneStore((state) => state.setFps);
   const setVoxelCount = useSceneStore((state) => state.setVoxelCount);
 
+  // Local string state so the user can fully clear the input while typing
+  const [raysInput, setRaysInput] = useState(String(numRays));
+  useEffect(() => setRaysInput(String(numRays)), [numRays]);
+  const commitRays = useCallback(() => {
+    const parsed = parseInt(raysInput);
+    const clamped = Number.isNaN(parsed)
+      ? 1
+      : Math.max(1, Math.min(100000, parsed));
+    setNumRays(clamped);
+    setRaysInput(String(clamped));
+  }, [raysInput, setNumRays]);
+
   // Dynamic voxel size range based on world dimensions
   const voxelRange = useMemo(() => {
     if (!worldDimensions) return { min: 0.1, max: 2.0, step: 0.1 };
@@ -94,20 +106,7 @@ export default function ConfigPanel({ mode = "staging" }: ConfigPanelProps) {
   const MAX_VOXELS = 500_000;
   const isOverLimit = numVoxels > MAX_VOXELS;
 
-  // ── Local state for numRays so the user can freely type/delete ──
-  const [raysInput, setRaysInput] = useState(String(numRays));
-  // Keep local input in sync when the store value changes externally
-  useEffect(() => setRaysInput(String(numRays)), [numRays]);
-  const commitRays = useCallback(() => {
-    const parsed = parseInt(raysInput);
-    const clamped = Number.isNaN(parsed) ? 1 : Math.max(1, Math.min(100000, parsed));
-    setNumRays(clamped);
-    setRaysInput(String(clamped));
-  }, [raysInput, setNumRays]);
 
-  // ── Local state for FPS slider to avoid rapid store updates (camera jitter) ──
-  const [localFps, setLocalFps] = useState(fps);
-  useEffect(() => setLocalFps(fps), [fps]);
 
   // When a new model loads (bounds change), reset voxel size to midpoint
   // Skip for saved simulations — their voxel size is restored from Appwrite
@@ -231,16 +230,14 @@ export default function ConfigPanel({ mode = "staging" }: ConfigPanelProps) {
             </Section>
 
             {/* FPS */}
-            <Section label={`FPS: ${localFps}`}>
+            <Section label={`FPS: ${fps}`}>
               <input
                 type="range"
                 min="1"
                 max="120"
                 step="1"
-                value={localFps}
-                onChange={(e) => setLocalFps(parseInt(e.target.value))}
-                onPointerUp={() => setFps(localFps)}
-                onMouseUp={() => setFps(localFps)}
+                value={fps}
+                onChange={(e) => setFps(parseInt(e.target.value))}
                 className="w-full accent-button-primary"
               />
             </Section>
