@@ -408,9 +408,9 @@ void AT_raytracer()
         }
         close(client_fd);
 
-        free(result_buf);
-        AT_scene_destroy(scene);
         AT_simulation_destroy(sim);
+        AT_scene_destroy(scene);
+        cJSON_Delete(sim_json);
     }
 
     close(server_fd);

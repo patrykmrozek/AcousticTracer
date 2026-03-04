@@ -145,28 +145,28 @@ AT_Result split_group(const AT_TriGroup *parent_group, AT_TriGroup **left_group,
     } while (
         (left_n == parent_group->num_tri || right_n == parent_group->num_tri) &&
         nth_longest++ < 3);
-    if (AT_BVH_partition_list(triangle_arrs, 3, start, num_tri, &ctx) != AT_OK) {
+    if (AT_MiniTree_partition_list(triangle_arrs, 3, start, num_tri, &ctx) != AT_OK) {
         return AT_ERR_ALLOC_ERROR;
     }
     if (ctx.axis == 0) {
-        if (AT_BVH_partition_list(parent_group->triangle_arrs, 1, parent_group->start, parent_group->num_tri, &ctx) != AT_OK) {
+        if (AT_MiniTree_partition_list(parent_group->triangle_arrs, 1, parent_group->start, parent_group->num_tri, &ctx) != AT_OK) {
             return AT_ERR_ALLOC_ERROR;
         }
-        if (AT_BVH_partition_list(parent_group->triangle_arrs, 2, parent_group->start, parent_group->num_tri, &ctx) != AT_OK) {
+        if (AT_MiniTree_partition_list(parent_group->triangle_arrs, 2, parent_group->start, parent_group->num_tri, &ctx) != AT_OK) {
             return AT_ERR_ALLOC_ERROR;
         }
     } else if (ctx.axis == 1) {
-        if (AT_BVH_partition_list(parent_group->triangle_arrs, 0, parent_group->start, parent_group->num_tri, &ctx) != AT_OK) {
+        if (AT_MiniTree_partition_list(parent_group->triangle_arrs, 0, parent_group->start, parent_group->num_tri, &ctx) != AT_OK) {
             return AT_ERR_ALLOC_ERROR;
         }
-        if (AT_BVH_partition_list(parent_group->triangle_arrs, 2, parent_group->start, parent_group->num_tri, &ctx) != AT_OK) {
+        if (AT_MiniTree_partition_list(parent_group->triangle_arrs, 2, parent_group->start, parent_group->num_tri, &ctx) != AT_OK) {
             return AT_ERR_ALLOC_ERROR;
         }
     } else {
-        if (AT_BVH_partition_list(parent_group->triangle_arrs, 0, parent_group->start, parent_group->num_tri, &ctx) != AT_OK) {
+        if (AT_MiniTree_partition_list(parent_group->triangle_arrs, 0, parent_group->start, parent_group->num_tri, &ctx) != AT_OK) {
             return AT_ERR_ALLOC_ERROR;
         }
-        if (AT_BVH_partition_list(parent_group->triangle_arrs, 1, parent_group->start, parent_group->num_tri, &ctx) != AT_OK) {
+        if (AT_MiniTree_partition_list(parent_group->triangle_arrs, 1, parent_group->start, parent_group->num_tri, &ctx) != AT_OK) {
             return AT_ERR_ALLOC_ERROR;
         }
     }
@@ -190,9 +190,9 @@ AT_Result AT_trigroup_split(AT_TriangleArrays *triangle_arrs, uint32_t num_tri, 
     if (!groups) return AT_ERR_INVALID_ARGUMENT;
 
     AT_TriGroup *tri_group = NULL;
-    if (AT_trigroup_create(&tri_group, triangle_arrs, 0, num_tri) != AT_OK) {
-        perror("Failed to create the triangle group");
-        return 1;
+    AT_Result res = AT_trigroup_create(&tri_group, triangle_arrs, 0, num_tri);
+    if (res != AT_OK) {
+        return res;
     }
 
     // 5. Repeat for sub trees

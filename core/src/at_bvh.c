@@ -3,6 +3,7 @@
 #include "../src/at_internal.h"
 #include "../src/at_utils.h"
 #include "acoustic/at_model.h"
+#include "at_ray.h"
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -43,7 +44,7 @@ AT_Result AT_triangle_arrays_create(AT_TriangleArrays **out_arrs, const AT_Model
         tri_arrs->arrs[3][i] = i;
     }
 
-    AT_BVH_sort_triangles(tri_arrs, num_tri);
+    AT_MiniTree_sort_triangles(tri_arrs, num_tri);
 
     *out_arrs = tri_arrs;
 
@@ -73,12 +74,12 @@ AT_AABB get_node_aabb(const AT_TriangleArrays *triangle_arrs, uint32_t axis, uin
     return aabb;
 }
 
-AT_Result AT_BVHNode_init(AT_BVH *tree, const AT_BVHNode *nodes, AT_TriangleArrays *triangles_arrs, uint32_t start, uint32_t num_tri, int index)
+AT_Result AT_MiniTreeNode_init(AT_MiniTree *minitree, const AT_MiniTreeNode *nodes, AT_TriangleArrays *triangles_arrs, uint32_t start, uint32_t num_tri, int index)
 {
     if (!nodes) {
         return AT_ERR_INVALID_ARGUMENT;
     }
-    AT_BVHNode *node = &nodes[index];
+    AT_MiniTreeNode *node = &nodes[index];
     node->idx = index;
     if (num_tri == 1) {
         node->left_child = -1;
@@ -86,8 +87,8 @@ AT_Result AT_BVHNode_init(AT_BVH *tree, const AT_BVHNode *nodes, AT_TriangleArra
         // TODO: reduce last node index to fix loops
         // TODO: grow aabb to encompass full triangles
     } else {
-        node->left_child = ++tree->last_node_idx;
-        node->right_child = ++tree->last_node_idx;
+        node->left_child = ++minitree->last_node_idx;
+        node->right_child = ++minitree->last_node_idx;
     }
     node->start = start;
     node->num_tri = num_tri;
@@ -98,11 +99,11 @@ AT_Result AT_BVHNode_init(AT_BVH *tree, const AT_BVHNode *nodes, AT_TriangleArra
     return AT_OK;
 }
 
-AT_Result AT_BVH_create(AT_BVH **out_tree, const AT_TriGroup *tri_group, const AT_BVHConfig *conf)
+AT_Result AT_MiniTree_create(AT_MiniTree **out_tree, const AT_TriGroup *tri_group, const AT_BVHConfig *conf)
 {
     if (!out_tree || *out_tree) return AT_ERR_INVALID_ARGUMENT;
 
-    AT_BVH *bvh = malloc(sizeof(*bvh));
+    AT_MiniTree *bvh = malloc(sizeof(*bvh));
     if (!bvh) return AT_ERR_ALLOC_ERROR;
     bvh->max_node_count = (2 * tri_group->num_tri) - 1;
     bvh->last_node_idx = 0;
@@ -111,9 +112,9 @@ AT_Result AT_BVH_create(AT_BVH **out_tree, const AT_TriGroup *tri_group, const A
         free(bvh);
         return AT_ERR_ALLOC_ERROR;
     }
-    AT_BVHNode_init(bvh, bvh->nodes, tri_group->triangle_arrs, tri_group->start, tri_group->num_tri, 0);
+    AT_MiniTreeNode_init(bvh, bvh->nodes, tri_group->triangle_arrs, tri_group->start, tri_group->num_tri, 0);
 
-    AT_Result res = AT_BVH_split(bvh, conf);
+    AT_Result res = AT_MiniTree_split(bvh, conf);
     if (res != AT_OK) {
         perror("Failed to split BVH");
         free(bvh->nodes);
@@ -125,7 +126,7 @@ AT_Result AT_BVH_create(AT_BVH **out_tree, const AT_TriGroup *tri_group, const A
     return AT_OK;
 }
 
-void AT_BVH_destroy(AT_BVH *tree)
+void AT_MiniTree_destroy(AT_MiniTree *tree)
 {
     if (!tree) return;
 
@@ -199,7 +200,7 @@ void count_sort(AT_TriangleArrays *triangle_arrs, AT_TriArray in_buf, int cur_by
     }
 }
 
-void AT_BVH_sort_triangles(AT_TriangleArrays *triangles_arrs, uint32_t num_tri)
+void AT_MiniTree_sort_triangles(AT_TriangleArrays *triangles_arrs, uint32_t num_tri)
 {
     AT_TriArray tmp_buf = malloc(sizeof(*tmp_buf) * num_tri);
     AT_TriArray res_buf = malloc(sizeof(*tmp_buf) * num_tri);
@@ -225,7 +226,7 @@ void AT_BVH_sort_triangles(AT_TriangleArrays *triangles_arrs, uint32_t num_tri)
     free(res_buf);
 }
 
-AT_Result AT_BVH_partition_list(AT_TriangleArrays *triangle_arrs, int array_idx, uint32_t start, uint32_t num_tri, AT_SplitContext *ctx)
+AT_Result AT_MiniTree_partition_list(AT_TriangleArrays *triangle_arrs, int array_idx, uint32_t start, uint32_t num_tri, AT_SplitContext *ctx)
 {
     uint32_t left = 0, right = 0;
     // TODO: check for malloc error
@@ -256,7 +257,7 @@ AT_Result AT_BVH_partition_list(AT_TriangleArrays *triangle_arrs, int array_idx,
     return AT_OK;
 }
 
-AT_Medians AT_BVH_get_median_range(const AT_BVHNode *node, int axis)
+AT_Medians AT_MiniTree_get_median_range(const AT_MiniTreeNode *node, int axis)
 {
     uint32_t num_tri = node->num_tri;
     // Object split
@@ -294,7 +295,7 @@ AT_Medians AT_BVH_get_median_range(const AT_BVHNode *node, int axis)
     return median;
 }
 
-AT_SA get_node_SA(const AT_BVHNode *node, int axis, uint32_t split_idx)
+AT_SA get_node_SA(const AT_MiniTreeNode *node, int axis, uint32_t split_idx)
 {
     AT_SA area;
 
@@ -306,7 +307,7 @@ AT_SA get_node_SA(const AT_BVHNode *node, int axis, uint32_t split_idx)
     return area;
 }
 
-float AT_BVH_get_SAH(const AT_BVHNode *node, const AT_BVHConfig *conf, uint32_t split_idx, int axis)
+float AT_MiniTree_get_SAH(const AT_MiniTreeNode *node, const AT_BVHConfig *conf, uint32_t split_idx, int axis)
 {
     // SAH(tree) = c_t + c_i((SA(left) / SA(tree)) * N(left) + (SA(right) / SA(tree) * N(right)))
     AT_SA areas = get_node_SA(node, axis, split_idx);
@@ -322,7 +323,7 @@ float AT_BVH_get_SAH(const AT_BVHNode *node, const AT_BVHConfig *conf, uint32_t 
     return c_t + c_i * (left_cost + right_cost);
 }
 
-AT_SplitContext AT_BVH_get_optimal_split(const AT_BVHNode *node, const AT_BVHConfig *conf)
+AT_SplitContext AT_MiniTree_get_optimal_split(const AT_MiniTreeNode *node, const AT_BVHConfig *conf)
 {
     float no_split_cost = node->aabb.SA * node->num_tri;
     float split_cost = no_split_cost;
@@ -330,11 +331,11 @@ AT_SplitContext AT_BVH_get_optimal_split(const AT_BVHNode *node, const AT_BVHCon
     uint32_t left_n = node->num_tri;
     int dim = 0;
     for (int axis = 0; axis < 3; axis++) {
-        AT_Medians medians = AT_BVH_get_median_range(node, axis);
+        AT_Medians medians = AT_MiniTree_get_median_range(node, axis);
         uint32_t start = AT_min(medians.object, medians.spatial);
         uint32_t end = AT_max(medians.object, medians.spatial);
         for (uint32_t i = start; i < end + 1; i++) {
-            new_cost = AT_BVH_get_SAH(node, conf, i, axis);
+            new_cost = AT_MiniTree_get_SAH(node, conf, i, axis);
             if (new_cost < split_cost) {
                 split_cost = new_cost;
                 left_n = i + 1;
@@ -362,27 +363,27 @@ AT_SplitContext AT_BVH_get_optimal_split(const AT_BVHNode *node, const AT_BVHCon
     };
 }
 
-AT_Result AT_BVH_split(AT_BVH *tree, const AT_BVHConfig *conf)
+AT_Result AT_MiniTree_split(AT_MiniTree *minitree, const AT_BVHConfig *conf)
 {
-    if (!tree || !conf) return AT_ERR_INVALID_ARGUMENT;
+    if (!minitree || !conf) return AT_ERR_INVALID_ARGUMENT;
 
-    AT_BVHNode *root = &tree->nodes[0];
+    AT_MiniTreeNode *root = &minitree->nodes[0];
     if (root->num_tri == 1) {
         root->left_child = -1;
         root->right_child = -1;
         return AT_OK;
     }
 
-    AT_BVHNode *stack[sizeof(tree->nodes) * tree->max_node_count];
+    AT_MiniTreeNode *stack[minitree->max_node_count];
     int stack_top = 0;
     stack[stack_top++] = root;
-    AT_BVHNode *parent;
+    AT_MiniTreeNode *parent;
     int left, right;
     while (stack_top > 0) {
         parent = stack[--stack_top];
         left = parent->left_child;
         right = parent->right_child;
-        AT_SplitContext split_ctx = AT_BVH_get_optimal_split(parent, conf);
+        AT_SplitContext split_ctx = AT_MiniTree_get_optimal_split(parent, conf);
 
         // Skip if not worth splitting
         if (split_ctx.left_n >= parent->num_tri) {
@@ -393,7 +394,7 @@ AT_Result AT_BVH_split(AT_BVH *tree, const AT_BVHConfig *conf)
             continue;
         }
 
-        if (AT_BVH_partition_list(parent->triangle_arrs, 3, parent->start, parent->num_tri, &split_ctx) != AT_OK) {
+        if (AT_MiniTree_partition_list(parent->triangle_arrs, 3, parent->start, parent->num_tri, &split_ctx) != AT_OK) {
             return AT_ERR_ALLOC_ERROR;
         }
 
@@ -403,40 +404,133 @@ AT_Result AT_BVH_split(AT_BVH *tree, const AT_BVHConfig *conf)
         // 3 - 1 = 2 + 3 % 1
         // 3 - 0 = 3 + 4 % 1
         if (split_ctx.axis == 0) {
-            if (AT_BVH_partition_list(parent->triangle_arrs, 1, parent->start, parent->num_tri, &split_ctx) != AT_OK) {
+            if (AT_MiniTree_partition_list(parent->triangle_arrs, 1, parent->start, parent->num_tri, &split_ctx) != AT_OK) {
                 return AT_ERR_ALLOC_ERROR;
             }
-            if (AT_BVH_partition_list(parent->triangle_arrs, 2, parent->start, parent->num_tri, &split_ctx) != AT_OK) {
+            if (AT_MiniTree_partition_list(parent->triangle_arrs, 2, parent->start, parent->num_tri, &split_ctx) != AT_OK) {
                 return AT_ERR_ALLOC_ERROR;
             }
         } else if (split_ctx.axis == 1) {
-            if (AT_BVH_partition_list(parent->triangle_arrs, 0, parent->start, parent->num_tri, &split_ctx) != AT_OK) {
+            if (AT_MiniTree_partition_list(parent->triangle_arrs, 0, parent->start, parent->num_tri, &split_ctx) != AT_OK) {
                 return AT_ERR_ALLOC_ERROR;
             }
-            if (AT_BVH_partition_list(parent->triangle_arrs, 2, parent->start, parent->num_tri, &split_ctx) != AT_OK) {
+            if (AT_MiniTree_partition_list(parent->triangle_arrs, 2, parent->start, parent->num_tri, &split_ctx) != AT_OK) {
                 return AT_ERR_ALLOC_ERROR;
             }
         } else {
-            if (AT_BVH_partition_list(parent->triangle_arrs, 0, parent->start, parent->num_tri, &split_ctx) != AT_OK) {
+            if (AT_MiniTree_partition_list(parent->triangle_arrs, 0, parent->start, parent->num_tri, &split_ctx) != AT_OK) {
                 return AT_ERR_ALLOC_ERROR;
             }
-            if (AT_BVH_partition_list(parent->triangle_arrs, 1, parent->start, parent->num_tri, &split_ctx) != AT_OK) {
+            if (AT_MiniTree_partition_list(parent->triangle_arrs, 1, parent->start, parent->num_tri, &split_ctx) != AT_OK) {
                 return AT_ERR_ALLOC_ERROR;
             }
         }
 
         // Create children
-        AT_BVHNode_init(tree, tree->nodes, parent->triangle_arrs, parent->start + 0, split_ctx.left_n, left);
-        AT_BVHNode_init(tree, tree->nodes, parent->triangle_arrs, parent->start + split_ctx.left_n, parent->num_tri - split_ctx.left_n, right);
+        AT_MiniTreeNode_init(minitree, minitree->nodes, parent->triangle_arrs, parent->start + 0, split_ctx.left_n, left);
+        AT_MiniTreeNode_init(minitree, minitree->nodes, parent->triangle_arrs, parent->start + split_ctx.left_n, parent->num_tri - split_ctx.left_n, right);
 
         // Add if not leaf
-        if (tree->nodes[left].num_tri > 1) {
-            stack[stack_top++] = &tree->nodes[left];
+        if (minitree->nodes[left].num_tri > 1) {
+            stack[stack_top++] = &minitree->nodes[left];
         }
-        if (tree->nodes[right].num_tri > 1) {
-            stack[stack_top++] = &tree->nodes[right];
+        if (minitree->nodes[right].num_tri > 1) {
+            stack[stack_top++] = &minitree->nodes[right];
         }
     }
 
     return AT_OK;
+}
+
+bool aabb_intersects(AT_AABB *aabb, AT_Ray *ray)
+{
+    float t_min = 0.0f, t_max = FLT_MAX;
+    AT_Vec3 min = aabb->min, max = aabb->max;
+    AT_Vec3 origin = ray->origin, dir = ray->direction;
+    bool sign;
+    float box_min, box_max, dim_min, dim_max;
+    float inv_dir[3] = {1.0f / dir.x, 1.0f / dir.y, 1.0f / dir.z};
+    float corners[2][3] = {
+        {min.x, min.y, min.z},
+        {max.x, max.y, max.z}
+    };
+
+    for (int d = 0; d < 3; d++) {
+        sign = signbit(inv_dir[d]);
+        box_min = corners[sign][d];
+        box_max = corners[!sign][d];
+
+        dim_min = (box_min - origin.arr[d]) * inv_dir[d];
+        dim_max = (box_max - origin.arr[d]) * inv_dir[d];
+
+        t_min = AT_max(dim_min, t_min);
+        t_max = AT_min(dim_max, t_max);
+        if (t_max < t_min) {
+            return false;
+        }
+    }
+
+    return t_min <= t_max;
+}
+
+AT_IntersectContext AT_IntersectContext_init()
+{
+    AT_IntersectContext ctx = (AT_IntersectContext){
+        .intersects = false,
+        .out_normal = {0},
+        .out_ray = AT_ray_init((AT_Vec3){FLT_MAX, FLT_MAX, FLT_MAX}, (AT_Vec3){0}, 0.0f, 0, 0),
+    };
+
+    return ctx;
+}
+
+void check_triangles(AT_MiniTreeNode *node, AT_Ray *in_ray, AT_IntersectContext *ctx)
+{
+    for (uint32_t tri_idx = 0; tri_idx < node->num_tri; tri_idx++) {
+        AT_Triangle *triangle = &AT_get_triangle(node, 3, tri_idx);
+        if (AT_ray_triangle_intersect(in_ray, triangle, &ctx->out_ray, &ctx->out_normal)) {
+            ctx->intersects = true;
+            ctx->triangle_index = node->triangle_arrs->arrs[3][tri_idx];
+        }
+    }
+}
+
+void AT_MiniTree_intersect(AT_IntersectContext *ctx, AT_MiniTree **minitrees, uint32_t num_trees, AT_Ray *in_ray)
+{
+    // TODO: fix this shit bro
+    AT_MiniTreeNode *stack[num_trees];
+    for (uint32_t tree_idx = 0; tree_idx < num_trees; tree_idx++) {
+        int stack_top = 0;
+        AT_MiniTreeNode *nodes = minitrees[tree_idx]->nodes;
+        stack[stack_top++] = &nodes[0];
+        AT_MiniTreeNode *parent;
+        AT_MiniTreeNode *left_node, *right_node;
+        while (stack_top > 0) {
+            parent = stack[--stack_top];
+            if (parent->left_child == -1 || parent->right_child == -1) {
+                if (aabb_intersects(&parent->aabb, in_ray)) {
+                    check_triangles(parent, in_ray, ctx);
+                }
+                continue;
+            }
+            left_node = &nodes[parent->left_child];
+            right_node = &nodes[parent->right_child];
+            if (aabb_intersects(&left_node->aabb, in_ray)) {
+                if (left_node->left_child == -1 || left_node->right_child == -1) {
+                    check_triangles(left_node, in_ray, ctx);
+                } else {
+                    stack[stack_top++] = &nodes[left_node->left_child];
+                    stack[stack_top++] = &nodes[left_node->right_child];
+                }
+            }
+            if (aabb_intersects(&right_node->aabb, in_ray)) {
+                if (right_node->left_child == -1 || right_node->right_child == -1) {
+                    check_triangles(right_node, in_ray, ctx);
+                } else {
+                    stack[stack_top++] = &nodes[right_node->left_child];
+                    stack[stack_top++] = &nodes[right_node->right_child];
+                }
+            }
+        }
+    }
 }
