@@ -106,8 +106,6 @@ export default function ConfigPanel({ mode = "staging" }: ConfigPanelProps) {
   const MAX_VOXELS = 500_000;
   const isOverLimit = numVoxels > MAX_VOXELS;
 
-
-
   // When a new model loads (bounds change), reset voxel size to midpoint
   // Skip for saved simulations — their voxel size is restored from Appwrite
   useEffect(() => {
@@ -167,7 +165,7 @@ export default function ConfigPanel({ mode = "staging" }: ConfigPanelProps) {
             checked={showTexture}
             onChange={(e) => {
               setShowTexture(e);
-              setWireframe(false);
+              if (e) setWireframe(false);
             }}
           />
           <Toggle
@@ -175,7 +173,7 @@ export default function ConfigPanel({ mode = "staging" }: ConfigPanelProps) {
             checked={wireframe}
             onChange={(e) => {
               setWireframe(e);
-              setShowTexture(false);
+              if (e) setShowTexture(false);
             }}
           />
         </div>
