@@ -164,12 +164,12 @@ export default function SceneCanvas({
         {bounds && <SourcePlacer isStaging={isStaging} />}
       </Suspense>
       {/* Orientation gizmo */}
-      {/* <GizmoHelper alignment="bottom-right" margin={[80, 80]}>
+      <GizmoHelper alignment="bottom-right" margin={[80, 80]}>
         <GizmoViewport
           axisColors={["red", "green", "blue"]}
           labelColor="black"
         />
-      </GizmoHelper> */}
+      </GizmoHelper>
       <OrbitControls makeDefault />
     </Canvas>
   );

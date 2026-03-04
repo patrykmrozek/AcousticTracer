@@ -10,7 +10,7 @@ export default function Dashboard() {
   const { logout, current } = useUser();
   const navigate = useNavigate();
   const [isUploadOpen, setIsUploadOpen] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<{
     id: string;
     fileId: string;
@@ -39,23 +39,19 @@ export default function Dashboard() {
         className={`${
           isSidebarOpen ? "w-64" : "w-20"
         } bg-bg-card transition-all duration-300 flex flex-col border-r border-gray-700 relative shrink-0`}
+        onMouseEnter={() => setIsSidebarOpen(true)}
+        onMouseLeave={() => setIsSidebarOpen(false)}
       >
-        <button
-          className="absolute -right-3 top-6 bg-button-primary text-white rounded-full w-6 h-6 flex items-center justify-center cursor-pointer border-none z-10 hover:bg-button-hover"
-          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          aria-label="Toggle Sidebar"
-        >
-          {isSidebarOpen ? "<" : ">"}
-        </button>
-
         <div className="p-6 flex-1">
           <div className="flex items-center gap-3 overflow-hidden whitespace-nowrap">
             <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-bg-primary font-bold shrink-0">
               {current?.name?.charAt(0).toUpperCase() || "?"}
             </div>
             <div
-              className={`transition-opacity duration-300 ${
-                isSidebarOpen ? "opacity-100" : "opacity-0 invisible"
+              className={`transition-all duration-300 ease-in-out ${
+                isSidebarOpen
+                  ? "opacity-100 translate-x-0 delay-100"
+                  : "opacity-0 -translate-x-2 pointer-events-none"
               }`}
             >
               <h2 className="text-sm font-bold m-0 uppercase tracking-wider text-text-secondary">
@@ -78,8 +74,10 @@ export default function Dashboard() {
           >
             <span className="text-xl">⎋</span>
             <span
-              className={`font-semibold transition-opacity duration-300 ${
-                isSidebarOpen ? "opacity-100" : "opacity-0 hidden"
+              className={`font-semibold transition-all duration-300 ease-in-out ${
+                isSidebarOpen
+                  ? "opacity-100 translate-x-0 delay-100"
+                  : "opacity-0 -translate-x-2 pointer-events-none w-0 overflow-hidden"
               }`}
             >
               Logout
