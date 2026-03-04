@@ -6,11 +6,40 @@ import {
   useDeleteSimulation,
   useSimulationsList,
 } from "../api/use-simulation-hooks";
+import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
+import {
+  LayoutDashboard,
+  LogOut,
+  Plus,
+  MoreHorizontal,
+  Trash2,
+  Eye,
+  Loader2,
+  Home,
+} from "lucide-react";
+import { motion } from "framer-motion";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 export default function Dashboard() {
   const { logout, current } = useUser();
   const navigate = useNavigate();
   const [isUploadOpen, setIsUploadOpen] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<{
     id: string;
     fileId: string;
@@ -34,195 +63,263 @@ export default function Dashboard() {
 
   return (
     <div className="flex h-screen bg-bg-primary text-text-primary overflow-hidden">
-      {/* Sidebar */}
-      <aside
-        className={`${
-          isSidebarOpen ? "w-64" : "w-20"
-        } bg-bg-card transition-all duration-300 flex flex-col border-r border-gray-700 relative shrink-0`}
-        onMouseEnter={() => setIsSidebarOpen(true)}
-        onMouseLeave={() => setIsSidebarOpen(false)}
-      >
-        <div className="p-6 flex-1">
-          <div className="flex items-center gap-3 overflow-hidden whitespace-nowrap">
-            <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-bg-primary font-bold shrink-0">
-              {current?.name?.charAt(0).toUpperCase() || "?"}
-            </div>
-            <div
-              className={`transition-all duration-300 ease-in-out ${
-                isSidebarOpen
-                  ? "opacity-100 translate-x-0 delay-100"
-                  : "opacity-0 -translate-x-2 pointer-events-none"
-              }`}
-            >
-              <h2 className="text-sm font-bold m-0 uppercase tracking-wider text-text-secondary">
-                Welcome
-              </h2>
-              <p className="text-base font-semibold truncate max-w-36 capitalize">
-                {current?.name}
-              </p>
+      {/* Animated Sidebar */}
+      <Sidebar open={sidebarOpen} setOpen={setSidebarOpen}>
+        <SidebarBody className="justify-between gap-10">
+          <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
+            {sidebarOpen ? <Logo /> : <LogoIcon />}
+            <div className="mt-8 flex flex-col gap-2">
+              <SidebarLink
+                link={{
+                  label: "Home",
+                  href: "/",
+                  icon: (
+                    <Home className="text-text-secondary h-5 w-5 shrink-0" />
+                  ),
+                }}
+              />
+              <SidebarLink
+                link={{
+                  label: "Dashboard",
+                  href: "/dashboard",
+                  icon: (
+                    <LayoutDashboard className="text-text-secondary h-5 w-5 shrink-0" />
+                  ),
+                }}
+              />
             </div>
           </div>
-        </div>
-
-        <div className="p-4 border-t border-gray-700">
-          <button
-            className={`flex items-center gap-3 w-full px-4 py-2.5 rounded-lg text-text-secondary hover:text-white hover:bg-white/5 transition-colors cursor-pointer border-none ${
-              !isSidebarOpen && "justify-center px-0"
-            }`}
-            onClick={logout}
-            title="Logout"
-          >
-            <span className="text-xl">⎋</span>
-            <span
-              className={`font-semibold transition-all duration-300 ease-in-out ${
-                isSidebarOpen
-                  ? "opacity-100 translate-x-0 delay-100"
-                  : "opacity-0 -translate-x-2 pointer-events-none w-0 overflow-hidden"
-              }`}
-            >
-              Logout
-            </span>
-          </button>
-        </div>
-      </aside>
+          <div className="flex flex-col gap-2 border-t border-border-primary pt-4">
+            <SidebarLink
+              link={{
+                label: "Logout",
+                href: "#",
+                icon: (
+                  <LogOut className="text-text-secondary h-5 w-5 shrink-0" />
+                ),
+              }}
+              onClick={logout}
+            />
+            <SidebarLink
+              link={{
+                label: current?.name ?? "User",
+                href: "#",
+                icon: (
+                  <div className="h-7 w-7 shrink-0 rounded-full bg-accent flex items-center justify-center text-bg-primary font-bold text-xs">
+                    {current?.name?.charAt(0).toUpperCase() || "?"}
+                  </div>
+                ),
+              }}
+            />
+          </div>
+        </SidebarBody>
+      </Sidebar>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        <header className="flex flex-row justify-between items-center px-8 pt-8 pb-4">
-          <h1 className="m-0 font-bold text-text-primary text-3xl">
-            Acoustic Tracer
-          </h1>
+        <header className="flex flex-row justify-between items-center px-8 pt-8 pb-2">
+          <div>
+            <h1 className="m-0 font-bold text-text-primary text-2xl">
+              Simulations
+            </h1>
+            <p className="text-text-secondary text-sm mt-1">
+              Manage and view your acoustic simulations
+            </p>
+          </div>
           {!isUploadOpen && (
-            <button
-              className="px-4 py-2.5 rounded-lg bg-button-primary text-white font-semibold text-sm transition-colors cursor-pointer border-none hover:bg-button-hover focus-visible:outline-2 focus-visible:outline-button-primary focus-visible:outline-offset-2 disabled:opacity-60 disabled:cursor-not-allowed"
-              onClick={() => setIsUploadOpen(true)}
-            >
-              Create new simulation
-            </button>
+            <Button onClick={() => setIsUploadOpen(true)} className="gap-2">
+              <Plus className="h-4 w-4" />
+              New Simulation
+            </Button>
           )}
         </header>
 
-        <main className="flex-1 overflow-y-auto px-8 pb-8">
+        <main className="flex-1 overflow-y-auto px-8 pb-8 pt-4">
           {deleteMutation.isError && (
-            <div className="text-danger text-sm p-2">
+            <div className="text-danger text-sm p-3 mb-4 bg-danger/10 rounded-lg border border-danger/20">
               Delete failed: {deleteMutation.error?.message}
             </div>
           )}
-          <div className="w-full">
-            <table className="w-full border-separate border-spacing-y-2 text-sm text-left">
-              <thead className="text-text-primary font-bold uppercase text-[11px] tracking-widest sticky top-0 bg-bg-primary z-10">
-                <tr>
-                  <th className="px-6 py-4">Date</th>
-                  <th className="px-6 py-4">Name</th>
-                  <th className="px-6 py-4">Status</th>
-                  <th className="px-6 py-4">Voxel Size</th>
-                  <th className="px-6 py-4">Voxels</th>
-                  <th className="px-6 py-4">FPS</th>
-                  <th className="px-6 py-4">Rays</th>
-                  <th className="px-6 py-4"></th>
-                </tr>
-              </thead>
-              <tbody>
+
+          <div className="rounded-lg border border-border bg-bg-card">
+            <Table>
+              <TableHeader>
+                <TableRow className="hover:bg-transparent border-border">
+                  <TableHead className="text-text-secondary font-semibold uppercase text-xs tracking-wider">
+                    Date
+                  </TableHead>
+                  <TableHead className="text-text-secondary font-semibold uppercase text-xs tracking-wider">
+                    Name
+                  </TableHead>
+                  <TableHead className="text-text-secondary font-semibold uppercase text-xs tracking-wider">
+                    Status
+                  </TableHead>
+                  <TableHead className="text-text-secondary font-semibold uppercase text-xs tracking-wider hidden md:table-cell">
+                    Voxel Size
+                  </TableHead>
+                  <TableHead className="text-text-secondary font-semibold uppercase text-xs tracking-wider hidden lg:table-cell">
+                    Voxels
+                  </TableHead>
+                  <TableHead className="text-text-secondary font-semibold uppercase text-xs tracking-wider hidden lg:table-cell">
+                    FPS
+                  </TableHead>
+                  <TableHead className="text-text-secondary font-semibold uppercase text-xs tracking-wider hidden md:table-cell">
+                    Rays
+                  </TableHead>
+                  <TableHead className="w-12"></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {isLoading ? (
-                  <tr>
-                    <td
-                      colSpan={9}
-                      className="text-center px-6 py-5 text-text-secondary"
+                  <TableRow className="hover:bg-transparent">
+                    <TableCell
+                      colSpan={8}
+                      className="h-32 text-center text-text-secondary"
                     >
                       <div className="flex items-center justify-center gap-2">
-                        <div className="animate-spin">⏳</div>
+                        <Loader2 className="h-5 w-5 animate-spin text-button-primary" />
                         <span>Loading simulations...</span>
                       </div>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ) : error ? (
-                  <tr>
-                    <td
+                  <TableRow className="hover:bg-transparent">
+                    <TableCell
                       colSpan={8}
-                      className="text-center px-6 py-5 text-danger"
+                      className="h-32 text-center text-danger"
                     >
-                      Failed to load simulations: {error.message}
-                      <button
-                        onClick={() => refetch()}
-                        className="ml-2 underline hover:no-underline"
-                      >
-                        Retry
-                      </button>
-                    </td>
-                  </tr>
+                      <div className="flex flex-col items-center gap-2">
+                        <span>Failed to load simulations: {error.message}</span>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => refetch()}
+                        >
+                          Retry
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
                 ) : simulations.length === 0 ? (
-                  <tr>
-                    <td
+                  <TableRow className="hover:bg-transparent">
+                    <TableCell
                       colSpan={8}
-                      className="text-center px-6 py-5 text-text-secondary"
+                      className="h-32 text-center text-text-secondary"
                     >
-                      No simulations found. Create one to get started.
-                    </td>
-                  </tr>
+                      <div className="flex flex-col items-center gap-3">
+                        <LayoutDashboard className="h-10 w-10 text-text-secondary/40" />
+                        <div>
+                          <p className="font-medium text-text-primary">
+                            No simulations yet
+                          </p>
+                          <p className="text-sm">
+                            Create your first simulation to get started.
+                          </p>
+                        </div>
+                        <Button
+                          size="sm"
+                          onClick={() => setIsUploadOpen(true)}
+                          className="gap-2 mt-1"
+                        >
+                          <Plus className="h-4 w-4" />
+                          New Simulation
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
                 ) : (
                   simulations.map((sim) => (
-                    <tr
+                    <TableRow
                       key={sim.$id}
                       onClick={() => navigate(`/scene/${sim.$id}`)}
-                      className="bg-bg-card transition-all duration-200 shadow-md hover:bg-hover-bg hover:-translate-y-0.5 hover:shadow-lg cursor-pointer group"
+                      className="cursor-pointer border-border hover:bg-hover-bg/50 transition-colors"
                     >
-                      <td className="px-6 py-5 align-middle leading-snug rounded-l-lg text-text-primary font-medium">
-                        {new Date(sim.$createdAt).toLocaleString()}
-                      </td>
-                      <td className="px-6 py-5 align-middle text-text-secondary leading-snug">
+                      <TableCell className="text-text-primary font-medium whitespace-nowrap">
+                        {new Date(sim.$createdAt).toLocaleDateString(
+                          undefined,
+                          {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          },
+                        )}
+                      </TableCell>
+                      <TableCell className="text-text-secondary">
                         {sim.name}
-                      </td>
-                      <td className="px-6 py-5 align-middle text-text-secondary leading-snug">
-                        <span
-                          className={`inline-flex items-center gap-1 px-2 py-1 rounded font-bold text-[11px] uppercase tracking-wide ${
-                            sim.status === "completed"
-                              ? "text-success"
-                              : sim.status === "failed"
-                                ? "text-danger"
-                                : "text-accent"
-                          }`}
-                        >
-                          {sim.status === "completed" && "✓ "}
-                          {sim.status === "failed" && "✗ "}
-                          {sim.status === "pending"}
-                          {sim.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-5 align-middle text-text-secondary leading-snug">
+                      </TableCell>
+                      <TableCell>
+                        <StatusBadge status={sim.status} />
+                      </TableCell>
+                      <TableCell className="text-text-secondary hidden md:table-cell">
                         {sim.config.voxelSize}m
-                      </td>
-                      <td className="px-6 py-5 align-middle text-text-secondary leading-snug">
+                      </TableCell>
+                      <TableCell className="text-text-secondary hidden lg:table-cell">
                         {sim.numVoxels?.toLocaleString() ?? "—"}
-                      </td>
-                      <td className="px-6 py-5 align-middle text-text-secondary leading-snug">
+                      </TableCell>
+                      <TableCell className="text-text-secondary hidden lg:table-cell">
                         {sim.config.fps}
-                      </td>
-                      <td className="px-6 py-5 align-middle text-text-secondary leading-snug">
+                      </TableCell>
+                      <TableCell className="text-text-secondary hidden md:table-cell">
                         {sim.config.numRays.toLocaleString()}
-                      </td>
-                      <td className="px-6 py-5 align-middle text-text-secondary leading-snug rounded-r-lg text-right">
-                        <button
-                          className="bg-transparent border-none text-text-secondary text-2xl cursor-pointer p-1 leading-none rounded hover:text-danger transition-colors focus-visible:outline-2 focus-visible:outline-button-primary focus-visible:outline-offset-2"
-                          aria-label="Delete"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setDeleteTarget({
-                              id: sim.$id,
-                              fileId: sim.inputFileId,
-                              resultFileId: sim.resultFileId,
-                              name: sim.name,
-                            });
-                          }}
-                        >
-                          &times;
-                        </button>
-                      </td>
-                    </tr>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <span className="sr-only">Open menu</span>
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(`/scene/${sim.$id}`);
+                              }}
+                            >
+                              <Eye className="mr-2 h-4 w-4" />
+                              View Scene
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              className="text-danger focus:text-danger"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setDeleteTarget({
+                                  id: sim.$id,
+                                  fileId: sim.inputFileId,
+                                  resultFileId: sim.resultFileId,
+                                  name: sim.name,
+                                });
+                              }}
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
                   ))
                 )}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
+
+          {simulations.length > 0 && (
+            <div className="flex items-center justify-end pt-3">
+              <p className="text-xs text-text-secondary">
+                {simulations.length} simulation{simulations.length !== 1 && "s"}
+              </p>
+            </div>
+          )}
+
           {isUploadOpen && (
             <UploadForm
               onClose={() => {
@@ -244,18 +341,15 @@ export default function Dashboard() {
                   ? This action cannot be undone.
                 </p>
                 <div className="flex justify-end gap-3">
-                  <button
+                  <Button
+                    variant="outline"
                     onClick={() => setDeleteTarget(null)}
-                    className="px-4 py-2 rounded-lg text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-white/10 transition-colors cursor-pointer bg-transparent border border-border-primary"
                   >
                     Cancel
-                  </button>
-                  <button
-                    onClick={confirmDelete}
-                    className="px-4 py-2 rounded-lg text-sm font-semibold bg-red-600 text-white hover:bg-red-500 transition-colors cursor-pointer border-none"
-                  >
+                  </Button>
+                  <Button variant="destructive" onClick={confirmDelete}>
                     Delete
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -265,3 +359,52 @@ export default function Dashboard() {
     </div>
   );
 }
+
+const statusConfig = {
+  completed: {
+    label: "Completed",
+    className: "bg-success/15 text-success border-success/25",
+  },
+  failed: {
+    label: "Failed",
+    className: "bg-danger/15 text-danger border-danger/25",
+  },
+  pending: {
+    label: "Pending",
+    className: "bg-accent/15 text-accent border-accent/25",
+  },
+  staging: {
+    label: "Staging",
+    className: "bg-button-primary/15 text-link border-button-primary/25",
+  },
+} as const;
+
+function StatusBadge({ status }: { status: keyof typeof statusConfig }) {
+  const config = statusConfig[status] ?? statusConfig.pending;
+  return (
+    <span
+      className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${config.className}`}
+    >
+      {config.label}
+    </span>
+  );
+}
+
+const Logo = () => (
+  <div className="font-normal flex space-x-2 items-center text-sm text-text-primary py-1 relative z-20">
+    <div className="h-5 w-6 bg-accent rounded-br-lg rounded-tr-sm rounded-tl-lg rounded-bl-sm shrink-0" />
+    <motion.span
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="font-medium text-text-primary whitespace-pre"
+    >
+      Acoustic Tracer
+    </motion.span>
+  </div>
+);
+
+const LogoIcon = () => (
+  <div className="font-normal flex space-x-2 items-center text-sm text-text-primary py-1 relative z-20">
+    <div className="h-5 w-6 bg-accent rounded-br-lg rounded-tr-sm rounded-tl-lg rounded-bl-sm shrink-0" />
+  </div>
+);

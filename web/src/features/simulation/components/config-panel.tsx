@@ -223,7 +223,9 @@ export default function ConfigPanel({ mode = "staging" }: ConfigPanelProps) {
                 value={raysInput}
                 onChange={(e) => setRaysInput(e.target.value)}
                 onBlur={commitRays}
-                onKeyDown={(e) => { if (e.key === "Enter") commitRays(); }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") commitRays();
+                }}
                 className="w-full p-2 rounded-lg bg-bg-primary text-text-primary border border-white/10 text-sm focus:outline-none focus:ring-1 focus:ring-button-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
             </Section>

@@ -162,6 +162,38 @@ export default function Scene() {
                   {error?.message}
                 </div>
               )}
+              {!isLoading && !error && !modelUrl && (
+                <div className="flex flex-col items-center gap-4 text-center px-6">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-button-primary/10">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-8 w-8 text-button-primary"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={1.5}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M12 16v-4m0 0V8m0 4h4m-4 0H8m13 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-lg font-semibold text-text-primary">
+                      No model loaded
+                    </p>
+                    <p className="mt-1 text-sm text-text-secondary max-w-xs">
+                      Upload a{" "}
+                      <span className="font-medium text-text-primary">
+                        .glb
+                      </span>{" "}
+                      file using the config panel on the right to get started.
+                    </p>
+                  </div>
+                </div>
+              )}
               {!isLoading && !error && modelUrl && (
                 <ErrorBoundary FallbackComponent={sceneFallbackRender}>
                   <div className="w-full h-full relative">
@@ -204,12 +236,22 @@ export default function Scene() {
                     aria-label={isPlaying ? "Pause" : "Play"}
                   >
                     {isPlaying ? (
-                      <svg width="10" height="12" viewBox="0 0 10 12" fill="currentColor">
+                      <svg
+                        width="10"
+                        height="12"
+                        viewBox="0 0 10 12"
+                        fill="currentColor"
+                      >
                         <rect x="0" y="0" width="3" height="12" rx="0.5" />
                         <rect x="7" y="0" width="3" height="12" rx="0.5" />
                       </svg>
                     ) : (
-                      <svg width="10" height="12" viewBox="0 0 10 12" fill="currentColor">
+                      <svg
+                        width="10"
+                        height="12"
+                        viewBox="0 0 10 12"
+                        fill="currentColor"
+                      >
                         <path d="M0 0.5a.5.5 0 0 1 .764-.424l9 5.5a.5.5 0 0 1 0 .848l-9 5.5A.5.5 0 0 1 0 11.5z" />
                       </svg>
                     )}

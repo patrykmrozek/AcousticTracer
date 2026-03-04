@@ -10,9 +10,11 @@ import { FeatureErrorFallback } from "@/components/feature-error-boundary";
 import { ErrorBoundary } from "react-error-boundary";
 // Lazy loading the different pages
 
+const Home = lazy(() => import("@/features/simulation/routes/home"));
 const Dashboard = lazy(() => import("@/features/simulation/routes/dashboard"));
 const Scene = lazy(() => import("@/features/simulation/routes/scene"));
 const Login = lazy(() => import("@/features/auth/routes/login"));
+const Register = lazy(() => import("@/features/auth/routes/register"));
 
 const ProtectedRoute = () => {
   const { current, isLoading } = useUser();
@@ -39,18 +41,27 @@ const ProtectedRoute = () => {
 
 const router = createBrowserRouter([
   {
+    // Home — public (shows guest CTA when logged out)
+    path: "/",
+    element: (
+      <Suspense
+        fallback={
+          <div className="flex h-screen items-center justify-center text-text-primary">
+            Loading...
+          </div>
+        }
+      >
+        <ErrorBoundary FallbackComponent={FeatureErrorFallback}>
+          <Home />
+        </ErrorBoundary>
+      </Suspense>
+    ),
+  },
+  {
     // Protected routes
     path: "/",
     element: <ProtectedRoute />,
     children: [
-      {
-        index: true,
-        element: (
-          <ErrorBoundary FallbackComponent={FeatureErrorFallback}>
-            <Navigate to="/dashboard" replace />
-          </ErrorBoundary>
-        ),
-      },
       {
         path: "dashboard",
         element: (
@@ -83,6 +94,14 @@ const router = createBrowserRouter([
     element: (
       <ErrorBoundary FallbackComponent={FeatureErrorFallback}>
         <Login />
+      </ErrorBoundary>
+    ),
+  },
+  {
+    path: "auth/register",
+    element: (
+      <ErrorBoundary FallbackComponent={FeatureErrorFallback}>
+        <Register />
       </ErrorBoundary>
     ),
   },
