@@ -116,15 +116,21 @@ export default function SourcePlacer({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
-  // Scale factor based on model size, clamped to stay visible but not huge
-  const scale = useMemo(() => {
-    if (!bounds) return 1;
+  // Scale factor based on model size — 2% of the diagonal, clamped so the
+  // markers stay visible on tiny models but don't dominate large ones.
+  const { markerScale, gizmoSize } = useMemo(() => {
+    if (!bounds) return { markerScale: 1, gizmoSize: 1 };
     const size = new THREE.Vector3();
     bounds.getSize(size);
-    return Math.max(size.x, size.y, size.z) * 0.03;
+    const diagonal = size.length();
+    const s = Math.min(Math.max(diagonal * 0.02, 0.02), 2);
+    // TransformControls gizmo size — smaller for larger models so the
+    // handles don't overshadow the scene.
+    const g = Math.min(Math.max(0.4, 1.5 / Math.max(diagonal, 1)), 1);
+    return { markerScale: s, gizmoSize: g };
   }, [bounds]);
 
-  const lineLength = scale * 3;
+  const lineLength = markerScale * 3;
 
   // Normalized direction vector (fallback to -Z)
   const dirVec = useMemo(() => {
@@ -140,8 +146,8 @@ export default function SourcePlacer({
 
   if (!bounds) return null;
 
-  const markerSize = scale;
-  const coneRadius = scale * 0.6;
+  const markerSize = markerScale;
+  const coneRadius = markerScale * 0.6;
   const coneHeight = coneRadius * 2.5;
 
   const sourceActive = activeHandle === "source";
@@ -209,6 +215,7 @@ export default function SourcePlacer({
       <TransformControls
         ref={controlsRef}
         mode="translate"
+        size={gizmoSize}
         enabled={controlsEnabled && sourceActive}
         showX={
           controlsEnabled &&
@@ -233,6 +240,7 @@ export default function SourcePlacer({
         lineLength={lineLength}
         coneRadius={coneRadius}
         coneHeight={coneHeight}
+        gizmoSize={gizmoSize}
         controlsEnabled={controlsEnabled}
         activeHandle={activeHandle}
         setActiveHandle={setActiveHandle}
@@ -246,6 +254,7 @@ function DirectionArrow({
   lineLength,
   coneRadius,
   coneHeight,
+  gizmoSize,
   controlsEnabled,
   activeHandle,
   setActiveHandle,
@@ -254,6 +263,7 @@ function DirectionArrow({
   lineLength: number;
   coneRadius: number;
   coneHeight: number;
+  gizmoSize: number;
   controlsEnabled: boolean;
   activeHandle: ActiveHandle;
   setActiveHandle: (h: ActiveHandle) => void;
@@ -411,7 +421,7 @@ function DirectionArrow({
       <TransformControls
         ref={controlsRef}
         mode="translate"
-        size={0.4}
+        size={gizmoSize * 0.6}
         enabled={controlsEnabled && activeHandle === "direction"}
         showX={controlsEnabled && activeHandle === "direction"}
         showY={controlsEnabled && activeHandle === "direction"}
