@@ -25,6 +25,8 @@ export interface SimulationDocument extends Models.Document {
   direction_x: number;
   direction_y: number;
   direction_z: number;
+
+  num_voxels: number;
 }
 
 export interface SimulationListResponse {

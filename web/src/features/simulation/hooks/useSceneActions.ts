@@ -54,6 +54,7 @@ export default function useSceneActions(
         fileId,
         numVoxels: voxelCount ?? 0,
         config,
+        num_voxels,
       });
       simulationId = createdSimulation.$id;
     } catch (err: unknown) {

@@ -13,6 +13,7 @@ export default function ConfigPanel({ mode = "staging" }: ConfigPanelProps) {
   const showTexture = useSceneStore((state) => state.showTexture);
   const setShowTexture = useSceneStore((state) => state.setShowTexture);
   const wireframe = useSceneStore((state) => state.wireframe);
+  const num_voxels = useSceneStore((state) => state.num_voxels);
   const setWireframe = useSceneStore((state) => state.setWireframe);
 
   // extra controls available in scene-store
@@ -179,7 +180,6 @@ export default function ConfigPanel({ mode = "staging" }: ConfigPanelProps) {
                 <option>Plastic</option>
                 <option>Metal</option>
                 <option>Wood</option>
-                <option>Glass</option>
               </select>
             </Section>
 
