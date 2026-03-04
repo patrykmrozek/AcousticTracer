@@ -37,7 +37,6 @@ export interface Simulation {
         z: number;
       };
     };
-    num_voxels: number;
   };
 }
 export interface StagingSimDetails {
@@ -77,7 +76,6 @@ export interface CreateSimulationParams {
       };
     };
   };
-  num_voxels?: number;
 }
 
 export interface UpdateSimulationParams {
@@ -119,7 +117,6 @@ function documentToSimulation(doc: SimulationDocument): Simulation {
           z: doc.direction_z,
         },
       },
-      num_voxels: doc.num_voxels,
     },
   };
 }
