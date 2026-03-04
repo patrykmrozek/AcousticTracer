@@ -79,6 +79,7 @@ export interface CreateSimulationParams {
 }
 
 export interface UpdateSimulationParams {
+  name?: string;
   status?: Simulation["status"];
   resultFileId?: string;
   computeTimeMs?: number;
@@ -218,6 +219,7 @@ class SimulationRepository {
     const data: Record<string, any> = {};
 
     // Only include fields that were provided
+    if (updates.name !== undefined) data.name = updates.name;
     if (updates.status !== undefined) data.status = updates.status;
     if (updates.resultFileId !== undefined)
       data.result_file_id = updates.resultFileId;

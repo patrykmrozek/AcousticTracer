@@ -35,7 +35,7 @@ export default function ConfigPanel({ mode = "staging" }: ConfigPanelProps) {
     const parsed = parseInt(raysInput);
     const clamped = Number.isNaN(parsed)
       ? 1
-      : Math.max(1, Math.min(100000, parsed));
+      : Math.max(1, Math.min(1000000000000, parsed));
     setNumRays(clamped);
     setRaysInput(String(clamped));
   }, [raysInput, setNumRays]);
@@ -48,7 +48,7 @@ export default function ConfigPanel({ mode = "staging" }: ConfigPanelProps) {
       worldDimensions.y,
       worldDimensions.z,
     );
-    const min = Math.max(0.01, +(maxDim / 100).toFixed(2));
+    const min = 0.01;
     const max = +(maxDim / 3).toFixed(1);
     const step = +((max - min) / 100).toFixed(4);
     return { min, max, step };
@@ -215,7 +215,7 @@ export default function ConfigPanel({ mode = "staging" }: ConfigPanelProps) {
               <input
                 type="number"
                 min="1"
-                max="100000"
+                max="1000000000000"
                 step="10"
                 value={raysInput}
                 onChange={(e) => setRaysInput(e.target.value)}

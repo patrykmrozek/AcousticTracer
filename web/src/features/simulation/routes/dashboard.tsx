@@ -5,6 +5,7 @@ import UploadForm from "../components/upload-form";
 import {
   useDeleteSimulation,
   useSimulationsList,
+  useUpdateSimulation,
 } from "../api/use-simulation-hooks";
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
 import {
@@ -14,6 +15,7 @@ import {
   MoreHorizontal,
   Trash2,
   Eye,
+  Pencil,
   Loader2,
   Home,
 } from "lucide-react";
@@ -46,10 +48,16 @@ export default function Dashboard() {
     resultFileId?: string;
     name: string;
   } | null>(null);
+  const [renameTarget, setRenameTarget] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+  const [renameValue, setRenameValue] = useState("");
   const { data, isLoading, error, refetch } = useSimulationsList(
     current?.$id || "",
   );
   const deleteMutation = useDeleteSimulation();
+  const updateMutation = useUpdateSimulation();
   const simulations = data?.simulations || [];
   const confirmDelete = () => {
     if (!deleteTarget) return;
@@ -59,6 +67,15 @@ export default function Dashboard() {
       resultFileId: deleteTarget.resultFileId,
     });
     setDeleteTarget(null);
+  };
+
+  const confirmRename = () => {
+    if (!renameTarget || !renameValue.trim()) return;
+    updateMutation.mutate({
+      id: renameTarget.id,
+      updates: { name: renameValue.trim() },
+    });
+    setRenameTarget(null);
   };
 
   return (
@@ -288,6 +305,19 @@ export default function Dashboard() {
                               View Scene
                             </DropdownMenuItem>
                             <DropdownMenuItem
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setRenameValue(sim.name);
+                                setRenameTarget({
+                                  id: sim.$id,
+                                  name: sim.name,
+                                });
+                              }}
+                            >
+                              <Pencil className="mr-2 h-4 w-4" />
+                              Rename
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
                               className="text-danger focus:text-danger"
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -349,6 +379,39 @@ export default function Dashboard() {
                   </Button>
                   <Button variant="destructive" onClick={confirmDelete}>
                     Delete
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+          {renameTarget && (
+            <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm z-50 bg-black/60">
+              <div className="bg-bg-card rounded-xl p-6 shadow-lg border border-border-primary w-96">
+                <h3 className="text-lg font-semibold text-text-primary mb-2">
+                  Rename Simulation
+                </h3>
+                <input
+                  autoFocus
+                  type="text"
+                  value={renameValue}
+                  onChange={(e) => setRenameValue(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") confirmRename();
+                  }}
+                  className="w-full p-2 rounded-lg bg-bg-primary text-text-primary border border-white/10 text-sm focus:outline-none focus:ring-1 focus:ring-button-primary mb-6"
+                />
+                <div className="flex justify-end gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => setRenameTarget(null)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={confirmRename}
+                    disabled={!renameValue.trim()}
+                  >
+                    Rename
                   </Button>
                 </div>
               </div>
