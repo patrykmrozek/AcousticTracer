@@ -31,7 +31,8 @@ export default function useSceneActions(
   const [startError, setStartError] = useState<string | null>(null);
 
   const handleStartSimulation = async () => {
-    const { bounds, config, pendingFile } = useSceneStore.getState();
+    const { bounds, config, pendingFile, num_voxels } =
+      useSceneStore.getState();
 
     if (!bounds || !current?.$id) return;
 
@@ -52,6 +53,7 @@ export default function useSceneActions(
         fileName: pendingFile?.name || "test",
         fileId,
         config,
+        num_voxels,
       });
       simulationId = createdSimulation.$id;
     } catch (err: unknown) {

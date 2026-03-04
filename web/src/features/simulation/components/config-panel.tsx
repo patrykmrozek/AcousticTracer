@@ -13,6 +13,7 @@ export default function ConfigPanel({ mode = "staging" }: ConfigPanelProps) {
   const showTexture = useSceneStore((state) => state.showTexture);
   const setShowTexture = useSceneStore((state) => state.setShowTexture);
   const wireframe = useSceneStore((state) => state.wireframe);
+  const num_voxels = useSceneStore((state) => state.num_voxels);
   const setWireframe = useSceneStore((state) => state.setWireframe);
 
   // extra controls available in scene-store
@@ -26,6 +27,7 @@ export default function ConfigPanel({ mode = "staging" }: ConfigPanelProps) {
   const setNumRays = useSceneStore((state) => state.setNumRays);
   const fps = useSceneStore((state) => state.config.fps);
   const setFps = useSceneStore((state) => state.setFps);
+  const setNumVoxels = useSceneStore((state) => state.setNumVoxels);
 
   // Dynamic voxel size range based on world dimensions
   const voxelRange = useMemo(() => {
@@ -114,9 +116,10 @@ export default function ConfigPanel({ mode = "staging" }: ConfigPanelProps) {
                 max={discreteSteps.length - 1}
                 step={1}
                 value={sliderIndex}
-                onChange={(e) =>
-                  setVoxelSize(discreteSteps[parseInt(e.target.value)])
-                }
+                onChange={(e) => {
+                  setVoxelSize(discreteSteps[parseInt(e.target.value)]);
+                  setNumVoxels(estimatedVoxels);
+                }}
                 className="w-full accent-button-primary"
               />
               <div className="flex justify-between text-[10px] text-text-secondary mt-0.5">
@@ -165,7 +168,6 @@ export default function ConfigPanel({ mode = "staging" }: ConfigPanelProps) {
                 <option>Plastic</option>
                 <option>Metal</option>
                 <option>Wood</option>
-                <option>Glass</option>
               </select>
             </Section>
 
