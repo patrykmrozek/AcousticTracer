@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useUser } from "../context/user-store";
 import { useNavigate } from "react-router";
 import { getErrorMessage } from "@/utils/get-error-message";
+import { showToast } from "@/components/toast";
 export default function Login() {
   const navigate = useNavigate();
   const { login, register } = useUser();
@@ -17,9 +18,11 @@ export default function Login() {
     try {
       if (isRegistering) {
         await register(email, password, name);
-        navigate("/dashboard")
+        showToast("Registration successful — welcome!", "success");
+        navigate("/dashboard");
       } else {
         await login(email, password);
+        showToast("Login successful — welcome back!", "success");
         navigate("/dashboard");
       }
     } catch (err: unknown) {

@@ -15,6 +15,7 @@ import * as THREE from "three";
 import { useSceneStore } from "../stores/scene-store";
 import VoxelGrid from "./voxel-grid";
 import SourcePlacer from "./source-place";
+import BoundBoxHelper from "./bbox-helper";
 
 interface SceneCanvasProps {
   modelUrl: string | null;
@@ -162,14 +163,16 @@ export default function SceneCanvas({
         </Bounds>
         {bounds && showGrid && !awaitingResults && <VoxelGrid />}
         {bounds && <SourcePlacer isStaging={isStaging} />}
+
+        <BoundBoxHelper></BoundBoxHelper>
       </Suspense>
       {/* Orientation gizmo */}
-      {/* <GizmoHelper alignment="bottom-right" margin={[80, 80]}>
+      <GizmoHelper alignment="bottom-right" margin={[80, 80]}>
         <GizmoViewport
           axisColors={["red", "green", "blue"]}
           labelColor="black"
         />
-      </GizmoHelper> */}
+      </GizmoHelper>
       <OrbitControls makeDefault />
     </Canvas>
   );
