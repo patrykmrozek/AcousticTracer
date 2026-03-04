@@ -15,6 +15,7 @@ import {
   Trash2,
   Eye,
   Loader2,
+  Home,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import {
@@ -68,6 +69,15 @@ export default function Dashboard() {
           <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
             {sidebarOpen ? <Logo /> : <LogoIcon />}
             <div className="mt-8 flex flex-col gap-2">
+              <SidebarLink
+                link={{
+                  label: "Home",
+                  href: "/",
+                  icon: (
+                    <Home className="text-text-secondary h-5 w-5 shrink-0" />
+                  ),
+                }}
+              />
               <SidebarLink
                 link={{
                   label: "Dashboard",

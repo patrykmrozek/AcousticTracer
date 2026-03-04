@@ -1,5 +1,5 @@
 import { useSceneStore } from "../stores/scene-store";
-import { useMemo, useEffect, useState, useRef } from "react";
+import { useMemo, useEffect, useState, useRef, useCallback } from "react";
 
 interface ConfigPanelProps {
   mode?: "staging" | "completed";
@@ -94,6 +94,23 @@ export default function ConfigPanel({ mode = "staging" }: ConfigPanelProps) {
 
   const MAX_VOXELS = 500_000;
   const isOverLimit = numVoxels > MAX_VOXELS;
+
+  // ── Local state for numRays so the user can freely type/delete ──
+  const [raysInput, setRaysInput] = useState(String(numRays));
+  // Keep local input in sync when the store value changes externally
+  useEffect(() => setRaysInput(String(numRays)), [numRays]);
+  const commitRays = useCallback(() => {
+    const parsed = parseInt(raysInput);
+    const clamped = Number.isNaN(parsed)
+      ? 1
+      : Math.max(1, Math.min(100000, parsed));
+    setNumRays(clamped);
+    setRaysInput(String(clamped));
+  }, [raysInput, setNumRays]);
+
+  // ── Local state for FPS slider to avoid rapid store updates (camera jitter) ──
+  const [localFps, setLocalFps] = useState(fps);
+  useEffect(() => setLocalFps(fps), [fps]);
 
   // When a new model loads (bounds change), reset voxel size to midpoint
   // Skip for saved simulations — their voxel size is restored from Appwrite
@@ -206,23 +223,27 @@ export default function ConfigPanel({ mode = "staging" }: ConfigPanelProps) {
                 min="1"
                 max="100000"
                 step="10"
-                value={numRays}
-                onChange={(e) =>
-                  setNumRays(Math.max(1, parseInt(e.target.value) || 1))
-                }
+                value={raysInput}
+                onChange={(e) => setRaysInput(e.target.value)}
+                onBlur={commitRays}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") commitRays();
+                }}
                 className="w-full p-2 rounded-lg bg-bg-primary text-text-primary border border-white/10 text-sm focus:outline-none focus:ring-1 focus:ring-button-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
             </Section>
 
             {/* FPS */}
-            <Section label={`FPS: ${fps}`}>
+            <Section label={`FPS: ${localFps}`}>
               <input
                 type="range"
                 min="1"
                 max="120"
                 step="1"
-                value={fps}
-                onChange={(e) => setFps(parseInt(e.target.value))}
+                value={localFps}
+                onChange={(e) => setLocalFps(parseInt(e.target.value))}
+                onPointerUp={() => setFps(localFps)}
+                onMouseUp={() => setFps(localFps)}
                 className="w-full accent-button-primary"
               />
             </Section>

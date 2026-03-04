@@ -15,7 +15,6 @@ import * as THREE from "three";
 import { useSceneStore } from "../stores/scene-store";
 import VoxelGrid from "./voxel-grid";
 import SourcePlacer from "./source-place";
-import BoundBoxHelper from "./bbox-helper";
 
 interface SceneCanvasProps {
   modelUrl: string | null;
@@ -164,7 +163,6 @@ export default function SceneCanvas({
         {bounds && showGrid && !awaitingResults && <VoxelGrid />}
         {bounds && <SourcePlacer isStaging={isStaging} />}
 
-        <BoundBoxHelper></BoundBoxHelper>
       </Suspense>
       {/* Orientation gizmo */}
       <GizmoHelper alignment="bottom-right" margin={[80, 80]}>
