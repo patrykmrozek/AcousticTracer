@@ -1,9 +1,12 @@
-import { useRef, useMemo, useLayoutEffect } from "react";
+import { useRef, useMemo, useLayoutEffect, useCallback } from "react";
 import * as THREE from "three";
 import { useSceneStore } from "../stores/scene-store";
 import { useRayResponse } from "../api/use-simulation-hooks";
+import type { RayFrame } from "../api/parse-result-binary";
 
 const MAX_VOXELS = 500_000;
+const ZERO_MATRIX = new THREE.Matrix4().makeScale(0, 0, 0);
+const WHITE = new THREE.Color("#ffffff");
 
 export default function VoxelGrid() {
   const meshRef = useRef<THREE.InstancedMesh>(null);
@@ -16,8 +19,7 @@ export default function VoxelGrid() {
   const frameIndex = useSceneStore((s) => s.frameIndex);
 
   // Ray response data fetched/cached entirely by TanStack Query.
-  // The query key includes resultFileId, so switching simulations
-  // automatically fetches (or returns from cache) the right data.
+  // Now returns RayFrame[] (typed arrays) instead of JSON objects.
   const { data: rayResponse } = useRayResponse(resultFileId ?? undefined);
 
   // -----------------------------------------------------------------
@@ -39,103 +41,146 @@ export default function VoxelGrid() {
   }, [bounds, gridDims, setGridDims]);
 
   // -----------------------------------------------------------------
-  // Convert a flat gridIndex → world-space position
+  // Convert a flat gridIndex → world-space position (memoised)
   // -----------------------------------------------------------------
-  const gridIndexToPos = (idx: number): [number, number, number] => {
-    const { nx, ny } = gridDims;
-    const z = Math.floor(idx / (nx * ny));
-    const rem = idx % (nx * ny);
-    const y = Math.floor(rem / nx);
-    const x = rem % nx;
-    const half = voxelSize / 2;
-    return [
-      bounds!.min.x + x * voxelSize + half,
-      bounds!.min.y + y * voxelSize + half,
-      bounds!.min.z + z * voxelSize + half,
-    ];
-  };
+  const gridIndexToPos = useCallback(
+    (idx: number): [number, number, number] => {
+      const { nx, ny } = gridDims;
+      const z = Math.floor(idx / (nx * ny));
+      const rem = idx % (nx * ny);
+      const y = Math.floor(rem / nx);
+      const x = rem % nx;
+      const half = voxelSize / 2;
+      return [
+        bounds!.min.x + x * voxelSize + half,
+        bounds!.min.y + y * voxelSize + half,
+        bounds!.min.z + z * voxelSize + half,
+      ];
+    },
+    [gridDims, voxelSize, bounds],
+  );
 
   // -----------------------------------------------------------------
-  // Build the list of instances to render
-  //   • No ray data  → full white grid
-  //   • Ray data     → only voxels with energy in the current frame
+  // Current frame data (null when no simulation results → full grid)
   // -----------------------------------------------------------------
-  const { instances, isSparse } = useMemo(() => {
-    // --- Sparse: frame data present ---
-    if (rayResponse && bounds) {
-      const frame = rayResponse[`frame_${frameIndex}`] ?? [];
-      const voxels = frame.map((bin) => {
-        const [gridIndex, intensity] = Object.entries(bin)[0] as [
-          string,
-          number,
-        ];
-        return { gridIndex: Number(gridIndex), intensity };
-      });
-      return { instances: voxels, isSparse: true };
-    }
+  const currentFrame: RayFrame | null = useMemo(() => {
+    if (!rayResponse || !bounds) return null;
+    return rayResponse[frameIndex] ?? null;
+  }, [rayResponse, frameIndex, bounds]);
 
-    // --- Full white grid ---
-    if (!bounds) return { instances: [], isSparse: false };
+  const isSparse = currentFrame !== null;
+
+  // -----------------------------------------------------------------
+  // Full-grid count (white grid shown before simulation runs)
+  // -----------------------------------------------------------------
+  const fullGridCount = useMemo(() => {
+    if (rayResponse || !bounds) return 0;
     const { nx, ny, nz } = gridDims;
     const total = nx * ny * nz;
-    if (total > MAX_VOXELS) return { instances: [], isSparse: false };
+    return total > MAX_VOXELS ? 0 : total;
+  }, [rayResponse, bounds, gridDims]);
 
-    const voxels = Array.from({ length: total }, (_, i) => ({
-      gridIndex: i,
-      intensity: -1, // sentinel → white
-    }));
-    return { instances: voxels, isSparse: false };
-  }, [rayResponse, frameIndex, bounds, gridDims]);
+  const activeCount = currentFrame
+    ? currentFrame.indices.length
+    : fullGridCount;
 
   // -----------------------------------------------------------------
-  // Write instance matrices (positions)
+  // Pre-compute the max instance count across ALL frames so the
+  // InstancedMesh is allocated once and never remounted.
   // -----------------------------------------------------------------
-  useLayoutEffect(() => {
-    if (!meshRef.current || !bounds || instances.length === 0) return;
-    const arr = meshRef.current.instanceMatrix.array as Float32Array;
-
-    instances.forEach(({ gridIndex }, i) => {
-      const [px, py, pz] = gridIndexToPos(gridIndex);
-      const off = i * 16;
-      arr[off + 0] = 1;
-      arr[off + 5] = 1;
-      arr[off + 10] = 1; // scale
-      arr[off + 12] = px;
-      arr[off + 13] = py;
-      arr[off + 14] = pz;
-      arr[off + 15] = 1;
-    });
-
-    meshRef.current.instanceMatrix.needsUpdate = true;
-  }, [instances, bounds, voxelSize]);
+  const maxInstanceCount = useMemo(() => {
+    if (rayResponse && bounds) {
+      let max = 0;
+      for (const frame of rayResponse) {
+        if (frame.indices.length > max) max = frame.indices.length;
+      }
+      return Math.max(max, 1);
+    }
+    return fullGridCount > 0 ? fullGridCount : 0;
+  }, [rayResponse, bounds, fullGridCount]);
 
   // -----------------------------------------------------------------
-  // Write instance colours (sparse mode only)
+  // Write instance matrices — position active voxels, zero-scale the rest
   // -----------------------------------------------------------------
   useLayoutEffect(() => {
-    if (!meshRef.current || !isSparse || instances.length === 0) return;
+    const mesh = meshRef.current;
+    if (!mesh || !bounds || maxInstanceCount === 0) return;
 
-    if (!meshRef.current.instanceColor) {
-      meshRef.current.setColorAt(0, new THREE.Color());
+    const mat = new THREE.Matrix4();
+
+    if (currentFrame) {
+      // Sparse mode: read voxel indices directly from typed array
+      const { indices } = currentFrame;
+      for (let i = 0; i < indices.length; i++) {
+        const [px, py, pz] = gridIndexToPos(indices[i]);
+        mat.makeTranslation(px, py, pz);
+        mesh.setMatrixAt(i, mat);
+      }
+      for (let i = indices.length; i < maxInstanceCount; i++) {
+        mesh.setMatrixAt(i, ZERO_MATRIX);
+      }
+    } else {
+      // Full grid mode: all voxels visible
+      for (let i = 0; i < activeCount; i++) {
+        const [px, py, pz] = gridIndexToPos(i);
+        mat.makeTranslation(px, py, pz);
+        mesh.setMatrixAt(i, mat);
+      }
+      for (let i = activeCount; i < maxInstanceCount; i++) {
+        mesh.setMatrixAt(i, ZERO_MATRIX);
+      }
     }
 
-    const color = new THREE.Color();
-    instances.forEach(({ intensity }, i) => {
-      const hue = THREE.MathUtils.mapLinear(intensity, 0, 1, 0.66, 1);
-      color.setRGB(hue, 0, 0);
-      meshRef.current!.setColorAt(i, color);
-    });
+    mesh.instanceMatrix.needsUpdate = true;
+    mesh.count = maxInstanceCount;
+  }, [
+    currentFrame,
+    activeCount,
+    bounds,
+    voxelSize,
+    maxInstanceCount,
+    gridIndexToPos,
+  ]);
 
-    meshRef.current.instanceColor!.needsUpdate = true;
-  }, [instances, isSparse]);
+  // -----------------------------------------------------------------
+  // Write instance colours
+  // -----------------------------------------------------------------
+  useLayoutEffect(() => {
+    const mesh = meshRef.current;
+    if (!mesh || maxInstanceCount === 0) return;
 
-  if (!bounds) return null;
+    // Ensure the instanceColor buffer exists
+    if (!mesh.instanceColor) {
+      mesh.setColorAt(0, WHITE);
+    }
+
+    if (currentFrame) {
+      // Sparse: read energies directly from typed array
+      const { energies } = currentFrame;
+      const color = new THREE.Color();
+      for (let i = 0; i < energies.length; i++) {
+        const hue = THREE.MathUtils.mapLinear(energies[i], 0, 1, 0.66, 1);
+        color.setRGB(hue, 0, 0);
+        mesh.setColorAt(i, color);
+      }
+    } else {
+      // Full grid — all white
+      for (let i = 0; i < activeCount; i++) {
+        mesh.setColorAt(i, WHITE);
+      }
+    }
+
+    mesh.instanceColor!.needsUpdate = true;
+  }, [currentFrame, activeCount, maxInstanceCount]);
+
+  if (!bounds || maxInstanceCount === 0) return null;
 
   return (
     <instancedMesh
       ref={meshRef}
-      args={[undefined, undefined, instances.length]}
+      args={[undefined, undefined, maxInstanceCount]}
       visible={visible}
+      frustumCulled={false}
     >
       <boxGeometry args={[voxelSize, voxelSize, voxelSize]} />
       <meshStandardMaterial

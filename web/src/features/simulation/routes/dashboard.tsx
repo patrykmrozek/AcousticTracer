@@ -118,6 +118,7 @@ export default function Dashboard() {
                   <th className="px-6 py-4">Name</th>
                   <th className="px-6 py-4">Status</th>
                   <th className="px-6 py-4">Voxel Size</th>
+                  <th className="px-6 py-4">Voxels</th>
                   <th className="px-6 py-4">FPS</th>
                   <th className="px-6 py-4">Rays</th>
                   <th className="px-6 py-4"></th>
@@ -127,7 +128,7 @@ export default function Dashboard() {
                 {isLoading ? (
                   <tr>
                     <td
-                      colSpan={8}
+                      colSpan={9}
                       className="text-center px-6 py-5 text-text-secondary"
                     >
                       <div className="flex items-center justify-center gap-2">
@@ -139,7 +140,7 @@ export default function Dashboard() {
                 ) : error ? (
                   <tr>
                     <td
-                      colSpan={7}
+                      colSpan={8}
                       className="text-center px-6 py-5 text-danger"
                     >
                       Failed to load simulations: {error.message}
@@ -154,7 +155,7 @@ export default function Dashboard() {
                 ) : simulations.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={7}
+                      colSpan={8}
                       className="text-center px-6 py-5 text-text-secondary"
                     >
                       No simulations found. Create one to get started.
@@ -185,12 +186,15 @@ export default function Dashboard() {
                         >
                           {sim.status === "completed" && "✓ "}
                           {sim.status === "failed" && "✗ "}
-                          {(sim.status === "pending")}
+                          {sim.status === "pending"}
                           {sim.status}
                         </span>
                       </td>
                       <td className="px-6 py-5 align-middle text-text-secondary leading-snug">
                         {sim.config.voxelSize}m
+                      </td>
+                      <td className="px-6 py-5 align-middle text-text-secondary leading-snug">
+                        {sim.numVoxels?.toLocaleString() ?? "—"}
                       </td>
                       <td className="px-6 py-5 align-middle text-text-secondary leading-snug">
                         {sim.config.fps}
@@ -200,7 +204,7 @@ export default function Dashboard() {
                       </td>
                       <td className="px-6 py-5 align-middle text-text-secondary leading-snug rounded-r-lg text-right">
                         <button
-                          className="bg-transparent border-none text-text-secondary text-2xl cursor-pointer p-1 leading-none rounded hover:text-danger hover:bg-white/10 transition-colors focus-visible:outline-2 focus-visible:outline-button-primary focus-visible:outline-offset-2"
+                          className="bg-transparent border-none text-text-secondary text-2xl cursor-pointer p-1 leading-none rounded hover:text-danger transition-colors focus-visible:outline-2 focus-visible:outline-button-primary focus-visible:outline-offset-2"
                           aria-label="Delete"
                           onClick={(e) => {
                             e.stopPropagation();

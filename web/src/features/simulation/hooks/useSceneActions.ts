@@ -31,7 +31,8 @@ export default function useSceneActions(
   const [startError, setStartError] = useState<string | null>(null);
 
   const handleStartSimulation = async () => {
-    const { bounds, config, pendingFile } = useSceneStore.getState();
+    const { bounds, config, pendingFile, voxelCount } =
+      useSceneStore.getState();
 
     if (!bounds || !current?.$id) return;
 
@@ -51,6 +52,7 @@ export default function useSceneActions(
         name: simDetails?.name || "Untitled",
         fileName: pendingFile?.name || "test",
         fileId,
+        numVoxels: voxelCount ?? 0,
         config,
       });
       simulationId = createdSimulation.$id;
@@ -66,13 +68,13 @@ export default function useSceneActions(
       runRaytracer(config)
         .then(async (raytracerResponse) => {
           let resultFileId: string | undefined;
+
           try {
-            const blob = new Blob([JSON.stringify(raytracerResponse)], {
-              type: "application/json",
-            });
-            const resultFile = new File([blob], `result-${simulationId}.json`, {
-              type: "application/json",
-            });
+            const resultFile = new File(
+              [raytracerResponse],
+              `result-${simulationId}.atrb`,
+              { type: "application/octet-stream" },
+            );
             const uploaded = await simulationRepo.uploadFile(resultFile);
             resultFileId = uploaded.$id;
           } catch {

@@ -7,6 +7,7 @@ export interface SimulationDocument extends Models.Document {
   user_id: string;
   result_file_id?: string;
   compute_time_ms?: number;
+  num_voxels?: number;
 
   // Config columns
   voxel_size: number;
