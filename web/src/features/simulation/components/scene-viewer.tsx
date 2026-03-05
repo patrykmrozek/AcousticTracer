@@ -61,8 +61,6 @@ function Model({
     if (!scene) return;
 
     scene.traverse((child) => {
-      // child.scale.set(1, 1, 1);
-      // child.updateMatrix();
 
       if (child instanceof THREE.Mesh) {
         if (!originalTexture.current.has(child.uuid)) {
@@ -76,13 +74,6 @@ function Model({
     const rawBox = new THREE.Box3().setFromObject(scene);
     const size = new THREE.Vector3();
     rawBox.getSize(size);
-    const maxDim = Math.max(size.x, size.y, size.z);
-    // Sponza is ridiculously big so if one dim is really large, scale it down
-    if (maxDim > 100) {
-      const scaleFactor = 1 / Math.round(maxDim / 10);
-      scene.scale.set(scaleFactor, scaleFactor, scaleFactor);
-      scene.updateMatrixWorld(true);
-    }
 
     const box = new THREE.Box3().setFromObject(scene);
     onLoad(box);
