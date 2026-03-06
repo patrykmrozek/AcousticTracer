@@ -4,6 +4,7 @@ import { useUser } from "../context/user-store";
 import { getErrorMessage } from "@/utils/get-error-message";
 import { showToast } from "@/components/toast";
 import { Waves } from "lucide-react";
+import GoogleButton from "@/components/ui/googleAuth";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -96,9 +97,9 @@ export default function Login() {
             {isSubmitting ? "Signing in..." : "Login"}
           </button>
         </form>
-
+        <GoogleButton/>
         <div className="mt-6 text-center text-sm text-text-secondary">
-          Don&apos;t have an account?{" "}
+          Don't have an account?{" "}
           <Link
             to="/auth/register"
             className="text-link font-medium hover:underline no-underline"

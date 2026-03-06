@@ -71,6 +71,17 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   async function init() {
     try {
+      // Handle OAuth callback: exchange token for session
+      const params = new URLSearchParams(window.location.search);
+      const secret = params.get("secret");
+      const userId = params.get("userId");
+
+      if (secret && userId) {
+        await account.createSession({ userId, secret });
+        // Clean the URL so the token isn't visible / reused
+        window.history.replaceState({}, "", window.location.pathname);
+      }
+
       const loggedIn = await account.get();
       setUser(loggedIn);
     } catch (err: unknown) {
@@ -97,7 +108,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   }, []);
   return (
     <UserContext.Provider
-      value={{ current: user, isLoading, login, logout, register }}
+      value={{ current: user, isLoading, login, logout, register, loginWithGoogle }}
     >
       {children}
     </UserContext.Provider>
