@@ -20,7 +20,7 @@ import { parseResultBuffer } from "./parse-result-binary";
  */
 export function useSimulationsList(userId: string) {
   return useQuery({
-    queryKey: simulationKeys.lists(),
+    queryKey: simulationKeys.lists(userId),
     queryFn: () => simulationRepo.list(userId),
     enabled: !!userId, // Only run if we have a userId
   });
@@ -65,7 +65,7 @@ export function useCreateSimulation() {
       simulationRepo.create(params),
     onSuccess: () => {
       // Invalidate list to show the new simulation
-      queryClient.invalidateQueries({ queryKey: simulationKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: simulationKeys.all });
     },
   });
 }
@@ -95,7 +95,7 @@ export function useUpdateSimulation() {
     }) => simulationRepo.update(id, updates),
     onSuccess: (_, variables) => {
       // Invalidate both the list and the specific simulation
-      queryClient.invalidateQueries({ queryKey: simulationKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: simulationKeys.all });
       queryClient.invalidateQueries({
         queryKey: simulationKeys.detail(variables.id),
       });
@@ -165,7 +165,7 @@ export function useDeleteSimulation() {
 
     // After success or failure, refetch to ensure consistency
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: simulationKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: simulationKeys.all });
     },
   });
 }

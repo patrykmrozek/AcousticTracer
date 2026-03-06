@@ -68,8 +68,8 @@ export default function useSceneActions(
 
       runRaytracer(config)
         .then(async (raytracerResponse) => {
+          if (!current) return;
           let resultFileId: string | undefined;
-
           try {
             const resultFile = new File(
               [raytracerResponse],

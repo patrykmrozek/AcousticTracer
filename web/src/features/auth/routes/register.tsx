@@ -12,16 +12,38 @@ export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
     setError("");
+
+    if (!name.trim()) {
+      setError("Please enter your name");
+      return;
+    }
+    if (!email.trim()) {
+      setError("Please enter your email");
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setError("Please enter a valid email address");
+      return;
+    }
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters long");
+      return;
+    }
+
+    setIsSubmitting(true);
     try {
       await register(email, password, name);
       showToast("Registration successful — welcome!", "success");
       navigate("/");
     } catch (err: unknown) {
       setError(getErrorMessage(err));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -42,7 +64,11 @@ export default function Register() {
           Get started with Acoustic Tracer
         </p>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+        <form
+          onSubmit={handleSubmit}
+          autoComplete="off"
+          className="flex flex-col gap-5"
+        >
           <div className="flex flex-col gap-2">
             <label
               className="block text-xs font-semibold text-text-secondary mb-1.5 uppercase tracking-wide"
@@ -54,10 +80,10 @@ export default function Register() {
               id="name"
               className="w-full py-2.5 px-3 border border-border-primary bg-input-bg text-text-primary rounded-lg text-sm transition-colors focus:outline-none focus:border-button-primary"
               type="text"
+              autoComplete="name"
               placeholder="Enter your name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              required
             />
           </div>
 
@@ -71,11 +97,11 @@ export default function Register() {
             <input
               id="email"
               className="w-full py-2.5 px-3 border border-border-primary bg-input-bg text-text-primary rounded-lg text-sm transition-colors focus:outline-none focus:border-button-primary"
-              type="email"
+              type="text"
+              autoComplete="off"
               placeholder="Enter your email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              required
             />
           </div>
 
@@ -90,10 +116,10 @@ export default function Register() {
               id="password"
               className="w-full py-2.5 px-3 border border-border-primary bg-input-bg text-text-primary rounded-lg text-sm transition-colors focus:outline-none focus:border-button-primary"
               type="password"
+              autoComplete="new-password"
               placeholder="Enter your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              required
             />
           </div>
 
@@ -106,8 +132,9 @@ export default function Register() {
           <button
             className="w-full px-4 py-2.5 rounded-lg bg-button-primary text-white font-semibold text-sm transition-colors cursor-pointer border-none hover:bg-button-hover focus-visible:outline-2 focus-visible:outline-button-primary focus-visible:outline-offset-2 disabled:opacity-60 disabled:cursor-not-allowed"
             type="submit"
+            disabled={isSubmitting}
           >
-            Sign Up
+            {isSubmitting ? "Registering..." : "Sign Up"}
           </button>
         </form>
 

@@ -3,7 +3,6 @@ import React, { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { MainErrorFallback } from "@/components/main-error-fallback";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import ToastContainer from "@/components/toast";
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -34,9 +33,11 @@ export const AppProvider = ({ children }: AppProviderProps) => {
         }
       >
         <QueryClientProvider client={queryClient}>
-          <UserProvider>{children}</UserProvider>
+          <UserProvider>
+            {children}
+            <ToastContainer />
+          </UserProvider>
         </QueryClientProvider>
-        <ToastContainer />
       </Suspense>
     </ErrorBoundary>
   );

@@ -38,6 +38,8 @@ interface SceneState {
   frameIndex: number;
   wireframe: boolean;
 
+  reset: () => void;
+
   setNumVoxels: (n: number) => void;
   setResultFileId: (id: string | null) => void;
   setShowGrid: (visible: boolean) => void;
@@ -59,7 +61,7 @@ interface SceneState {
   setWireframe: (visible: boolean) => void;
 }
 
-export const useSceneStore = create<SceneState>()((set) => ({
+export const useSceneStore = create<SceneState>()((set, get) => ({
   config: {
     fileName: "",
     voxelSize: 2,
@@ -90,6 +92,32 @@ export const useSceneStore = create<SceneState>()((set) => ({
   frameIndex: 0,
   wireframe: false,
   num_voxels: 0,
+
+  reset: () =>
+    set({
+      pendingFile: null,
+      bounds: null,
+      gridDimensions: null,
+      worldDimensions: null,
+      voxelCount: null,
+      resultFileId: null,
+      frameIndex: 0,
+      showGrid: true,
+      showTexture: true,
+      wireframe: false,
+      num_voxels: 0,
+      config: {
+        fileName: "",
+        voxelSize: 2,
+        numRays: 10,
+        fps: 60,
+        material: "Plastic",
+        selectedSource: {
+          position: { x: 0, y: 0, z: 0 },
+          direction: { x: 0, y: 0, z: 0 },
+        },
+      },
+    }),
 
   // the actions functions to call when updating state
   setVoxelSize: (size) =>
@@ -133,32 +161,12 @@ export const useSceneStore = create<SceneState>()((set) => ({
   setShowTexture: (visible) => set({ showTexture: visible }),
   setPendingFile: (file) => {
     if (file) {
-      // New file selected — full reset so the scene starts fresh
-      set({
+      get().reset();
+      set((state) => ({
         pendingFile: file,
-        bounds: null,
-        gridDimensions: null,
-        worldDimensions: null,
-        voxelCount: null,
-        resultFileId: null,
-        showGrid: true,
-        showTexture: true,
-        wireframe: false,
-        frameIndex: 0,
-        config: {
-          fileName: file.name,
-          voxelSize: 2,
-          numRays: 10,
-          fps: 60,
-          material: "Plastic",
-          selectedSource: {
-            position: { x: 0, y: 0, z: 0 },
-            direction: { x: 0, y: 0, z: 0 },
-          },
-        },
-      });
+        config: { ...state.config, fileName: file.name },
+      }));
     } else {
-      // Clearing pendingFile only (e.g. when loading a saved simulation)
       set({ pendingFile: null });
     }
   },

@@ -68,7 +68,6 @@ function Model({
         }
       }
     });
-
     scene.updateMatrixWorld(true);
 
     const rawBox = new THREE.Box3().setFromObject(scene);
