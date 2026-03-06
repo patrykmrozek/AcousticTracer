@@ -1,4 +1,4 @@
-import { ID, type Models } from "appwrite";
+import { ID, OAuthProvider, type Models } from "appwrite";
 import {
   createContext,
   useContext,
@@ -14,6 +14,7 @@ interface UserContextType {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  loginWithGoogle: () => void;
   register: (email: string, password: string, name: string) => Promise<void>;
 }
 
@@ -32,6 +33,14 @@ export function UserProvider({ children }: { children: ReactNode }) {
     null,
   );
   const [isLoading, setIsLoading] = useState(true);
+
+  function loginWithGoogle() {
+    account.createOAuth2Token({
+      provider: OAuthProvider.Google,
+      success: `${window.location.origin}/`,
+      failure: `${window.location.origin}/auth/login`,
+    });
+  }
 
   async function login(email: string, password: string) {
     await account.createEmailPasswordSession({
