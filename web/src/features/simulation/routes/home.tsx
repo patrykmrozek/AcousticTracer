@@ -21,7 +21,6 @@ export default function Home() {
     );
   }
 
-  /* ───── Guest (not logged in) ───── */
   if (!current) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-bg-primary px-6 text-text-primary">
@@ -65,7 +64,6 @@ export default function Home() {
     );
   }
 
-  /* ───── Authenticated ───── */
   return (
     <AppSidebar>
       <div className="flex-1 flex flex-col items-center justify-center overflow-y-auto px-6 py-16">

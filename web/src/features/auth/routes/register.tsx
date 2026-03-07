@@ -4,7 +4,7 @@ import { useUser } from "../context/user-store";
 import { getErrorMessage } from "@/utils/get-error-message";
 import { showToast } from "@/components/toast";
 import { Waves } from "lucide-react";
-import GoogleButton from "@/components/ui/googleAuth";
+import GoogleButton from "@/components/ui/google-auth";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -15,7 +15,7 @@ export default function Register() {
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (e: React.SubmitEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
 
@@ -83,6 +83,7 @@ export default function Register() {
               type="text"
               autoComplete="name"
               placeholder="Enter your name"
+              required
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
@@ -101,6 +102,7 @@ export default function Register() {
               type="text"
               autoComplete="off"
               placeholder="Enter your email"
+              required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
@@ -119,6 +121,7 @@ export default function Register() {
               type="password"
               autoComplete="new-password"
               placeholder="Enter your password"
+              required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
@@ -138,7 +141,7 @@ export default function Register() {
             {isSubmitting ? "Registering..." : "Sign Up"}
           </button>
         </form>
-        <GoogleButton/>
+        <GoogleButton />
 
         <div className="mt-6 text-center text-sm text-text-secondary">
           Already have an account?{" "}

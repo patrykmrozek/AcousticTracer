@@ -122,7 +122,6 @@ export default function ConfigPanel({ mode = "staging" }: ConfigPanelProps) {
           Configuration
         </h3>
 
-        {/* ── Voxel Size ── */}
         {mode === "staging" && (
           <Section label={`Voxel Size: ${voxelSize}m`}>
             {discreteSteps.length > 0 && (
@@ -153,7 +152,6 @@ export default function ConfigPanel({ mode = "staging" }: ConfigPanelProps) {
           </Section>
         )}
 
-        {/* ── Display toggles ── */}
         <div className="space-y-1.5">
           <Toggle
             label="Voxel Grid"
@@ -178,7 +176,6 @@ export default function ConfigPanel({ mode = "staging" }: ConfigPanelProps) {
           />
         </div>
 
-        {/* ── Staging-only controls ── */}
         {mode === "staging" && (
           <>
             {/* Material */}
@@ -242,17 +239,13 @@ export default function ConfigPanel({ mode = "staging" }: ConfigPanelProps) {
           </>
         )}
 
-        {/* ── Grid Stats ── */}
         <GridStats />
 
-        {/* ── Source Details (collapsible, pinned to bottom) ── */}
         <SourceDetails selectedSource={selectedSource} />
       </div>
     </div>
   );
 }
-
-/* ── Helper Components ── */
 
 function Section({
   label,

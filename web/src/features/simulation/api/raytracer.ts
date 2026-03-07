@@ -1,9 +1,12 @@
 import { type Simulation } from "./simulation-repository";
 
+const RAYTRACER_URL =
+  import.meta.env.VITE_RAYTRACER_URL;
+
 export async function runRaytracer(
   config: Simulation["config"],
 ): Promise<ArrayBuffer> {
-  const response = await fetch("http://127.0.0.1:8080/run", {
+  const response = await fetch(`${RAYTRACER_URL}/run`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

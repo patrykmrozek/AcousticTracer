@@ -15,6 +15,13 @@ const Dashboard = lazy(() => import("@/features/simulation/routes/dashboard"));
 const Scene = lazy(() => import("@/features/simulation/routes/scene"));
 const Login = lazy(() => import("@/features/auth/routes/login"));
 const Register = lazy(() => import("@/features/auth/routes/register"));
+const Settings = lazy(() => import("@/features/auth/routes/settings"));
+const ForgotPassword = lazy(
+  () => import("@/features/auth/routes/forgot-password"),
+);
+const ResetPassword = lazy(
+  () => import("@/features/auth/routes/reset-password"),
+);
 
 const ProtectedRoute = () => {
   const { current, isLoading } = useUser();
@@ -86,6 +93,14 @@ const router = createBrowserRouter([
           </ErrorBoundary>
         ),
       },
+      {
+        path: "settings",
+        element: (
+          <ErrorBoundary FallbackComponent={FeatureErrorFallback}>
+            <Settings />
+          </ErrorBoundary>
+        ),
+      },
     ],
   },
   // Public routes
@@ -102,6 +117,22 @@ const router = createBrowserRouter([
     element: (
       <ErrorBoundary FallbackComponent={FeatureErrorFallback}>
         <Register />
+      </ErrorBoundary>
+    ),
+  },
+  {
+    path: "auth/forgot-password",
+    element: (
+      <ErrorBoundary FallbackComponent={FeatureErrorFallback}>
+        <ForgotPassword />
+      </ErrorBoundary>
+    ),
+  },
+  {
+    path: "auth/reset-password",
+    element: (
+      <ErrorBoundary FallbackComponent={FeatureErrorFallback}>
+        <ResetPassword />
       </ErrorBoundary>
     ),
   },

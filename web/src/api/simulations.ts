@@ -1,5 +1,3 @@
-// src/api/simulations.ts
-
 /**
  * Central API export for simulations
  *

@@ -4,7 +4,7 @@ import { useUser } from "../context/user-store";
 import { getErrorMessage } from "@/utils/get-error-message";
 import { showToast } from "@/components/toast";
 import { Waves } from "lucide-react";
-import GoogleButton from "@/components/ui/googleAuth";
+import GoogleButton from "@/components/ui/google-auth";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -12,7 +12,7 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,7 +24,7 @@ export default function Login() {
       navigate("/");
     } catch (err: unknown) {
       setError(getErrorMessage(err));
-    } finally{
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -86,8 +86,29 @@ export default function Login() {
           {error && (
             <div className="text-danger text-sm text-center p-2 bg-red-500/10 rounded">
               {error}
+              {error.includes("already logged in") && (
+                <>
+                  {" "}
+                  <Link
+                    to="/"
+                    className="text-link font-medium hover:underline no-underline"
+                  >
+                    home page
+                  </Link>
+                  .{"\n"}
+                </>
+              )}
             </div>
           )}
+
+          <div className="flex justify-end">
+            <Link
+              to="/auth/forgot-password"
+              className="text-link text-xs hover:underline no-underline"
+            >
+              Forgot your password?
+            </Link>
+          </div>
 
           <button
             className="w-full px-4 py-2.5 rounded-lg bg-button-primary text-white font-semibold text-sm transition-colors cursor-pointer border-none hover:bg-button-hover focus-visible:outline-2 focus-visible:outline-button-primary focus-visible:outline-offset-2 disabled:opacity-60 disabled:cursor-not-allowed"
@@ -97,7 +118,7 @@ export default function Login() {
             {isSubmitting ? "Signing in..." : "Login"}
           </button>
         </form>
-        <GoogleButton/>
+        <GoogleButton />
         <div className="mt-6 text-center text-sm text-text-secondary">
           Don't have an account?{" "}
           <Link

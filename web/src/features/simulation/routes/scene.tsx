@@ -14,6 +14,7 @@ import useModelUrl from "../hooks/useModelUrl";
 import useSimDetails from "../hooks/useSimDetails";
 import useSceneActions from "../hooks/useSceneActions";
 import { getErrorMessage } from "@/utils/get-error-message";
+import { PlusCircle } from "lucide-react";
 
 function sceneFallbackRender(props: FallbackProps) {
   const msg = getErrorMessage(props.error).toLowerCase();
@@ -94,6 +95,16 @@ export default function Scene() {
   const bounds = useSceneStore((state) => state.bounds);
   const pendingFile = useSceneStore((state) => state.pendingFile);
 
+  // Warn users before closing/navigating away with an unsaved simulation
+  useEffect(() => {
+    if (!pendingFile) return;
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [pendingFile]);
+
   // Sync loaded simulation config + resultFileId into Zustand
   useSceneSync(idOfFile, simulation, pendingFile);
 
@@ -165,20 +176,7 @@ export default function Scene() {
               {!isLoading && !error && !modelUrl && (
                 <div className="flex flex-col items-center gap-4 text-center px-6">
                   <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-button-primary/10">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-8 w-8 text-button-primary"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={1.5}
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M12 16v-4m0 0V8m0 4h4m-4 0H8m13 0a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
+                    <PlusCircle className="h-8 w-8 text-button-primary" />
                   </div>
                   <div>
                     <p className="text-lg font-semibold text-text-primary">
