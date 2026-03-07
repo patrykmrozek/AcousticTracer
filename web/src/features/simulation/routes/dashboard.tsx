@@ -38,6 +38,7 @@ export default function Dashboard() {
   const { current } = useUser();
   const navigate = useNavigate();
   const [isUploadOpen, setIsUploadOpen] = useState(false);
+
   const [deleteTarget, setDeleteTarget] = useState<{
     id: string;
     fileId: string;

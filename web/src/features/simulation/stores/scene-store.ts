@@ -22,7 +22,7 @@ interface SceneState {
     };
   };
   bounds: THREE.Box3 | null;
-  num_voxels: number;
+  numVoxels: number;
   showGrid: boolean;
   showTexture: boolean;
   pendingFile: File | null;
@@ -91,7 +91,7 @@ export const useSceneStore = create<SceneState>()((set, get) => ({
   resultFileId: null,
   frameIndex: 0,
   wireframe: false,
-  num_voxels: 0,
+  numVoxels: 0,
 
   reset: () =>
     set({
@@ -105,7 +105,7 @@ export const useSceneStore = create<SceneState>()((set, get) => ({
       showGrid: true,
       showTexture: true,
       wireframe: false,
-      num_voxels: 0,
+      numVoxels: 0,
       config: {
         fileName: "",
         voxelSize: 2,
@@ -178,7 +178,7 @@ export const useSceneStore = create<SceneState>()((set, get) => ({
       },
     })),
 
-  setNumVoxels: (n: number) => set({ num_voxels: n }),
+  setNumVoxels: (n: number) => set({ numVoxels: n }),
   setGridDimensions: (dims) => set({ gridDimensions: dims }),
   setWorldDimensions: (dims) => set({ worldDimensions: dims }),
   setVoxelCount: (count) => set({ voxelCount: count }),

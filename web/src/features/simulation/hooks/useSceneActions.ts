@@ -8,9 +8,10 @@ import {
 } from "@/api/simulations";
 import { useSceneStore } from "../stores/scene-store";
 import { useUser } from "@/features/auth/context/user-store";
+import { account } from "@/lib/appwrite";
 import type { SimDetails } from "../api/simulation-repository";
 import { useErrorBoundary } from "react-error-boundary";
-import { queryClient } from "@/app/provider";
+import { queryClient } from "@/lib/query-client";
 import { simulationKeys } from "@/lib/query-keys";
 import { parseResultBuffer } from "../api/parse-result-binary";
 
@@ -68,7 +69,10 @@ export default function useSceneActions(
 
       runRaytracer(config)
         .then(async (raytracerResponse) => {
-          if (!current) return;
+          // Guard: if the user logged out while the raytracer was running, bail
+          const activeUser = await account.get().catch(() => null);
+          if (!activeUser) return;
+
           let resultFileId: string | undefined;
           try {
             const resultFile = new File(
@@ -103,6 +107,10 @@ export default function useSceneActions(
           }
         })
         .catch(async (err: unknown) => {
+          // Guard: skip DB updates if user logged out
+          const activeUser = await account.get().catch(() => null);
+          if (!activeUser) return;
+
           if (simulationId) {
             try {
               await simulationRepo.update(simulationId, {

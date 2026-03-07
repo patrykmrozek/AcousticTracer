@@ -14,7 +14,7 @@ export default function UploadForm({ onClose }: UploadFormProps) {
   const navigate = useNavigate();
   const setPendingFile = useSceneStore((state) => state.setPendingFile);
 
-  const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!file) {
       setFormError("Please select a .glb file to upload");

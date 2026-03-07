@@ -1,5 +1,3 @@
-// src/features/simulation/components/source-placer.tsx
-
 import { useState, useRef, useEffect, useMemo, type RefObject } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Line, TransformControls } from "@react-three/drei";

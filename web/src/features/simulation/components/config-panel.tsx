@@ -122,7 +122,6 @@ export default function ConfigPanel({ mode = "staging" }: ConfigPanelProps) {
           Configuration
         </h3>
 
-        {/* ── Voxel Size ── */}
         {mode === "staging" && (
           <Section label={`Voxel Size: ${voxelSize}m`}>
             {discreteSteps.length > 0 && (
@@ -153,7 +152,6 @@ export default function ConfigPanel({ mode = "staging" }: ConfigPanelProps) {
           </Section>
         )}
 
-        {/* ── Display toggles ── */}
         <div className="space-y-1.5">
           <Toggle
             label="Voxel Grid"
@@ -178,7 +176,6 @@ export default function ConfigPanel({ mode = "staging" }: ConfigPanelProps) {
           />
         </div>
 
-        {/* ── Staging-only controls ── */}
         {mode === "staging" && (
           <>
             {/* Material */}
@@ -242,17 +239,13 @@ export default function ConfigPanel({ mode = "staging" }: ConfigPanelProps) {
           </>
         )}
 
-        {/* ── Grid Stats ── */}
         <GridStats />
 
-        {/* ── Source Details (collapsible, pinned to bottom) ── */}
         <SourceDetails selectedSource={selectedSource} />
       </div>
     </div>
   );
 }
-
-/* ── Helper Components ── */
 
 function Section({
   label,
@@ -283,12 +276,22 @@ function Toggle({
   return (
     <div className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-white/5 transition-colors">
       <span className="text-sm text-text-primary">{label}</span>
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
-        className="accent-button-primary scale-110 cursor-pointer"
-      />
+      <button
+        type="button"
+        role="switch"
+        aria-checked={checked}
+        onClick={() => onChange(!checked)}
+        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-button-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bg-primary ${
+          checked ? "bg-green-500" : "bg-white/20"
+        }`}
+      >
+        <span
+          aria-hidden="true"
+          className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-lg ring-0 transition-transform duration-200 ease-in-out ${
+            checked ? "translate-x-5" : "translate-x-0"
+          }`}
+        />
+      </button>
     </div>
   );
 }

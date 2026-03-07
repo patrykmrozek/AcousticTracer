@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useUser } from "@/features/auth/context/user-store";
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
-import { LayoutDashboard, LogOut, Home } from "lucide-react";
+import { LayoutDashboard, LogOut, Home, Settings, Waves, Box } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function AppSidebar({
@@ -37,6 +37,24 @@ export default function AppSidebar({
                   ),
                 }}
               />
+              <SidebarLink
+                link={{
+                  label: "Scene Viewer",
+                  href: "/scene/new",
+                  icon: (
+                    <Box className="text-text-secondary h-5 w-5 shrink-0" />
+                  ),
+                }}
+              />
+              <SidebarLink
+                link={{
+                  label: "Settings",
+                  href: "/settings",
+                  icon: (
+                    <Settings className="text-text-secondary h-5 w-5 shrink-0" />
+                  ),
+                }}
+              />
             </div>
           </div>
           <div className="flex flex-col gap-2 border-t border-border-primary pt-4">
@@ -53,7 +71,7 @@ export default function AppSidebar({
             <SidebarLink
               link={{
                 label: current?.name ?? "User",
-                href: "#",
+                href: "/settings",
                 icon: (
                   <div className="h-7 w-7 shrink-0 rounded-full bg-accent flex items-center justify-center text-bg-primary font-bold text-xs">
                     {current?.name?.charAt(0).toUpperCase() || "?"}
@@ -71,7 +89,7 @@ export default function AppSidebar({
 
 const Logo = () => (
   <div className="font-normal flex space-x-2 items-center text-sm text-text-primary py-1 relative z-20">
-    <div className="h-5 w-6 bg-accent rounded-br-lg rounded-tr-sm rounded-tl-lg rounded-bl-sm shrink-0" />
+    <Waves className="h-5 w-6 text-accent shrink-0" />
     <motion.span
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -84,6 +102,6 @@ const Logo = () => (
 
 const LogoIcon = () => (
   <div className="font-normal flex space-x-2 items-center text-sm text-text-primary py-1 relative z-20">
-    <div className="h-5 w-6 bg-accent rounded-br-lg rounded-tr-sm rounded-tl-lg rounded-bl-sm shrink-0" />
+    <Waves className="h-5 w-6 text-accent shrink-0" />
   </div>
 );

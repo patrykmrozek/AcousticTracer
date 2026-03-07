@@ -1,4 +1,4 @@
-// TanStack Query Hooks for Simulations with doc strings to help me remember use cases ( and for alex )
+// TanStack Query hooks for simulation CRUD
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { simulationRepo } from "./simulation-repository";
@@ -10,14 +10,7 @@ import type {
 import { simulationKeys } from "@/lib/query-keys";
 import { parseResultBuffer } from "./parse-result-binary";
 
-/**
- * Hook: List all simulations for the current user
- *
- * Usage:
- * ```tsx
- * const { data, isLoading, error } = useSimulationsList(userId);
- * ```
- */
+/** List all simulations for a user. */
 export function useSimulationsList(userId: string) {
   return useQuery({
     queryKey: simulationKeys.lists(userId),
@@ -26,14 +19,7 @@ export function useSimulationsList(userId: string) {
   });
 }
 
-/**
- * Hook: Get a single simulation by ID
- *
- * Usage:
- * ```tsx
- * const { data, isLoading, error } = useSimulationDetail(id);
- * ```
- */
+/** Get a single simulation by ID. */
 export function useSimulationDetail(id: string | undefined) {
   return useQuery({
     queryKey: simulationKeys.detail(id || ""),
@@ -42,21 +28,7 @@ export function useSimulationDetail(id: string | undefined) {
   });
 }
 
-/**
- * Hook: Create a new simulation
- *
- * Usage:
- * ```tsx
- * const createMutation = useCreateSimulation();
- * createMutation.mutate({
- *   userId: '123',
- *   name: 'My Simulation',
- *   fileId: 'file-id',
- *   config: {...},
- *   dimensions: {...}
- * });
- * ```
- */
+/** Create a new simulation and invalidate the list cache. */
 export function useCreateSimulation() {
   const queryClient = useQueryClient();
 
@@ -70,18 +42,7 @@ export function useCreateSimulation() {
   });
 }
 
-/**
- * Hook: Update a simulation
- *
- * Usage:
- * ```tsx
- * const updateMutation = useUpdateSimulation();
- * updateMutation.mutate({
- *   id: 'sim-123',
- *   updates: { status: 'completed' }
- * });
- * ```
- */
+/** Update a simulation and invalidate related caches. */
 export function useUpdateSimulation() {
   const queryClient = useQueryClient();
 
@@ -103,15 +64,7 @@ export function useUpdateSimulation() {
   });
 }
 
-/**
- * Hook: Delete a simulation (with optional file deletion)
- *
- * Usage:
- * ```tsx
- * const deleteMutation = useDeleteSimulation();
- * deleteMutation.mutate({ id: 'sim-123', fileId: 'file-abc' });
- * ```
- */
+/** Delete a simulation with optimistic cache removal and rollback on failure. */
 export function useDeleteSimulation() {
   const queryClient = useQueryClient();
 
@@ -170,32 +123,14 @@ export function useDeleteSimulation() {
   });
 }
 
-/**
- * Hook: Upload a simulation file
- *
- * Usage:
- * ```tsx
- * const uploadMutation = useUploadSimulationFile();
- * uploadMutation.mutate(file);
- * ```
- */
+/** Upload a simulation file. */
 export function useUploadSimulationFile() {
   return useMutation({
     mutationFn: (file: File) => simulationRepo.uploadFile(file),
   });
 }
 
-/**
- * Hook: Fetch and cache a simulation's ray response JSON
- *
- * Uses TanStack Query for in-memory caching so revisiting the same
- * simulation serves instantly from cache instead of re-fetching.
- *
- * Usage:
- * ```tsx
- * const { data } = useRayResponse(simulation?.resultFileId);
- * ```
- */
+/** Fetch and cache a simulation's ray-response binary. Cached with staleTime: Infinity. */
 export function useRayResponse(resultFileId: string | undefined) {
   return useQuery({
     queryKey: simulationKeys.rayResponse(resultFileId || ""),

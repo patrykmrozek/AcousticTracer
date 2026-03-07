@@ -2,21 +2,9 @@ import { UserProvider } from "@/features/auth/context/user-store";
 import React, { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { MainErrorFallback } from "@/components/main-error-fallback";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClient } from "@/lib/query-client";
 import ToastContainer from "@/components/toast";
-export const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 5,
-      gcTime: 1000 * 60 * 30,
-      retry: 1,
-      refetchOnWindowFocus: false,
-    },
-    mutations: {
-      retry: 0,
-    },
-  },
-});
 
 interface AppProviderProps {
   children: React.ReactNode;

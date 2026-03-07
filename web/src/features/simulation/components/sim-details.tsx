@@ -1,26 +1,13 @@
 import type { SimDetails } from "../api/simulation-repository";
+import { Info } from "lucide-react";
 
 export default function SimDetails({ simDetails }: { simDetails: SimDetails }) {
   if (!simDetails) return null;
 
   return (
     <div className="ml-auto relative group">
-      {/* Svg Icon */}
       <div className="text-text-secondary hover:text-text-primary cursor-help p-2 rounded-full hover:bg-white/10 transition-all duration-200">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="w-6 h-6"
-        >
-          <circle cx="12" cy="12" r="10"></circle>
-          <line x1="12" y1="16" x2="12" y2="12"></line>
-          <line x1="12" y1="8" x2="12.01" y2="8"></line>
-        </svg>
+        <Info className="w-6 h-6" />
       </div>
 
       {/* Hover Content */}

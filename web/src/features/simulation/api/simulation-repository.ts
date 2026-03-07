@@ -144,16 +144,10 @@ function simulationToRowData(params: CreateSimulationParams) {
   };
 }
 
-// The repository class, encapsulates all the CRUD operations with doc strings
+// The repository class — encapsulates all simulation CRUD
 
 class SimulationRepository {
-  /**
-   * List simulations for a specific user
-   *
-   * @param userId - The user ID to filter by
-   * @returns List of simulations with total count
-   * @throws Error if request fails
-   */
+  /** List simulations for a user, newest first. */
   async list(userId: string): Promise<SimulationList> {
     const response = await tablesDB.listRows({
       databaseId: CONFIG.databaseId,
@@ -169,13 +163,7 @@ class SimulationRepository {
     };
   }
 
-  /**
-   * Get a single simulation by ID
-   *
-   * @param id - Simulation ID
-   * @returns Simulation data
-   * @throws Error if not found or request fails
-   */
+  /** Get a single simulation by ID. */
   async getById(id: string): Promise<Simulation> {
     const doc = await tablesDB.getRow({
       databaseId: CONFIG.databaseId,
@@ -186,13 +174,7 @@ class SimulationRepository {
     return documentToSimulation(doc as unknown as SimulationDocument);
   }
 
-  /**
-   * Create a new simulation
-   *
-   * @param params - Simulation creation parameters
-   * @returns Created simulation
-   * @throws Error if creation fails
-   */
+  /** Create a new simulation. */
   async create(params: CreateSimulationParams): Promise<Simulation> {
     const doc = await tablesDB.createRow({
       databaseId: CONFIG.databaseId,
@@ -204,19 +186,12 @@ class SimulationRepository {
     return documentToSimulation(doc as unknown as SimulationDocument);
   }
 
-  /**
-   * Update an existing simulation
-   *
-   * @param id - Simulation ID
-   * @param updates - Fields to update
-   * @returns Updated simulation
-   * @throws Error if update fails
-   */
+  /** Partially update a simulation. */
   async update(
     id: string,
     updates: UpdateSimulationParams,
   ): Promise<Simulation> {
-    const data: Record<string, any> = {};
+    const data: Record<string, unknown> = {};
 
     // Only include fields that were provided
     if (updates.name !== undefined) data.name = updates.name;
@@ -237,12 +212,7 @@ class SimulationRepository {
     return documentToSimulation(doc as unknown as SimulationDocument);
   }
 
-  /**
-   * Delete a simulation
-   *
-   * @param id - Simulation ID
-   * @throws Error if deletion fails
-   */
+  /** Delete a simulation by ID. */
   async delete(id: string): Promise<void> {
     await tablesDB.deleteRow({
       databaseId: CONFIG.databaseId,
@@ -253,13 +223,7 @@ class SimulationRepository {
 
   // File Operations
 
-  /**
-   * Upload a simulation file
-   *
-   * @param file - File to upload
-   * @returns Uploaded file metadata
-   * @throws Error if upload fails
-   */
+  /** Upload a simulation file. */
   async uploadFile(file: File): Promise<Models.File> {
     return await storage.createFile({
       bucketId: CONFIG.bucketId,
@@ -268,12 +232,7 @@ class SimulationRepository {
     });
   }
 
-  /**
-   * Get file download URL (better caching than getFileView)
-   *
-   * @param fileId - File ID
-   * @returns URL to download/view the file
-   */
+  /** Get a download URL for a stored file. */
   getFileUrl(fileId: string): string {
     // Use getFileDownload for better browser caching
     return storage.getFileDownload({
@@ -282,12 +241,7 @@ class SimulationRepository {
     });
   }
 
-  /**
-   * Delete a file
-   *
-   * @param fileId - File ID
-   * @throws Error if deletion fails
-   */
+  /** Delete a file from storage. */
   async deleteFile(fileId: string): Promise<void> {
     await storage.deleteFile({
       bucketId: CONFIG.bucketId,
@@ -295,16 +249,7 @@ class SimulationRepository {
     });
   }
 
-  /**
-   * Delete simulation and its associated file
-   *
-   * Atomic operation - if file deletion fails, simulation is still deleted
-   * (file orphaning is better than simulation orphaning)
-   *
-   * @param id - Simulation ID
-   * @param fileId - File ID to delete
-   * @throws Error if simulation deletion fails
-   */
+  /** Delete a simulation and its associated file (file failure is non-fatal). */
   async deleteWithFile(id: string, fileId: string): Promise<void> {
     // Delete simulation first (more important)
     await this.delete(id);
@@ -316,13 +261,7 @@ class SimulationRepository {
     }
   }
 
-  /**
-   * Delete simulation and all associated files (input + result)
-   *
-   * @param id - Simulation ID
-   * @param fileIds - Array of file IDs to delete
-   * @throws Error if simulation deletion fails
-   */
+  /** Delete a simulation and all associated files (input + result). */
   async deleteWithFiles(id: string, fileIds: string[]): Promise<void> {
     await this.delete(id);
 
