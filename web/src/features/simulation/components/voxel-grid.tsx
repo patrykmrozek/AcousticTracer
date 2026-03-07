@@ -4,7 +4,7 @@ import { useSceneStore } from "../stores/scene-store";
 import { useRayResponse } from "../api/use-simulation-hooks";
 import type { RayFrame } from "../api/parse-result-binary";
 
-const MAX_VOXELS = 500_000;
+const MAX_VOXELS = 500_000_000;
 const ZERO_MATRIX = new THREE.Matrix4().makeScale(0, 0, 0);
 const WHITE = new THREE.Color("#ffffff");
 

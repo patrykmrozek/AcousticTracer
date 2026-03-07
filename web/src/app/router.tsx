@@ -21,7 +21,7 @@ const ProtectedRoute = () => {
 
   if (isLoading) return null;
 
-  if (!current) return <Navigate to="/auth/login" replace />;
+  if (!current) return <Navigate to="/" replace />;
 
   // This Suspense boundary catches lazy-route chunk loads so the
   // outer AppProvider Suspense doesn't unmount the whole tree
@@ -107,7 +107,18 @@ const router = createBrowserRouter([
   },
   {
     path: "*",
-    element: <div className="p-10 text-center">Error 404- Page Not Found</div>,
+    element: (
+      <div className="flex flex-col items-center justify-center h-screen bg-bg-primary text-text-primary gap-4">
+        <h1 className="text-6xl font-bold text-text-secondary">404</h1>
+        <p className="text-text-secondary">Page not found</p>
+        <a
+          href="/"
+          className="mt-4 px-6 py-2 bg-button-primary text-white rounded-lg no-underline hover:bg-button-hover transition-colors"
+        >
+          Go Home
+        </a>
+      </div>
+    ),
   },
 ]);
 

@@ -11,16 +11,20 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setIsSubmitting(true);
     try {
       await login(email, password);
       showToast("Login successful — welcome back!", "success");
       navigate("/");
     } catch (err: unknown) {
       setError(getErrorMessage(err));
+    } finally{
+      setIsSubmitting(false);
     }
   };
 
@@ -87,8 +91,9 @@ export default function Login() {
           <button
             className="w-full px-4 py-2.5 rounded-lg bg-button-primary text-white font-semibold text-sm transition-colors cursor-pointer border-none hover:bg-button-hover focus-visible:outline-2 focus-visible:outline-button-primary focus-visible:outline-offset-2 disabled:opacity-60 disabled:cursor-not-allowed"
             type="submit"
+            disabled={isSubmitting}
           >
-            Login
+            {isSubmitting ? "Signing in..." : "Login"}
           </button>
         </form>
 

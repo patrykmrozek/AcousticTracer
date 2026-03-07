@@ -6,7 +6,9 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { queryClient } from "@/app/provider";
 import { account } from "@/lib/appwrite";
+import { useSceneStore } from "@/features/simulation/stores/scene-store";
 interface UserContextType {
   current: Models.User<Models.Preferences> | null;
   isLoading: boolean;
@@ -36,13 +38,15 @@ export function UserProvider({ children }: { children: ReactNode }) {
       email: email,
       password: password,
     });
-
+    useSceneStore.getState().reset();
     const loggedIn = await account.get();
     setUser(loggedIn);
   }
 
   async function logout() {
     await account.deleteSession({ sessionId: "current" });
+    queryClient.clear();
+    useSceneStore.getState().reset();
     setUser(null);
   }
 
