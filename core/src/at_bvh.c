@@ -498,8 +498,8 @@ void check_triangles(AT_MiniTreeNode *node, AT_Ray *in_ray, AT_IntersectContext 
 void AT_MiniTree_intersect(AT_IntersectContext *ctx, AT_MiniTree **minitrees, uint32_t num_trees, AT_Ray *in_ray)
 {
     // TODO: fix this shit bro
-    AT_MiniTreeNode *stack[num_trees];
     for (uint32_t tree_idx = 0; tree_idx < num_trees; tree_idx++) {
+	AT_MiniTreeNode *stack[minitrees[tree_idx]->last_node_idx];
         int stack_top = 0;
         AT_MiniTreeNode *nodes = minitrees[tree_idx]->nodes;
         stack[stack_top++] = &nodes[0];
