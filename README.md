@@ -1,11 +1,13 @@
 # AcousticTracer
 
-> (Work In Progress)
+Our project 'Acoustic Tracer' is a three-dimensional, acoustic visualiser that allows users to visualise sound travelling throughout a modelled environment as a heat map. At the core it is a C library, where the user can read in a `.glb` file (3D Model File), insert one or more speakers, specify simulation settings, and receive back a heat map of how the sound travelled through the environment over time. Our final project extends it into a web-based application that renders this heat map and makes the configuration of the scene and simulation more user-friendly, while also allowing more technical users to achieve their desired configuration.
 
-An audio simulation to trace sound waves from a source placed inside an environment,
-in order to track how the sound travels through the space,
-and interacts with the environments surfaces and observers.
+Some demonstrations of it's functionality:
 
+![Conference Gif](assets/clips/bathroom.gif){width=45%} ![Conference Gif](assets/clips/conference.gif){width=45%}
+![Conference Gif](assets/clips/Cathedral.gif)
+
+Link to our report: [Here](docs/report.pdf)
 Project website: [link to the documentation](https://acoustic-resonance.github.io/AcousticTracer/)
 
 ## Contributors
@@ -14,3 +16,8 @@ Project website: [link to the documentation](https://acoustic-resonance.github.i
 - [Patryk Mrozek](https://github.com/patrykmrozek)
 - [Eoghan Murphy](https://github.com/eonmurph)
 - [Alex Wright](https://github.com/alexodwright)
+
+Future Plans:
+- [ ] Frontend Multiple Source Selection
+- [ ] LiDar 3D Environment Compatability
+- [ ] Genetic Algorithm for Optimal Source Position & Orientation
