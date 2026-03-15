@@ -4,10 +4,17 @@ Our project 'Acoustic Tracer' is a three-dimensional, acoustic visualiser that a
 
 Some demonstrations of it's functionality:
 
-![Conference Gif](assets/clips/bathroom.gif){width=45%} ![Conference Gif](assets/clips/conference.gif){width=45%}
-![Conference Gif](assets/clips/Cathedral.gif)
+<p align="center">
+  <img src="assets/clips/bathroom.gif" alt="Bathroom demo" width="46%" height="100%" />
+  &nbsp; &nbsp; &nbsp; &nbsp;
+  <img src="assets/clips/cathedral.gif" alt="Cathedral demo" width="46%" height="100%" />
+</p>
 
-Link to our report: [Here](docs/report.pdf)
+<p align="center">
+  <img src="assets/clips/conference.gif" alt="Conference demo" width="45%" height="100%" />
+</p>
+
+Project report: [link to the report](docs/report.pdf)</br>
 Project website: [link to the documentation](https://acoustic-resonance.github.io/AcousticTracer/)
 
 ## Contributors
@@ -18,6 +25,7 @@ Project website: [link to the documentation](https://acoustic-resonance.github.i
 - [Alex Wright](https://github.com/alexodwright)
 
 Future Plans:
+
 - [ ] Frontend Multiple Source Selection
 - [ ] LiDar 3D Environment Compatability
 - [ ] Genetic Algorithm for Optimal Source Position & Orientation
