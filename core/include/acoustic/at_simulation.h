@@ -1,14 +1,21 @@
 /** \file
     \brief AT_Simulation and related functions
+    \ingroup sim
 */
 
 #include "acoustic/at.h"
 
-/** \brief Groups the necessary simulation data.
+/** \defgroup sim Simulation */
+
+/** \struct AT_Simulation
+    \brief Groups the necessary simulation data.
+    \ingroup sim
  */
 typedef struct AT_Simulation AT_Simulation;
 
 /** \brief AT_Simulation constructor using defined AT_Settings.
+    \relatesalso AT_Simulation
+    \ingroup sim
 
     \param out_simulation Pointer to an empty initialised AT_Simulation.
     \param scene Pointer to the simulation's scene data.
@@ -22,14 +29,16 @@ AT_Result AT_simulation_create(AT_Simulation **out_simulation,
                                const AT_Settings *settings);
 
 /** \brief Destroys an allocated AT_Simulation
+    \relatesalso AT_Simulation
+    \ingroup sim
 
     \param simulation Pointer to the simulation data.
-
-    \retval void
 */
 void AT_simulation_destroy(AT_Simulation *simulation);
 
 /** \brief Starts the simulation.
+    \relatesalso AT_Simulation
+    \ingroup sim
 
     \param simulation Pointer to the simulation.
 
