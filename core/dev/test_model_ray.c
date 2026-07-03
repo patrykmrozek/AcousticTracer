@@ -33,9 +33,9 @@ int main()
         return 1;
     }
 
-    for (uint32_t i = 0; i < model->vertex_count; i++) {
-        model->vertices[i] = AT_vec3_scale(model->vertices[i], 0.01);
-    }
+    //for (uint32_t i = 0; i < model->vertex_count; i++) {
+        //model->vertices[i] = AT_vec3_scale(model->vertices[i], 0.01);
+    //}
 
     AT_Ray rays[MAX_RAYS] = {0};
 
