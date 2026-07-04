@@ -1,10 +1,15 @@
 #include "../src/at_ray.h"
+#include "acoustic/at.h"
 #include "acoustic/at_math.h"
 #include "at_utils.h"
 
+#define SURFACE_EPSILON  0.001f
 
 //Möller–Trumbore intersection alg
-bool AT_ray_triangle_intersect(AT_Ray *ray, const AT_Triangle *triangle, AT_Ray *out_ray, AT_Vec3 *out_normal)
+bool AT_ray_triangle_intersect(AT_Ray *ray,
+                               const AT_Triangle *triangle,
+                               AT_Ray *out_ray,
+                               AT_Vec3 *out_normal)
 {
     AT_Vec3 edge1 = AT_vec3_sub(triangle->v2, triangle->v1);
     AT_Vec3 edge2 = AT_vec3_sub(triangle->v3, triangle->v1);
@@ -43,6 +48,36 @@ bool AT_ray_triangle_intersect(AT_Ray *ray, const AT_Triangle *triangle, AT_Ray 
     }
 
     return false;
+}
+
+AT_Result AT_ray_child_create_and_init(AT_Ray *ray,
+                                       AT_Ray out_ray,
+                                       uint32_t num_rays,
+                                       AT_Vec3 out_normal,
+                                       AT_MaterialType mat_type,
+                                       AT_Ray *out_child)
+{
+    AT_Ray *child = (AT_Ray *)malloc(sizeof(AT_Ray));
+    if (!child) return AT_ERR_ALLOC_ERROR;
+    *child = out_ray;
+    child->child = NULL;
+    child->ray_id = ray->ray_id + num_rays;
+    ray->hit_point = out_ray.origin;
+
+    AT_Vec3 offset = AT_vec3_scale(out_normal, SURFACE_EPSILON);
+    child->origin = AT_vec3_add(ray->hit_point, offset);
+
+    child->total_distance = ray->total_distance + AT_vec3_distance(ray->origin, ray->hit_point);
+    child->energy = ray->energy * (1.0f - AT_MATERIAL_TABLE[mat_type].absorption);
+
+    float rand = AT_get_random_float();
+    if (rand < AT_MATERIAL_TABLE[mat_type].scattering) {
+        child->direction = AT_sample_cosine_hemisphere(out_normal);
+    }
+
+    *out_child = *child;
+
+    return AT_OK;
 }
 
 void AT_ray_destroy_children(AT_Ray *ray) {

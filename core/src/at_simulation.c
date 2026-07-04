@@ -14,7 +14,9 @@
 #include <math.h>
 #include <float.h>
 
-AT_Result AT_simulation_create(AT_Simulation **out_simulation, const AT_Scene *scene, const AT_Settings *settings)
+AT_Result AT_simulation_create(AT_Simulation **out_simulation,
+                               const AT_Scene *scene,
+                               const AT_Settings *settings)
 {
     if (!scene || !settings) return AT_ERR_INVALID_ARGUMENT;
     if (settings->fps <= 0 || settings->voxel_size <= 0.0f) return AT_ERR_INVALID_ARGUMENT;
@@ -33,17 +35,15 @@ AT_Result AT_simulation_create(AT_Simulation **out_simulation, const AT_Scene *s
 
     // World dimensions
     AT_Vec3 dimensions = AT_vec3_sub(scene->world_AABB.max, scene->world_AABB.min);
-    // printf("DIMENSIONS: {%f, %f, %f}\n", dimensions.x, dimensions.y, dimensions.z);
-    // printf("AABB min: {%f, %f, %f}\n", scene->world_AABB.min.x, scene->world_AABB.min.y, scene->world_AABB.min.z);
-    // printf("AABB max: {%f, %f, %f}\n", scene->world_AABB.max.x, scene->world_AABB.max.y, scene->world_AABB.max.z);
 
     // Grid dimensions (num voxels in each dimension)
-    float grid_x = ceilf(dimensions.x / settings->voxel_size);
-    float grid_y = ceilf(dimensions.y / settings->voxel_size);
-    float grid_z = ceilf(dimensions.z / settings->voxel_size);
-    // printf("grid_x : %f,grid_y: %f,grid_z: %f\n", grid_x, grid_y, grid_z);
-    // printf("dim_x : %f,dim_y: %f,dim_z: %f\n", dimensions.x, dimensions.y, dimensions.z);
-    uint32_t num_voxels = (uint32_t)(grid_x * grid_y * grid_z);
+    AT_Vec3 grid = {{
+        .x = ceilf(dimensions.x / settings->voxel_size),
+        .y = ceilf(dimensions.y / settings->voxel_size),
+        .z = ceilf(dimensions.z / settings->voxel_size)
+    }};
+    
+    uint32_t num_voxels = (uint32_t)(grid.x * grid.y * grid.z);
 
     simulation->voxel_grid = calloc(num_voxels, sizeof(AT_Voxel));
     if (!simulation->voxel_grid) {
@@ -62,7 +62,7 @@ AT_Result AT_simulation_create(AT_Simulation **out_simulation, const AT_Scene *s
     simulation->fps = settings->fps;
     simulation->num_rays = settings->num_rays;
     simulation->num_voxels = num_voxels;
-    simulation->grid_dimensions = (AT_Vec3){{grid_x, grid_y, grid_z}}; //dimensions in terms of voxels
+    simulation->grid_dimensions = grid;
     simulation->voxel_size = settings->voxel_size;
     simulation->bin_width = 1.0f / settings->fps;
 
@@ -74,23 +74,14 @@ AT_Result AT_simulation_create(AT_Simulation **out_simulation, const AT_Scene *s
 
 #define SOURCE_ENERGY 1.0f //this can be the power of the sound source defined by the user
 
-AT_Result AT_simulation_run(AT_Simulation *simulation)
+
+void AT_simulation_rays_init(AT_Simulation *simulation)
 {
-    if (!simulation) return AT_ERR_INVALID_ARGUMENT;
-
-    const float MIN_ENERGY_THRESHOLD = 0.8f / simulation->num_rays;
-    const float SURFACE_EPSILON = simulation->voxel_size * 1e-4f;
-
-    uint32_t num_children = 0;
-
-    //initialize and trace rays at every source
-    for (uint32_t s = 0; s < simulation->scene->num_sources; s++) {
+for (uint32_t s = 0; s < simulation->scene->num_sources; s++) {
         //init rays for this source
         for (uint32_t r = 0; r < simulation->num_rays; r++) {
             uint32_t ray_idx = s * simulation->num_rays + r;
-
             AT_Vec3 hemisphere_dir = AT_sample_cosine_hemisphere(simulation->scene->sources[s].direction);
-            //printf("dir: {%.3f, %.3f, %.3f}\n", hemisphere_dir.x, hemisphere_dir.y, hemisphere_dir.z);
 
             simulation->rays[ray_idx] = AT_ray_init(
                 simulation->scene->sources[s].position,
@@ -101,6 +92,16 @@ AT_Result AT_simulation_run(AT_Simulation *simulation)
             );
         }
     }
+}
+
+AT_Result AT_simulation_run(AT_Simulation *simulation)
+{
+    if (!simulation) return AT_ERR_INVALID_ARGUMENT;
+
+    const float MIN_ENERGY_THRESHOLD = 0.8f / simulation->num_rays;
+
+    //initialize and trace rays at every source
+    AT_simulation_rays_init(simulation);
 
     //trace rays for this source
     uint32_t total_rays = simulation->scene->num_sources * simulation->num_rays;
@@ -108,42 +109,28 @@ AT_Result AT_simulation_run(AT_Simulation *simulation)
         AT_Ray *ray = &simulation->rays[i];
         while (ray->energy > MIN_ENERGY_THRESHOLD) {
             AT_IntersectContext ctx = AT_IntersectContext_init();
-            AT_MiniTree_intersect(&ctx, simulation->scene->mini_trees, simulation->scene->num_trees, ray);
+            AT_MiniTree_intersect(&ctx,
+                                  simulation->scene->mini_trees,
+                                  simulation->scene->num_trees, ray);
             if (!ctx.intersects) break;
-            AT_Ray *child = (AT_Ray *)malloc(sizeof(AT_Ray));
-            if (!child) return AT_ERR_ALLOC_ERROR;
-            *child = ctx.out_ray;
-            child->child = NULL;
-            child->ray_id = ray->ray_id + simulation->num_rays;
-            //AT_Vec3 hit_point = closest.origin;
-            ray->hit_point = ctx.out_ray.origin;
+            AT_MaterialType mat_type = simulation->scene->environment->triangle_materials[ctx.triangle_index];
+            AT_Ray child;
 
-            //slightly offset child origin to avoid percision issues (when hitting corners and such)
-            const float SURFACE_EPSILON = 0.001f;
-            AT_Vec3 offset = AT_vec3_scale(ctx.out_normal, SURFACE_EPSILON);
-            child->origin = AT_vec3_add(ray->hit_point, offset);
+            AT_Result res = AT_ray_child_create_and_init(ray, 
+                                                         ctx.out_ray,
+                                                         simulation->num_rays,
+                                                         ctx.out_normal,
+                                                         mat_type,
+                                                         &child);
+            if (res != AT_OK) return res;
 
-            child->total_distance = ray->total_distance + AT_vec3_distance(ray->origin, ray->hit_point);
-            child->energy = ray->energy * (1.0f - AT_MATERIAL_TABLE[simulation->scene->environment->triangle_materials[ctx.triangle_index]].absorption);
-
-            float rand = AT_get_random_float();
-            if (rand < AT_MATERIAL_TABLE[simulation->scene->environment->triangle_materials[ctx.triangle_index]].scattering) {
-                //printf("SCATTER!\n");
-                child->direction = AT_sample_cosine_hemisphere(ctx.out_normal);
-            }
-
-            ray->child = child;
+            ray->child = &child;
             ray = ray->child;
-
-            num_children++;
         }
         if (ray->energy < MIN_ENERGY_THRESHOLD) ray->has_died = true;
     }
 
-    printf("Number of child rays: %i\n", num_children);
-
     //DDA
-
     for (uint32_t i = 0; i < total_rays; i++) {
         AT_Ray *ray = &simulation->rays[i];
 
@@ -154,17 +141,16 @@ AT_Result AT_simulation_run(AT_Simulation *simulation)
                 ray_end = ray->hit_point;
             //if the ray doesnt have an end point but hasnt died, continue it for max_AABB distance
             } else if (!ray->has_died) {
-               ray_end = AT_vec3_add(
-                         ray->origin,
-                         AT_vec3_scale(
-                             ray->direction,
-                             AT_vec3_distance(
-                                 simulation->scene->world_AABB.min,
-                                 simulation->scene->world_AABB.max
-                             )
-                         )
-                     );
-               //otherwise if it has died just break
+                ray_end = AT_vec3_add(
+                            ray->origin,
+                            AT_vec3_scale(
+                                ray->direction,
+                                AT_vec3_distance(
+                                    simulation->scene->world_AABB.min,
+                                    simulation->scene->world_AABB.max
+                                )
+                            )
+                        );
             } else {
                 break;
             }

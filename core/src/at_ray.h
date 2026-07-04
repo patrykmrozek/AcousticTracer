@@ -8,25 +8,23 @@
 #include <stdlib.h>
 #include <string.h>
 
-static inline AT_Ray AT_ray_init(
-    const AT_Vec3 origin,
-    const AT_Vec3 direction,
-    float current_distance,
-    float energy,
-    uint32_t ray_id
-) {
-
+static inline AT_Ray AT_ray_init(const AT_Vec3 origin,
+                                 const AT_Vec3 direction,
+                                 float current_distance,
+                                 float energy,
+                                 uint32_t ray_id)
+{
     AT_Ray ray = {
-    .origin = origin,
-    .direction = AT_vec3_normalize(direction),
-    .hit_point = {0},
-    .has_died = false,
-    //accoustic energy transported by ray (initially, overall sound energy didived equally among rays)
-    .energy = energy,
-    .total_distance = current_distance,
-    .ray_id = ray_id,
-    .bounce_count = 0,
-    .child = NULL
+        .origin = origin,
+        .direction = AT_vec3_normalize(direction),
+        .hit_point = {0},
+        .has_died = false,
+        //accoustic energy transported by ray (initially, overall sound energy didived equally among rays)
+        .energy = energy,
+        .total_distance = current_distance,
+        .ray_id = ray_id,
+        .bounce_count = 0,
+        .child = NULL
     };
 
     return ray;
@@ -61,6 +59,12 @@ bool AT_ray_triangle_intersect(AT_Ray *ray,
                                AT_Ray *out_ray,
                                AT_Vec3 *out_normal);
 
+AT_Result AT_ray_child_create_and_init(AT_Ray *ray,
+                                       AT_Ray out_ray,
+                                       uint32_t num_rays,
+                                       AT_Vec3 out_normal,
+                                       AT_MaterialType mat_type,
+                                       AT_Ray *out_child);
 
 void AT_ray_destroy_children(AT_Ray *ray);
 
